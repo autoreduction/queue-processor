@@ -75,7 +75,7 @@ class TestHandleMessage(TestCase):
             "instrument": self.instrument_name  # Autoreduction Mock Instrument
         })
         with patch("logging.getLogger") as patched_logger:
-            self.handler = HandleMessage(self.mocked_client)
+            self.handler = HandleMessage()
             self.handler.connect()
             self.mocked_logger = patched_logger.return_value
 

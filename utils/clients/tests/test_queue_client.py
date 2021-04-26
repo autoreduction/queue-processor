@@ -8,17 +8,19 @@
 Test functionality for the activemq client
 """
 import os
+import socket
 
 from unittest import TestCase, mock
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from model.message.message import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.queue_client import QueueClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
+from utils.settings import ACTIVEMQ_SETTINGS
 
 
-# pylint:disable=protected-access,invalid-name,missing-docstring
+# pylint:disable=protected-access,no-self-use
 class TestQueueClient(TestCase):
     """
     Exercises the queue client
@@ -48,7 +50,7 @@ class TestQueueClient(TestCase):
         """
         client = QueueClient()
         client.connect()
-        self.assertTrue(client._test_connection())
+        self.assertTrue(client._connection.is_connected())
 
     def test_connection_failed_invalid_credentials(self):
         """
@@ -80,7 +82,6 @@ class TestQueueClient(TestCase):
         mocked_connection.disconnect.assert_called_with(receipt=str(1))
         self.assertIsNone(client._connection)
 
-    # pylint:disable=no-self-use
     @patch('stomp.connect.StompConnection11.send')
     def test_send_with_raw_string(self, mock_stomp_send):
         """
@@ -117,21 +118,11 @@ class TestQueueClient(TestCase):
         client.ack("test", "subscription")
         mock_stomp_ack.assert_called_once_with('test', "subscription")
 
-    @patch('stomp.connect.StompConnection11.set_listener')
-    @patch('stomp.connect.StompConnection11.subscribe')
-    def test_subscribe_to_single_queue(self, mock_stomp_subscribe, mock_stomp_set_listener):
-        """
-        Test: subscribe_queues handles a single queue (non-list)
-        and calls stomp.subscribe_queues for it
-        When: subscribe_queues is called a single queue passed as queue_list
-        """
-        client = QueueClient()
-        client.connect()
-        client.subscribe_queues('single-queue', 'consumer', None)
-        mock_stomp_set_listener.assert_called_once_with('consumer', None)
-        mock_stomp_subscribe.assert_called_once()
-
     def test_create_connection_bad_development(self):
+        """
+        Test: Exception raised
+        When: production host used in non production environment
+        """
         client = QueueClient()
         real_host = client.credentials.host
         client.credentials.host = "production.domain.com"
@@ -139,6 +130,10 @@ class TestQueueClient(TestCase):
         client.credentials.host = real_host
 
     def test_create_connection_bad_production(self):
+        """
+        Test: Exception raised
+        When: Local host used in production environment
+        """
         client = QueueClient()
         real_host = client.credentials.host
 
@@ -154,3 +149,44 @@ class TestQueueClient(TestCase):
 
         client.credentials.host = real_host
         del os.environ["AUTOREDUCTION_PRODUCTION"]
+
+    def test_test_connection_not_connected(self):
+        """
+        Test: Exception raised
+        When: test_connection called when not connected
+
+        """
+        client = QueueClient()
+        mock_connection = MagicMock()
+        mock_connection.is_connected.return_value = False
+        client._connection = mock_connection
+        with self.assertRaises(ConnectionException):
+            client._test_connection()
+
+    def test_test_connection_connected(self):
+        """
+        Test: test_connection returns True
+        When: Connected
+        """
+        client = QueueClient()
+        mock_connection = MagicMock()
+        mock_connection.is_connected.return_value = True
+        client._connection = mock_connection
+        self.assertTrue(client._test_connection())
+
+    def test_subscribe(self):
+        """
+        Test: correct calls made
+        When: subscribe is called
+        """
+        client = QueueClient()
+        mock_connection = MagicMock()
+        mock_listener = MagicMock()
+        client._connection = mock_connection
+        client.subscribe(mock_listener)
+
+        mock_connection.set_listener.assert_called_with("queue_processor", mock_listener)
+        mock_connection.subscribe.assert_called_with(destination=ACTIVEMQ_SETTINGS.data_ready,
+                                                     id=socket.getfqdn(),
+                                                     ack="client-individual",
+                                                     header={"activemq.prefetchSize": "1"})

@@ -10,13 +10,15 @@ Tests that data can traverse through the autoreduction system successfully
 """
 import os
 import shutil
+import subprocess
 import time
-from typing import Union
 import unittest
 from pathlib import Path
+from typing import Union
 
 from parameterized.parameterized import parameterized
 
+from build.settings import ACTIVEMQ_EXECUTABLE
 from model.database import access as db
 from model.message.message import Message
 from queue_processors.queue_processor.queue_listener import main
@@ -149,16 +151,41 @@ class TestEndToEnd(unittest.TestCase):
     def send_and_wait_for_result(self, message):
         """Sends the message to the queue and waits until the listener has finished processing it"""
         # forces the is_processing to return True so that the listener has time to actually start processing the message
-        self.listener._processing = True  #pylint:disable=protected-access
+        self.listener._processing = True  # pylint:disable=protected-access
         self.queue_client.send('/queue/DataReady', message)
+        start_time = time.time()
         while self.listener.is_processing_message():
             time.sleep(0.5)
+            if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
+                break
 
         # Get Result from database
         results = self._find_run_in_database()
 
         assert results
         return results
+
+    @staticmethod
+    def _start_activemq():
+        subprocess.Popen([ACTIVEMQ_EXECUTABLE, "start"]).wait(timeout=60)
+
+    @staticmethod
+    def _stop_activemq():
+        subprocess.Popen([ACTIVEMQ_EXECUTABLE, "stop"]).wait(timeout=60)
+
+    def test_reconnect_on_activemq_failure(self):
+        """
+        Test: Listener is still listening
+        When: ActiveMQ has started after stopping
+        """
+        self._stop_activemq()
+        self._start_activemq()
+
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self.data_ready_message.data = file_location
+
+        results = self.send_and_wait_for_result(self.data_ready_message)
+        self.assertEqual(1, len(results))
 
     @parameterized.expand([
         [222, 222],
