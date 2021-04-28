@@ -637,9 +637,9 @@ class TestInstrumentVariableUtils(unittest.TestCase):
                                                                    experiment_reference=exp_ref)
         assert variables[0] == new_vars[0]
 
-    @parameterized.expand([["text", "text"], ["", "text"], ["None", "text"], [1, 'number'], [1.0, 'number'],
-                           [True, 'boolean'], [False, 'boolean'], [[1, 2], 'list_number'], [['s', 't', 'r'],
-                                                                                            'list_text']])
+    @parameterized.expand([["text", "text"], ["", "text"], ["None", "text"], [None, "text"], [1, 'number'],
+                           [1.0, 'number'], [True, 'boolean'], [False, 'boolean'], [[1, 2], 'list_number'],
+                           [['s', 't', 'r'], 'list_text']])
     def test_variable_not_updated(self, var_value, var_type):
         """
         Test that the value does not get updated when it hasn't changed. Parameterized for all supported types
