@@ -16,14 +16,10 @@ class Variable(models.Model):
     Generic model class that should be treated as abstract
     """
     name = models.CharField(max_length=50, blank=False)
-    value = models.CharField(max_length=300, blank=True)
+    value = models.CharField(max_length=300, blank=True, null=True)
     type = models.CharField(max_length=50, blank=False)
     is_advanced = models.BooleanField(default=False)
     help_text = models.TextField(blank=True, null=True, default='')
-
-    # pylint:disable=no-member
-    def __str__(self):
-        return f"{self.instrument.name} - {self.name}=self.value"
 
     def sanitized_name(self):
         """
@@ -47,6 +43,10 @@ class InstrumentVariable(Variable):
     experiment_reference = models.IntegerField(blank=True, null=True)
     start_run = models.IntegerField(blank=True, null=True)
     tracks_script = models.BooleanField(default=False)
+
+    # pylint:disable=no-member
+    def __str__(self):
+        return f"{self.instrument.name} - {self.name}=self.value"
 
 
 class RunVariable(models.Model):

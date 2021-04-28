@@ -5,6 +5,92 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Queue Processor Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker Queue Processor",
+            "postDebugTask": "Kill queue-processor-debugpy"
+        },
+        {
+            "name": "Webapp Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5679
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker Web App",
+            "postDebugTask": "Kill webapp-debugpy"
+        },
+        {
+            "name": "pytest Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5680
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker pytest",
+        },
+        {
+            "name": "pytest django Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5681
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker pytest django",
+        },
+        {
             "name": "Pytest",
             "type": "python",
             "request": "launch",
@@ -16,7 +102,7 @@
             ],
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce",
+                "group": "autoreduce-native",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -34,7 +120,7 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce",
+                "group": "autoreduce-native",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -56,7 +142,7 @@
             ],
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce",
+                "group": "autoreduce-native",
             },
             "env": {
                 "RUNNING_VIA_PYTEST": "true"
@@ -74,8 +160,8 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce",
-                "order": 1
+                "group": "autoreduce-native",
+                "order": 99
             },
         },
         {
@@ -86,8 +172,8 @@
             "console": "integratedTerminal",
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce",
-                "order": 2
+                "group": "autoreduce-native",
+                "order": 98
             }
         },
         {
@@ -104,6 +190,6 @@
                     "remoteRoot": "/autoreduce"
                 }
             ]
-        }
+        },
     ]
 }

@@ -31,7 +31,10 @@ def get_chrome_driver() -> webdriver.Chrome:
 
     options.add_argument("--window-size=" + WINDOW_SIZE)
     options.add_argument("log-level=3")
-    driver = webdriver.Chrome(options=options)
+    if "SELENIUM_REMOTE" in os.environ:
+        driver = webdriver.Remote(options=options)
+    else:
+        driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
     driver.set_page_load_timeout(30)
     return driver
