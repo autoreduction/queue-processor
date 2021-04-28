@@ -438,12 +438,40 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         """
         Tests that the arguments are merged correctly when both standard and advanced are being replaced
         """
-        message_args = {"standard_vars": {"standard_var1": 123}, "advanced_vars": {"advanced_var1": "321"}}
-        fakemod = FakeModule()
+        message_args = {
+            "standard_vars": {
+                "standard_var1": 123,
+                "none_var": None,
+                "int_var": 123,
+                "float_var": 123.0,
+                "bool_var": False,
+                "num_list_var": [1, 2, 3],
+                "str_list_var": ["1", "2", "3"]
+            },
+            "advanced_vars": {
+                "advanced_var1": "321"
+            }
+        }
+        fakemod = FakeModule(
+            standard_vars={
+                "standard_var1": "standard_value1",
+                "none_var": None,
+                "int_var": 123,
+                "float_var": 123.0,
+                "bool_var": False,
+                "num_list_var": [1, 2, 3],
+                "str_list_var": ["1", "2", "3"],
+            })
 
         expected = {
             "standard_vars": {
-                "standard_var1": '123'
+                "standard_var1": '123',
+                "none_var": "None",
+                "int_var": 123,
+                "float_var": 123.0,
+                "bool_var": False,
+                "num_list_var": [1, 2, 3],
+                "str_list_var": ["1", "2", "3"]
             },
             "advanced_vars": {
                 "advanced_var1": "321"
@@ -585,9 +613,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
     def test_find_or_make_doesnt_update_without_changes(self):
         """
-        Test that find_or_make will overwrite the variable saved for an experiment reference
-        when the variable is provided a new value. (This behaviour is different than for start_run,
-        as a new value for a start_run will COPY the variable instead, not overwrite)
+        Test that find_or_make will reuse the variable when the value of the experiment variable has not changed.
         """
         exp_ref = 4321
         name = "test_variable1"
@@ -610,6 +636,25 @@ class TestInstrumentVariableUtils(unittest.TestCase):
                                                                    red_args,
                                                                    experiment_reference=exp_ref)
         assert variables[0] == new_vars[0]
+
+    @parameterized.expand([["text", "text"], ["", "text"], ["None", "text"], [1, 'number'], [1.0, 'number'],
+                           [True, 'boolean'], [False, 'boolean'], [[1, 2], 'list_number'], [['s', 't', 'r'],
+                                                                                            'list_text']])
+    def test_variable_not_updated(self, var_value, var_type):
+        """
+        Test that the value does not get updated when it hasn't changed. Parameterized for all supported types
+        """
+        name = "test"
+        new_var = self.variable_model.Variable.objects.create(
+            name=name,
+            value=var_value,
+            type=var_type,
+            help_text="",
+        )
+
+        self.delete_on_teardown = [new_var]
+        new_var = self.variable_model.Variable.objects.get(pk=new_var.pk)
+        assert not InstrumentVariablesUtils.variable_was_updated(new_var, var_value, var_type, "")
 
 
 if __name__ == "__main__":
