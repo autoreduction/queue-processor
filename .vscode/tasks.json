@@ -12,9 +12,13 @@
                 "database"
             ],
             "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
             }
         },
         {
@@ -25,11 +29,279 @@
                 "setup.py",
                 "fixtures"
             ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Export UID:GID to $USERID",
+            "type": "shell",
+            "command": "echo 'export USERID=$(id -u):$(id -g)' > ~/.userid.sh",
             "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            "detail": "Exports the current user's user and group IDs so that the output files are owned by the correct user",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
             }
+        },
+        {
+            "label": "Run Docker Queue Processor",
+            "type": "shell",
+            "command": "docker",
+            "isBackground": true,
+            "args": [
+                "run",
+                "--rm",
+                "--network=host",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--name",
+                "queue-processor-debugpy",
+                "-it",
+                "autoreduction/qp",
+                "python3",
+                "-m",
+                "debugpy",
+                "--listen",
+                "5678",
+                "--wait-for-client",
+                "/autoreduce/queue_processors/queue_processor/queue_listener.py"
+            ]
+        },
+        {
+            "label": "Kill queue-processor-debugpy",
+            "type": "shell",
+            "command": "docker kill queue-processor-debugpy",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Run Docker Web App",
+            "type": "shell",
+            "command": "docker",
+            "isBackground": true,
+            "args": [
+                "run",
+                "--rm",
+                "--network=host",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--name",
+                "webapp-debugpy",
+                "-it",
+                "autoreduction/qp",
+                "python3",
+                "-m",
+                "debugpy",
+                "--listen",
+                "5679",
+                "--wait-for-client",
+                "/autoreduce/WebApp/autoreduce_webapp/manage.py",
+                "runserver"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
+        },
+        {
+            "label": "Run Docker pytest",
+            "type": "shell",
+            "command": "docker",
+            "isBackground": true,
+            "args": [
+                "run",
+                "--rm",
+                "--network=host",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--name",
+                "webapp-debugpy",
+                "-it",
+                "autoreduction/devtest",
+                "python3",
+                "-m",
+                "debugpy",
+                "--listen",
+                "5680",
+                "--wait-for-client",
+                "-m",
+                "pytest",
+                "-pno:django",
+                "-v",
+                "/autoreduce/${relativeFileDirname}/${fileBasename}"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Run Docker pytest django",
+            "type": "shell",
+            "command": "docker",
+            "isBackground": true,
+            "args": [
+                "run",
+                "--rm",
+                "--network=host",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--name",
+                "devtest",
+                "-e",
+                "DISPLAY=:1",
+                "-e",
+                "SELENIUM_REMOTE=1",
+                "-it",
+                "autoreduction/devtest",
+                "python3",
+                "-m",
+                "debugpy",
+                "--listen",
+                "5681",
+                "--wait-for-client",
+                "-m",
+                "pytest",
+                "-v",
+                "/autoreduce/${relativeFileDirname}/${fileBasename}"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+        },
+        {
+            "label": "Kill webapp-debugpy",
+            "type": "shell",
+            "command": "docker kill webapp-debugpy",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Kill devtest",
+            "type": "shell",
+            "command": "docker kill devtest",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Run ActiveMQ Docker",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "run",
+                "--name",
+                "activemq",
+                "-p",
+                "61613:61613",
+                "-p",
+                "8161:8161",
+                "-it",
+                "rmohr/activemq"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Migrate database (with fixtures via setup.py)",
+            "type": "shell",
+            "command": "source",
+            "isBackground": true,
+            "args": [
+                "~/.userid.sh",
+                "&&",
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--user",
+                "$USERID",
+                "-it",
+                "autoreduction/qp",
+                "python3",
+                "/autoreduce/setup.py",
+                "database"
+            ],
+            "problemMatcher": [],
+            "dependsOn": [
+                "Export UID:GID to $USERID"
+            ],
+        },
+        {
+            "label": "Migrate database (clean via manage.py)",
+            "type": "shell",
+            "command": "source",
+            "isBackground": true,
+            "args": [
+                "~/.userid.sh",
+                "&&",
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--user",
+                "$USERID",
+                "-it",
+                "autoreduction/webapp",
+                "python3",
+                "/autoreduce/WebApp/autoreduce_webapp/manage.py",
+                "migrate"
+            ],
+            "problemMatcher": [],
+            "dependsOn": [
+                "Export UID:GID to $USERID"
+            ],
+        },
+        {
+            "label": "Selenium Docker",
+            "type": "shell",
+            "command": "docker run --rm -it --network=host -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-beta-3-prerelease-20210422",
+            "problemMatcher": [],
         }
     ]
 }

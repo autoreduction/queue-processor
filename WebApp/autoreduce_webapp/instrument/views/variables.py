@@ -32,9 +32,10 @@ def summarize_variables(request, instrument, last_run_object):
     # pylint:disable=invalid-name
     current_variables = [runvar.variable.instrumentvariable for runvar in last_run_object.run_variables.all()]
 
-    upcoming_variables_by_run = InstrumentVariable.objects.filter(start_run__gt=last_run_object.run_number)
+    upcoming_variables_by_run = InstrumentVariable.objects.filter(start_run__gt=last_run_object.run_number,
+                                                                  instrument=instrument)
     upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
-        experiment_reference__gte=last_run_object.experiment.reference_number)
+        experiment_reference__gte=last_run_object.experiment.reference_number, instrument=instrument)
 
     # There's a known issue with inaccurate display of tracks script:
     # https://github.com/ISISScientificComputing/autoreduce/issues/1187
