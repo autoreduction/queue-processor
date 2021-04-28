@@ -68,20 +68,11 @@ class TestVariableUtils(unittest.TestCase):
         """
         self.assertEqual(vu.get_type_string({'key': 'value'}), 'text')
 
-    @parameterized.expand([
-        ["text", "text", str],
-        ["", "text", str],
-        ["None", "text", str],
-        [None, "text", str],
-        ['1', 'number', int],
-        ['1.0', 'number', float],
-        ['True', 'boolean', bool],
-        ['False', 'boolean', bool],
-        [1, 'number', int],
-        [1.0, 'number', float],
-        [True, 'boolean', bool],
-        [False, 'boolean', bool],
-    ])
+    @parameterized.expand([["text", "text", str], ["", "text", str], ["None", "text", str], [None, "text", str],
+                           ['1', 'number', int], ['1.0', 'number', float], ['True', 'boolean', bool],
+                           ['False', 'boolean', bool], [1, 'number', int], [1.0, 'number', float],
+                           [True, 'boolean', bool], [False, 'boolean', bool], [[1, 2, 3], 'list_number', list],
+                           [['s', 't', 'r'], 'list_text', list]])
     def test_convert_variable_to_type(self, value, value_type, exp_type):
         """
         Test: database variables types are successfully recognised and converted into python
