@@ -247,7 +247,13 @@ class InstrumentVariablesUtils:
         Returns whether any of the variable's field was updated.
         """
         changed = False
-        if new_value != variable.value:
+        # compare the new value, which was converted earlier, to the original value in its real type
+        real_type_value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
+        # special case for a None value - make it a None string
+        if new_value is None:
+            new_value = "None"
+
+        if new_value != real_type_value:
             variable.value = new_value
             changed = True
 

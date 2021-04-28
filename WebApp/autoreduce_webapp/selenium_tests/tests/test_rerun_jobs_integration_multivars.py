@@ -125,7 +125,7 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
         assert run_vars[2].variable.value == new_float
         assert run_vars[3].variable.value == new_listint
         assert run_vars[4].variable.value == new_liststr
-        assert run_vars[5].variable.value == "None"
+        assert run_vars[5].variable.value is None
         assert run_vars[6].variable.value == ""
         assert run_vars[7].variable.value == "False"
 
@@ -134,4 +134,4 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
 
         for runvar in run_vars:
             assert runvar.variable.name in contents
-            assert runvar.variable.value in contents
+            assert str(runvar.variable.value) in contents
