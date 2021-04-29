@@ -12,7 +12,7 @@ import subprocess
 
 from build.utils.common import BUILD_LOGGER
 
-
+# pylint:disable=consider-using-with
 def run_process_and_log(list_of_args):
     """
     Call a process using Popen and logs output to file

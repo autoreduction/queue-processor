@@ -73,7 +73,7 @@ class TemporaryReductionDirectory:
     Encapsulates the use of the temporary reduction directory
     """
     def __init__(self, rb_number, run_number):
-        self._temp_dir = TemporaryDirectory()
+        self._temp_dir = TemporaryDirectory()  # pylint:disable=consider-using-with
         self._path = Path(self._temp_dir.name)
         self.log_path = self._path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
