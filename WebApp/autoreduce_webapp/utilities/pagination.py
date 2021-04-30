@@ -50,10 +50,7 @@ class CustomPaginator:
         Update the page to min/max if outside of expected range
         """
         page_count = int(math.ceil(float(len(self.query_set)) / float(self.items_per_page)))
-        if self.current_page_index > page_count:
-            self.current_page_index = page_count
-        if self.current_page_index < 1:
-            self.current_page_index = 1
+        self.current_page_index = max(1, min(self.current_page_index, page_count))
 
     def _construct_pagination(self):
         """

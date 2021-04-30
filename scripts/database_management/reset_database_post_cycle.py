@@ -77,6 +77,7 @@ class DatabaseReset:
                                'Please rename it or remove it in order to allow '
                                'this script to execute. This script does not overwrite '
                                'for data security.'.format(self.backup_file))
+        # pylint:disable=consider-using-with
         process = subprocess.Popen('mysqldump {0} --databases {1} --no-create-info'
                                    ' > {2}'.format(arguments, self.databases, self.backup_file),
                                    shell=True)

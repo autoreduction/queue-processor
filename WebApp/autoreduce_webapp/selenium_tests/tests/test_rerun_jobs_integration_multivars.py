@@ -13,7 +13,7 @@ from selenium_tests.utils import submit_and_wait_for_result
 
 from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
-TEMP_OUT_FILE = tempfile.NamedTemporaryFile()
+TEMP_OUT_FILE = tempfile.NamedTemporaryFile()  # pylint:disable=consider-using-with
 SCRIPT = f"""
 import sys
 import os
