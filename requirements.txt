@@ -6,7 +6,7 @@ django-debug-toolbar==3.2.1
 parameterized==0.8.1
 pylint==2.8.2
 pylint-django==2.4.4
-pytest==6.2.3
+pytest==6.2.4
 pytest-cov==2.11.1
 pytest-django==4.2.0
 pytest-xdist==2.2.1
