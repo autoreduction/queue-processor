@@ -95,6 +95,8 @@
                 "--network=host",
                 "-v",
                 "${workspaceFolder}:/autoreduce",
+                "-v",
+                "${workspaceFolder}/reduced-data:/instrument",
                 "--name",
                 "webapp-debugpy",
                 "-it",
