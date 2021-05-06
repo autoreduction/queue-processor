@@ -32,7 +32,7 @@ from django.shortcuts import redirect
 from django.utils.http import url_has_allowed_host_and_scheme
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
 from reduction_viewer.utils import ReductionRunUtils
-from reduction_viewer.view_utils import deactivate_invalid_instruments
+from reduction_viewer.view_utils import deactivate_invalid_instruments, get_interactive_plot_data
 from utilities.pagination import CustomPaginator
 
 from plotting.plot_handler import PlotHandler
@@ -271,9 +271,13 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             plot_handler = PlotHandler(data_filepath=run.data_location.first().file_path,
                                        server_dir=reduction_location,
                                        rb_number=rb_number)
-            plot_locations = plot_handler.get_plot_file()
-            if plot_locations:
-                context_dictionary['plot_locations'] = plot_locations
+            local_plot_locs, server_plot_locs = plot_handler.get_plot_file()
+            if local_plot_locs:
+                context_dictionary['static_plots'] = [
+                    location for location in local_plot_locs if not location.endswith(".json")
+                ]
+
+                context_dictionary['interactive_plots'] = get_interactive_plot_data(server_plot_locs)
         except Exception as exception:
             # Lack of plot images is recoverable - we shouldn't stop the whole page rendering
             # if something is wrong with the plot images - but display an error message

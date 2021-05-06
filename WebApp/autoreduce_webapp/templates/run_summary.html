@@ -8,6 +8,10 @@
 {% load static %}
 
 {% block body %}
+    {% comment %} only pull in plotly if there are interactive plots {% endcomment %}
+    {% if interactive_plots %}
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    {% endif %}
     {% if not run %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Reduction run not found or error encountered: {{ message }}.
@@ -25,22 +29,36 @@
                 {% endif %}
             </div>
         </div>
-        {% if plot_locations %}
+        {% if plot_error_message %}
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <p class="panel panel-warning text-center">{{ plot_error_message }}</p>
+                </div>
+            </div>
+        {% else %}
+            {% if static_plots %}
             <div class="row plot-container">
-                {% for plot_file in plot_locations %}
-                    {% if plot_locations|length == 1 %}
+                {% for plot_file in static_plots %}
+                    {% if static_plots|length == 1 %}
                         <img class="center-block" src="{{ plot_file }}" alt="Plot image stored at {{ plot_file }}">
                     {% else %}
                         <img class="col-md-6" src="{{ plot_file }}" alt="Plot image stored at {{ plot_file }}">
                     {% endif %}
                 {% endfor %}
             </div>
-        {% elif plot_error_message %}
-            <div class="row">
-                <div class="col-md-8 col-md-offset-2">
-                    <p class="panel panel-warning text-center">{{ plot_error_message }}</p>
-                </div>
+            {% endif %}
+            {% if interactive_plots %}
+             <div class="row plot-container">
+                {% for name, data in interactive_plots.items %}
+                    <div id="{{ name }}"></div>
+                    <script>
+                        const data = JSON.parse('{{ data|escapejs }}');
+                        const elem = document.getElementById("{{ name }}");
+                        Plotly.newPlot(elem, data);
+                    </script>
+                {% endfor %}
             </div>
+            {% endif %}
         {% endif %}
         {% if run.message %}
             {% if 'Skipped' in run.message %}
