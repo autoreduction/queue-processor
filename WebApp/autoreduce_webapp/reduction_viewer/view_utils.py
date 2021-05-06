@@ -50,7 +50,7 @@ def get_interactive_plot_data(plot_locations):
 
     for filepath in json_files:
         name = os.path.basename(filepath)
-        with open(filepath, 'r') as f:
-            data = f.read()
+        with open(filepath, 'r') as file:
+            data = file.read()
         output[name] = data
     return output
