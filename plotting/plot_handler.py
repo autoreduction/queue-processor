@@ -16,7 +16,7 @@ import os
 import traceback
 import re
 import shutil
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from WebApp.autoreduce_webapp.autoreduce_webapp.settings import STATIC_ROOT
 
 LOGGER = logging.getLogger('app')
@@ -95,7 +95,7 @@ class PlotHandler:
         if not os.path.exists(self.static_graph_dir):
             os.makedirs(self.static_graph_dir, exist_ok=True)
 
-    def get_plot_file(self) -> Tuple[List[str], List[str]]:
+    def get_plot_file(self) -> Tuple[Optional[List[str]], Optional[List[str]]]:
         """
         Searches for and retrieves a plot file from CEPH.
         Might find multiple files (e.g. if more than one plot_type is specified),
@@ -124,4 +124,4 @@ class PlotHandler:
                                  traceback.format_exc())
             return local_plot_paths, server_paths
         # No files found
-        return ([], [])
+        return (None, None)
