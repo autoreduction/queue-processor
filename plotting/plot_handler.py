@@ -16,6 +16,7 @@ import os
 import traceback
 import re
 import shutil
+from typing import List, Tuple
 from WebApp.autoreduce_webapp.autoreduce_webapp.settings import STATIC_ROOT
 
 LOGGER = logging.getLogger('app')
@@ -34,7 +35,7 @@ class PlotHandler:
         self.rb_number = rb_number
         # this is a path somewhere on CEPH
         self.server_dir = server_dir
-        self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
+        self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff", "json"]
         # Directory to place fetched data files / images
         self.static_graph_dir = os.path.join(STATIC_ROOT, 'graphs')
 
@@ -94,7 +95,7 @@ class PlotHandler:
         if not os.path.exists(self.static_graph_dir):
             os.makedirs(self.static_graph_dir, exist_ok=True)
 
-    def get_plot_file(self):
+    def get_plot_file(self) -> Tuple[List[str], List[str]]:
         """
         Searches for and retrieves a plot file from CEPH.
         Might find multiple files (e.g. if more than one plot_type is specified),
@@ -104,6 +105,7 @@ class PlotHandler:
         _existing_plot_files = self._check_for_plot_files()
         self._ensure_staticfiles_graphs_exists()
         local_plot_paths = []
+        server_paths = []
         if _existing_plot_files:
             for plot_file in _existing_plot_files:
                 _server_path = f"{self.server_dir}/{plot_file}"
@@ -114,11 +116,12 @@ class PlotHandler:
                     LOGGER.info('File \'%s\' found and saved to %s', _server_path, _local_path)
                     # URL to retrieve the static assert from the static dir - only if succesful
                     local_plot_paths.append(f'/static/graphs/{plot_file}')
+                    server_paths.append(_server_path)
                 except FileNotFoundError:
                     LOGGER.error("File \'%s\' does not exist. Error: %s", _server_path, traceback.format_exc())
                 except PermissionError:
                     LOGGER.error("Insufficient permissions to read \'%s\'. Error: %s", _server_path,
                                  traceback.format_exc())
-            return local_plot_paths
+            return local_plot_paths, server_paths
         # No files found
-        return None
+        return ([], [])
