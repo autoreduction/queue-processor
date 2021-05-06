@@ -131,7 +131,7 @@
                 "-v",
                 "${workspaceFolder}:/autoreduce",
                 "--name",
-                "webapp-debugpy",
+                "webapp-debugpy-pytest",
                 "-it",
                 "autoreduction/devtest",
                 "python3",
