@@ -9,9 +9,9 @@ Utility functions for the view of django models
 """
 import functools
 import logging
+import os
 
 from reduction_viewer.models import Instrument
-
 from queue_processors.queue_processor.reduction.service import ReductionScript
 
 LOGGER = logging.getLogger("app")
@@ -37,3 +37,20 @@ def deactivate_invalid_instruments(func):
         return func(request, *args, **kws)
 
     return request_processor
+
+
+def get_interactive_plot_data(plot_locations):
+    """
+    Get the data for the interactive plots from the saved JSON files
+    """
+    # get only JSON files
+    json_files = [location for location in plot_locations if location.endswith(".json")]
+
+    output = {}
+
+    for filepath in json_files:
+        name = os.path.basename(filepath)
+        with open(filepath, 'r') as f:
+            data = f.read()
+        output[name] = data
+    return output
