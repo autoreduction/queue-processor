@@ -16,6 +16,7 @@ from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
 setup_requires = [
+    'autoreduce_utils==1.0.0',
     'attrs==21.2.0',
     'dash==1.20.0',
     'dash_html_components==1.1.3',
@@ -40,7 +41,7 @@ setup_requires = [
     'service_identity==18.1.0',
     'stomp.py==6.1.0',
     'suds-py3==1.4.4.1',
-    'PyYAML==5.4.1',
+    'PyYAML==5.4.1'
 ]
 
 if platform.system() == 'Windows':

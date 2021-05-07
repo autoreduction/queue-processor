@@ -10,9 +10,7 @@
 import logging.config
 import os
 
-from utils.settings import PROJECT_ROOT
-
-from .settings import LOG_LEVEL
+from .settings import LOG_LEVEL, PROJECT_ROOT
 
 LOGGING = {
     'version': 1,

@@ -6,7 +6,8 @@
 # ############################################################################### #
 # pylint: skip-file
 import os
-from utils.project.structure import PROJECT_ROOT
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 FACILITY = 'ISIS'
 
