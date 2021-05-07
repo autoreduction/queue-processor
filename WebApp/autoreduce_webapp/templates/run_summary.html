@@ -52,8 +52,8 @@
                 {% for name, data in interactive_plots.items %}
                     <div id="{{ name }}"></div>
                     <script>
-                        const data = JSON.parse('{{ data|escapejs }}');
-                        const elem = document.getElementById("{{ name }}");
+                        var data = JSON.parse('{{ data|escapejs }}');
+                        var elem = document.getElementById("{{ name }}");
                         Plotly.newPlot(elem, data);
                     </script>
                 {% endfor %}
