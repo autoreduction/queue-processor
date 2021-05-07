@@ -192,7 +192,7 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            },
+            }
         },
         {
             "label": "Kill webapp-debugpy",
@@ -248,7 +248,7 @@
             }
         },
         {
-            "label": "Migrate database (with fixtures via setup.py)",
+            "label": "Migrate database (with PR fixtures)",
             "type": "shell",
             "command": "source",
             "isBackground": true,
@@ -264,17 +264,17 @@
                 "$USERID",
                 "-it",
                 "autoreduction/qp",
-                "python3",
-                "/autoreduce/setup.py",
-                "database"
+                "bash",
+                "-c",
+                "'python3 /autoreduce/WebApp/autoreduce_webapp/manage.py migrate && python3 /autoreduce/WebApp/autoreduce_webapp/manage.py loaddata super_user_fixture status_fixture pr_test'"
             ],
             "problemMatcher": [],
             "dependsOn": [
                 "Export UID:GID to $USERID"
-            ],
+            ]
         },
         {
-            "label": "Migrate database (clean via manage.py)",
+            "label": "Migrate database (clean)",
             "type": "shell",
             "command": "source",
             "isBackground": true,
@@ -297,13 +297,13 @@
             "problemMatcher": [],
             "dependsOn": [
                 "Export UID:GID to $USERID"
-            ],
+            ]
         },
         {
-            "label": "Selenium Docker",
+            "label": "Run Selenium Docker",
             "type": "shell",
             "command": "docker run --rm -it --network=host -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-beta-3-prerelease-20210422",
-            "problemMatcher": [],
+            "problemMatcher": []
         }
     ]
 }
