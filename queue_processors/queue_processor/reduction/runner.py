@@ -12,7 +12,7 @@ import logging
 import sys
 import traceback
 
-from model.message.message import Message
+from autoreduce_utils.message.message import Message
 from queue_processors.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
 from queue_processors.queue_processor.reduction.utilities import windows_to_linux_path
 from queue_processors.queue_processor.reduction.service import (Datafile, ReductionDirectory, ReductionScript,

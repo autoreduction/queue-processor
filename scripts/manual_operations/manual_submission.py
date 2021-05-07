@@ -13,15 +13,15 @@ import sys
 
 import fire
 
-from model.database import access as db
-from model.message.message import Message
-from scripts.manual_operations.util import get_run_range
+from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.clients.icat_client import ICATClient
+from autoreduce_utils.clients.queue_client import QueueClient
+from autoreduce_utils.clients.tools.isisicat_prefix_mapping import get_icat_instrument_prefix
+from autoreduce_utils.message.message import Message
 
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.icat_client import ICATClient
-from utils.clients.queue_client import QueueClient
-from utils.clients.django_database_client import DatabaseClient
-from utils.clients.tools.isisicat_prefix_mapping import get_icat_instrument_prefix
+from model.database import access as db
+from model.database.django_database_client import DatabaseClient
+from scripts.manual_operations.util import get_run_range
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):

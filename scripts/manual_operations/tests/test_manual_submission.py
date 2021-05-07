@@ -9,15 +9,16 @@ Test cases for the manual job submission script
 """
 import unittest
 from unittest.mock import patch, Mock, MagicMock
+
+from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.clients.icat_client import ICATClient
+from autoreduce_utils.clients.queue_client import QueueClient
+from autoreduce_utils.message.message import Message
+
 import scripts.manual_operations.manual_submission as ms
 
-from model.message.message import Message
-
 from queue_processors.queue_processor.status_utils import StatusUtils
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
-from utils.clients.icat_client import ICATClient
-from utils.clients.queue_client import QueueClient
+from model.database.django_database_client import DatabaseClient
 from scripts.manual_operations.tests.test_manual_remove import create_experiment_and_instrument, make_test_run
 
 STATUS = StatusUtils()

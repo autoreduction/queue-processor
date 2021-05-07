@@ -19,8 +19,8 @@ from typing import Tuple
 from stomp import ConnectionListener
 from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.message.message import Message
 
-from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 
 

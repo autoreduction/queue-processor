@@ -16,8 +16,8 @@ import time
 from autoreduce_webapp.settings import FACILITY
 from reduction_viewer.models import ReductionRun
 
-from model.message.message import Message
-from utils.clients.queue_client import QueueClient
+from autoreduce_utils.message.message import Message
+from autoreduce_utils.clients.queue_client import QueueClient
 
 
 class ReductionRunUtils:

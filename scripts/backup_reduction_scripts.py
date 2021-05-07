@@ -35,8 +35,7 @@ from pathlib import Path
 
 from git import Git, exc
 
-from utils.project.static_content import LOG_FORMAT
-from utils.project.structure import get_log_file
+from queue_processors.queue_processor.settings import PROJECT_ROOT
 
 ISIS_MOUNT_PATH = Path("/isis")
 AUTOREDUCTION_PATH = Path("user/scripts/autoreduction")
@@ -45,7 +44,7 @@ REDUCE_FILES_TO_SAVE = ["reduce.py", "reduce_vars.py"]
 # STORAGE_DIR is the git repository dir that has been configured to point to the correct remote
 STORAGE_DIR = Path("~/autoreduction_scripts").expanduser().absolute()
 
-logging.basicConfig(filename=get_log_file('backup_reduction_scripts.log'), level=logging.INFO, format=LOG_FORMAT)
+logging.basicConfig(filename=str(Path(PROJECT_ROOT, 'logs', 'backup_reduction_scripts.log')), level=logging.INFO)
 log = logging.getLogger(__file__)
 log.addHandler(logging.StreamHandler())
 

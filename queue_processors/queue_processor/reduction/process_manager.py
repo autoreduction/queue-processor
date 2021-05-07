@@ -12,7 +12,7 @@ import sys
 import tempfile
 import traceback
 
-from model.message.message import Message
+from autoreduce_utils.message.message import Message
 
 RUNNER_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/runner.py"
 

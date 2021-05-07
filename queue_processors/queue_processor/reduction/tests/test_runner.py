@@ -11,7 +11,7 @@ import unittest
 import tempfile
 from unittest.mock import patch, call, Mock
 
-from model.message.message import Message
+from autoreduce_utils.message.message import Message
 from queue_processors.queue_processor.reduction.exceptions import ReductionScriptError
 from queue_processors.queue_processor.reduction.runner import ReductionRunner, main
 

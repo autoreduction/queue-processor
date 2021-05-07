@@ -9,7 +9,7 @@ from unittest.mock import (Mock, patch, call)
 from filelock import FileLock
 
 import monitors.run_detection
-from model.message.message import Message
+from autoreduce_utils.message.message import Message
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 
 # Test data

@@ -16,9 +16,10 @@ from unittest.mock import Mock, patch
 from django.db.utils import IntegrityError
 from parameterized import parameterized
 
+from autoreduce_utils.message.message import Message
+
 import model.database.access
 from model.database.records import create_reduction_run_record
-from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.queue_listener import QueueListener
 from queue_processors.queue_processor.status_utils import StatusUtils

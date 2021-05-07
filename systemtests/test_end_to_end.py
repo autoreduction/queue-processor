@@ -18,16 +18,16 @@ from typing import Union
 
 from parameterized.parameterized import parameterized
 
+from autoreduce_utils.message.message import Message
+from autoreduce_utils.clients.connection_exception import ConnectionException
+
 from build.settings import ACTIVEMQ_EXECUTABLE
 from model.database import access as db
-from model.message.message import Message
+from model.database.django_database_client import DatabaseClient
 from queue_processors.queue_processor.queue_listener import main
-from queue_processors.queue_processor.settings import MANTID_PATH
+from queue_processors.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
 from scripts.manual_operations import manual_remove as remove
 from systemtests.utils.data_archive import DataArchive
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
-from utils.project.structure import PROJECT_ROOT
 
 REDUCE_SCRIPT = \
     'def main(input_file, output_dir):\n' \

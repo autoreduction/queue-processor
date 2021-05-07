@@ -18,9 +18,10 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
+from autoreduce_utils.message.message import Message
+
 import model.database.records as db_records
 from model.database import access as db_access
-from model.message.message import Message
 from queue_processors.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from queue_processors.queue_processor.status_utils import StatusUtils
 from queue_processors.queue_processor.variable_utils import VariableUtils
