@@ -11,8 +11,8 @@ import unittest
 
 from unittest.mock import patch
 
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
+from models.database.django_database_client import DatabaseClient
+from autoreduce_utils.clients.connection_exception import ConnectionException
 
 
 # pylint:disable=protected-access
