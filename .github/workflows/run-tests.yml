@@ -28,8 +28,7 @@ jobs:
       - name: Run unit tests
         run: >-
           pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
-          --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction
-          --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
+          --cov=scripts --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
           --cov-report=xml
 
       - name: Run system tests
@@ -136,13 +135,11 @@ jobs:
       - name: Pylint tests
         run: |
           pylint build
-          pylint docker_reduction
           pylint model
           pylint monitors
           pylint queue_processors
           pylint scripts
           pylint systemtests
-          pylint utils
           pylint plotting
           pylint --disable=django-not-configured,import-error,no-name-in-module --load-plugins pylint_django WebApp
 
@@ -150,4 +147,4 @@ jobs:
         run: python -m yapf --parallel --diff --recursive .
 
       - name: Vulture
-        run: vulture --min-confidence 100 build docker_reduction model monitors scripts queue_processors systemtests utils plotting
+        run: vulture --min-confidence 100 build model monitors scripts queue_processors systemtests plotting
