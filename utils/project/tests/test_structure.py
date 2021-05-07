@@ -17,9 +17,7 @@ from utils.project.structure import get_project_root, get_log_file
 class TestStructure(unittest.TestCase):
     def test_get_project_root(self):
         path = get_project_root()
-        expected = [
-            'build', 'docker_reduction', 'documentation', 'scripts', 'queue_processors', 'utils', 'WebApp', 'monitors'
-        ]
+        expected = ['build', 'documentation', 'scripts', 'queue_processors', 'utils', 'WebApp', 'monitors']
         actual = os.listdir(path)
         for directory in expected:
             self.assertIn(directory, actual)
