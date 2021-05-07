@@ -194,21 +194,22 @@ class TestRunSummaryPagePlots(BaseTestCase):
         # the plot files are expected to be in the reduction location, so we write them there for the test to work
         plot_files = []
 
-        for i in range(2):
+        for _ in range(2):
+            # pylint:disable=consider-using-with
             tfile = tempfile.NamedTemporaryFile('w',
                                                 prefix="data_",
                                                 suffix=".json",
                                                 dir=self.run.reduction_location.first().file_path)
             tfile.write("""{"data": [{"type": "bar","x": [1,2,3],"y": [1,3,2]}]}""")
             tfile.flush()
-            plot_files.append(tfile)
+            plot_files.append(tfile.name)
 
         self.page.launch()
 
         plots = self.page.plotly_plots()
         assert len(plots) == 2
         for plot in plots:
-            assert any([plot.get_attribute("id") in file.name for file in plot_files])
+            assert any(plot.get_attribute("id") in file for file in plot_files)
 
     def test_plot_files_mix(self):
         """Test that both static and interactive plots are rendered"""
