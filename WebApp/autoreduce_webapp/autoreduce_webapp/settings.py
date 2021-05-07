@@ -7,13 +7,15 @@
 # pylint: skip-file
 import configparser
 import os
+from pathlib import Path
 
-from utils.project.structure import PROJECT_ROOT
+from queue_processors.queue_processor.settings import PROJECT_ROOT
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Read the utilities .ini file that contains service credentials
-INI_FILE = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'utils', 'credentials.ini')
+CONFIG_ROOT = str(Path("~/.autoreduce").expanduser())
+INI_FILE = os.environ.get("AUTOREDUCTION_CREDENTIALS", os.path.expanduser(f"{CONFIG_ROOT}/credentials.ini"))
 CONFIG = configparser.ConfigParser()
 CONFIG.read(INI_FILE)
 
