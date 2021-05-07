@@ -206,5 +206,33 @@ class TestRunSummaryPagePlots(BaseTestCase):
 
         plots = self.page.plotly_plots()
         assert len(plots) == 2
-        for idx, plot in enumerate(plots[::-1]):
-            assert plot.get_attribute("id") in plot_files[idx].name
+
+    def test_plot_files_mix(self):
+        """Test that both static and interactive plots are rendered"""
+        plot_files = [
+            tempfile.NamedTemporaryFile(prefix="data_",
+                                        suffix=".png",
+                                        dir=self.run.reduction_location.first().file_path),
+            tempfile.NamedTemporaryFile('w',
+                                        prefix="data_",
+                                        suffix=".json",
+                                        dir=self.run.reduction_location.first().file_path)
+        ]
+        # write the interactive plot data
+        plot_files[1].write("""{"data": [{"type": "bar","x": [1,2,3],"y": [1,3,2]}]}""")
+        plot_files[1].flush()
+
+        self.page.launch()
+
+        images = self.page.images()
+        # 1 is the logo, the other is the static plot
+        assert len(images) == 2
+
+        img = images[1]
+        alt_text = img.get_attribute("alt")
+        assert "Plot image stored at" in alt_text
+        assert any(os.path.basename(f.name) in alt_text for f in plot_files)
+
+        plots = self.page.plotly_plots()
+        assert len(plots) == 1
+        assert plots[0].get_attribute("id") in plot_files[1].name
