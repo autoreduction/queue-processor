@@ -14,12 +14,13 @@ from unittest import TestCase, mock
 from unittest.mock import patch, MagicMock
 from copy import deepcopy
 
+from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.clients.queue_client import QueueClient
+
 from model.message.message import Message
 from queue_processors.queue_processor import queue_listener
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.queue_listener import QueueListener
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.queue_client import QueueClient
 
 
 class TestQueueProcessor(TestCase):
