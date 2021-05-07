@@ -13,7 +13,7 @@ from unittest.mock import patch
 
 from queue_processors.queue_processor.status_utils import StatusUtils
 
-from utils.clients.django_database_client import DjangoORM
+from model.database.django_database_client import DjangoORM
 
 
 class TestStatusUtils(unittest.TestCase):

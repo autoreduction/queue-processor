@@ -16,7 +16,7 @@ import django
 from django.conf import settings
 from django.db import close_old_connections, connection
 
-from utils.project.structure import get_project_root
+from queue_processors.queue_processor.settings import PROJECT_ROOT
 
 
 class DjangoORM:
@@ -37,7 +37,7 @@ class DjangoORM:
         Get path to the autoreduce_webapp and add this path to the system path
         This will enable importing of the autoreduce_webapp (and it's models)
         """
-        path = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
+        path = os.path.join(PROJECT_ROOT, 'WebApp', 'autoreduce_webapp')
         if path not in sys.path:
             sys.path.append(path)
 

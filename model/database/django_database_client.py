@@ -7,8 +7,9 @@
 """
 Creates a database session for the reduction database
 """
+from autoreduce_utils.clients.connection_exception import ConnectionException
+
 from model.database import DjangoORM
-from utils.clients.connection_exception import ConnectionException
 
 
 class DatabaseClient:
