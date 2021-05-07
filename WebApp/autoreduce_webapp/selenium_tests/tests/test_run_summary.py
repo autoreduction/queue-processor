@@ -162,17 +162,20 @@ class TestRunSummaryPagePlots(BaseTestCase):
         self.instrument_name = "TestInstrument"
 
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
+        self.run = ReductionRun.objects.first()
 
     def test_plot_files_png(self):
         """
         Test: PNG plot files are fetched and shown
         """
-        run = ReductionRun.objects.first()
-
         # the plot files are expected to be in the reduction location, so we write them there for the test to work
         plot_files = [
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=run.reduction_location.first().file_path),
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=run.reduction_location.first().file_path)
+            tempfile.NamedTemporaryFile(prefix="data_",
+                                        suffix=".png",
+                                        dir=self.run.reduction_location.first().file_path),
+            tempfile.NamedTemporaryFile(prefix="data_",
+                                        suffix=".png",
+                                        dir=self.run.reduction_location.first().file_path)
         ]
         self.page.launch()
 
@@ -188,8 +191,6 @@ class TestRunSummaryPagePlots(BaseTestCase):
         """
         Test: JSON plot files are fetched and rendered by plotly
         """
-        run = ReductionRun.objects.first()
-
         # the plot files are expected to be in the reduction location, so we write them there for the test to work
         plot_files = []
 
@@ -197,7 +198,7 @@ class TestRunSummaryPagePlots(BaseTestCase):
             tfile = tempfile.NamedTemporaryFile('w',
                                                 prefix="data_",
                                                 suffix=".json",
-                                                dir=run.reduction_location.first().file_path)
+                                                dir=self.run.reduction_location.first().file_path)
             tfile.write("""{"data": [{"type": "bar","x": [1,2,3],"y": [1,3,2]}]}""")
             tfile.flush()
             plot_files.append(tfile)
