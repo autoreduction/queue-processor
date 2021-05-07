@@ -163,9 +163,9 @@ class TestRunSummaryPagePlots(BaseTestCase):
 
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
 
-    def test_plot_files(self):
+    def test_plot_files_png(self):
         """
-        Test: Local plot files are fetched and shown
+        Test: PNG plot files are fetched and shown
         """
         run = ReductionRun.objects.first()
 
@@ -183,3 +183,28 @@ class TestRunSummaryPagePlots(BaseTestCase):
             alt_text = img.get_attribute("alt")
             assert "Plot image stored at" in alt_text
             assert any(os.path.basename(f.name) in alt_text for f in plot_files)
+
+    def test_plot_files_json(self):
+        """
+        Test: JSON plot files are fetched and rendered by plotly
+        """
+        run = ReductionRun.objects.first()
+
+        # the plot files are expected to be in the reduction location, so we write them there for the test to work
+        plot_files = []
+
+        for i in range(2):
+            tfile = tempfile.NamedTemporaryFile('w',
+                                                prefix="data_",
+                                                suffix=".json",
+                                                dir=run.reduction_location.first().file_path)
+            tfile.write("""{"data": [{"type": "bar","x": [1,2,3],"y": [1,3,2]}]}""")
+            tfile.flush()
+            plot_files.append(tfile)
+
+        self.page.launch()
+
+        plots = self.page.plotly_plots()
+        assert len(plots) == 2
+        for idx, plot in enumerate(plots[::-1]):
+            assert plot.get_attribute("id") in plot_files[idx].name
