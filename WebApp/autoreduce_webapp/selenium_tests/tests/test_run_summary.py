@@ -206,6 +206,8 @@ class TestRunSummaryPagePlots(BaseTestCase):
 
         plots = self.page.plotly_plots()
         assert len(plots) == 2
+        for plot in plots:
+            assert any([plot.get_attribute("id") in file.name for file in plot_files])
 
     def test_plot_files_mix(self):
         """Test that both static and interactive plots are rendered"""
