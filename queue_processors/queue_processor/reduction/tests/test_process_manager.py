@@ -9,7 +9,7 @@ import unittest
 from subprocess import CalledProcessError
 
 from unittest.mock import Mock, patch
-from model.message.message import Message
+from autoreduce_utils.message.message import Message
 from queue_processors.queue_processor.reduction.process_manager import ReductionProcessManager
 
 
