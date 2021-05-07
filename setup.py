@@ -16,7 +16,7 @@ from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
 setup_requires = [
-    'attrs==20.3.0',
+    'attrs==21.1.0',
     'dash==1.20.0',
     'dash_html_components==1.1.3',
     'dash_core_components==1.16.0',
