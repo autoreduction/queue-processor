@@ -9,7 +9,7 @@ Test reduction_viewer.models
 """
 import unittest
 
-from utils.clients.django_database_client import DjangoORM
+from model.database.django_database_client import DjangoORM
 
 
 class TestModels(unittest.TestCase):
