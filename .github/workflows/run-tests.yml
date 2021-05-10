@@ -27,10 +27,9 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
-          --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction
-          --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
-          --cov-report=xml
+          pytest -pno:django --cov=build --cov=monitors --cov=queue_processors
+          --cov=scripts --cov=utils --cov=paths --cov=plotting --cov=model --cov-report=xml
+          --ignore=WebApp/autoreduce_webapp/selenium_tests/ --ignore=systemtests
 
       - name: Run system tests
         run: |
@@ -40,6 +39,7 @@ jobs:
         with:
           files: ./coverage.xml
           name: codecov-umbrella
+          flags: backend
           fail_ci_if_error: true
           verbose: true
 
@@ -77,7 +77,15 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest WebApp/autoreduce_webapp/selenium_tests
+          pytest WebApp/autoreduce_webapp/selenium_tests --cov-report=xml --cov=WebApp/autoreduce_webapp
+
+      - uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml
+          name: codecov-umbrella
+          flags: webapp
+          fail_ci_if_error: true
+          verbose: true
 
       - uses: actions/upload-artifact@v2
         if: failure()
@@ -86,6 +94,7 @@ jobs:
           path: |
             WebApp/autoreduce_webapp/selenium_tests/screenshots
             WebApp/autoreduce_webapp/selenium_tests/a11y_reports
+
 
   dependency-check:
     name: Dependency-Check
@@ -136,7 +145,6 @@ jobs:
       - name: Pylint tests
         run: |
           pylint build
-          pylint docker_reduction
           pylint model
           pylint monitors
           pylint queue_processors
@@ -150,4 +158,4 @@ jobs:
         run: python -m yapf --parallel --diff --recursive .
 
       - name: Vulture
-        run: vulture --min-confidence 100 build docker_reduction model monitors scripts queue_processors systemtests utils plotting
+        run: vulture --min-confidence 100 build model monitors scripts queue_processors systemtests utils plotting
