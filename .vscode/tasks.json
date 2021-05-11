@@ -123,7 +123,8 @@
                 "panel": "shared",
                 "showReuseMessage": false,
                 "clear": false
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "(don't use) Run Docker pytest",
@@ -160,7 +161,8 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "(don't use) Run Docker pytest django",
@@ -200,7 +202,8 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "Kill webapp-debugpy",
