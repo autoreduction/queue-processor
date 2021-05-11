@@ -5,7 +5,7 @@
     <div class="well text-center">
         <h2><i class="fa fa-exclamation-triangle"></i>Error</h2>
         <p>
-            {{ message }}
+            <div id="error-message">{{ message }}</div>
             <br>
             {% if admin_email %}
                 If this error continues please <a href="mailto:{{ admin_email }}">contact us</a>.
