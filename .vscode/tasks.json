@@ -47,7 +47,8 @@
             }
         },
         {
-            "label": "Run Docker Queue Processor",
+            "label": "(don't use) Run Docker Queue Processor",
+            "detail": "Used by the debugging configuration. Don't manually use",
             "type": "shell",
             "command": "docker",
             "isBackground": true,
@@ -68,10 +69,12 @@
                 "5678",
                 "--wait-for-client",
                 "/autoreduce/queue_processors/queue_processor/queue_listener.py"
-            ]
+            ],
+            "problemMatcher": [],
         },
         {
             "label": "Kill queue-processor-debugpy",
+            "detail": "Used by the debugging configuration. Don't manually use",
             "type": "shell",
             "command": "docker kill queue-processor-debugpy",
             "problemMatcher": [],
@@ -85,7 +88,8 @@
             }
         },
         {
-            "label": "Run Docker Web App",
+            "label": "(don't use) Run Docker Web App",
+            "detail": "Used by the debugging configuration. Don't manually use",
             "type": "shell",
             "command": "docker",
             "isBackground": true,
@@ -118,7 +122,8 @@
             }
         },
         {
-            "label": "Run Docker pytest",
+            "label": "(don't use) Run Docker pytest",
+            "detail": "Used by the debugging configuration. Don't manually use",
             "type": "shell",
             "command": "docker",
             "isBackground": true,
@@ -154,7 +159,8 @@
             }
         },
         {
-            "label": "Run Docker pytest django",
+            "label": "(don't use) Run Docker pytest django",
+            "detail": "Used by the debugging configuration. Don't manually use",
             "type": "shell",
             "command": "docker",
             "isBackground": true,
@@ -190,7 +196,7 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            },
+            }
         },
         {
             "label": "Kill webapp-debugpy",
@@ -221,7 +227,7 @@
             }
         },
         {
-            "label": "Run ActiveMQ Docker",
+            "label": "(don't use) Run ActiveMQ Docker",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -270,6 +276,10 @@
             "dependsOn": [
                 "Export UID:GID to $USERID"
             ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "Migrate database (clean via manage.py)",
@@ -295,13 +305,13 @@
             "problemMatcher": [],
             "dependsOn": [
                 "Export UID:GID to $USERID"
-            ],
+            ]
         },
         {
             "label": "Selenium Docker",
             "type": "shell",
             "command": "docker run --rm -it --network=host -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-beta-3-prerelease-20210422",
-            "problemMatcher": [],
+            "problemMatcher": []
         }
     ]
 }

@@ -23,7 +23,7 @@
                 "group": "autoreduce-docker",
                 "order": 1
             },
-            "preLaunchTask": "Run Docker Queue Processor",
+            "preLaunchTask": "(don't use) Run Docker Queue Processor",
             "postDebugTask": "Kill queue-processor-debugpy"
         },
         {
@@ -45,7 +45,7 @@
                 "group": "autoreduce-docker",
                 "order": 1
             },
-            "preLaunchTask": "Run Docker Web App",
+            "preLaunchTask": "(don't use) Run Docker Web App",
             "postDebugTask": "Kill webapp-debugpy"
         },
         {
@@ -67,7 +67,7 @@
                 "group": "autoreduce-docker",
                 "order": 1
             },
-            "preLaunchTask": "Run Docker pytest",
+            "preLaunchTask": "(don't use) Run Docker pytest",
         },
         {
             "name": "pytest django Docker Attach",
@@ -88,7 +88,7 @@
                 "group": "autoreduce-docker",
                 "order": 1
             },
-            "preLaunchTask": "Run Docker pytest django",
+            "preLaunchTask": "(don't use) Run Docker pytest django",
         },
         {
             "name": "Pytest",
