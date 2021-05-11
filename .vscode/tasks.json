@@ -229,18 +229,7 @@
         {
             "label": "(don't use) Run ActiveMQ Docker",
             "type": "shell",
-            "command": "docker",
-            "args": [
-                "run",
-                "--name",
-                "activemq",
-                "-p",
-                "61613:61613",
-                "-p",
-                "8161:8161",
-                "-it",
-                "rmohr/activemq"
-            ],
+            "command": "docker run --name activemq -p 61613:61613 -p 8161:8161 -it rmohr/activemq",
             "problemMatcher": [],
             "presentation": {
                 "echo": true,
@@ -254,24 +243,7 @@
         {
             "label": "Migrate database (with fixtures via setup.py)",
             "type": "shell",
-            "command": "source",
-            "isBackground": true,
-            "args": [
-                "~/.userid.sh",
-                "&&",
-                "docker",
-                "run",
-                "--rm",
-                "-v",
-                "${workspaceFolder}:/autoreduce",
-                "--user",
-                "$USERID",
-                "-it",
-                "autoreduction/qp",
-                "python3",
-                "/autoreduce/setup.py",
-                "database"
-            ],
+            "command": "source ~/.userid.sh && docker run --rm -v ${workspaceFolder}:/autoreduce --user $USERID -it autoreduction/qp bash -c 'python3 /autoreduce/WebApp/autoreduce_webapp/manage.py migrate && python3 /autoreduce/WebApp/autoreduce_webapp/manage.py loaddata super_user_fixture status_fixture pr_test'",
             "problemMatcher": [],
             "dependsOn": [
                 "Export UID:GID to $USERID"
@@ -284,24 +256,8 @@
         {
             "label": "Migrate database (clean via manage.py)",
             "type": "shell",
-            "command": "source",
+            "command": "source ~/.userid.sh && docker run --rm -v ${workspaceFolder}:/autoreduce --user $USERID -it autoreduction/webapp python3 /autoreduce/WebApp/autoreduce_webapp/manage.py migrate",
             "isBackground": true,
-            "args": [
-                "~/.userid.sh",
-                "&&",
-                "docker",
-                "run",
-                "--rm",
-                "-v",
-                "${workspaceFolder}:/autoreduce",
-                "--user",
-                "$USERID",
-                "-it",
-                "autoreduction/webapp",
-                "python3",
-                "/autoreduce/WebApp/autoreduce_webapp/manage.py",
-                "migrate"
-            ],
             "problemMatcher": [],
             "dependsOn": [
                 "Export UID:GID to $USERID"
