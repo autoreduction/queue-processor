@@ -436,11 +436,48 @@ import reduce_vars as params</code></pre>
                     <pre><code class="language-python"> ... some plotting code with matplotlib ...
 
 filename = get_name_of_data_file(input_file)
-my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=None)
-                        </code></pre>
+my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=None)</code></pre>
                 </div>
             </section>
-                        <section class="help-topic panel panel-default" data-category="question"
+            <section class="help-topic panel panel-default" data-category="question">
+                <div class="panel-heading">
+                    <h3>How do I save out interactive plots with Plotly?</h3>
+                </div>
+                <div class="panel-body">
+                    <p>To get an interactive plot in the webapp you need to do the plotting with <strong>Plotly</strong> and save it to a .json file.</p>
+                    <pre><code class="language-xml">&lt;name-part-of-the-data-file&gt;.json</code></pre>
+                    <p>where e.g. if the data file is "GEM90963.nxs" then "GEM90963" is the <code>name-part-of-the-data-file</code>,
+                        and the plot file extension must be "json".</p>
+
+                    <p>The save code that you need in the reduction script is:</p>
+                    <pre><code class="language-python"># Serialise the figure to a JSON that can be shown in the webapp
+figure_json = my_plotly_figure.to_json()
+
+# Save the file in the output_dir
+filename = get_name_of_data_file(input_file)
+with open(os.path.join(output_dir, f"{filename}.json")) as figfile:
+    figfile.write(figure_json)</code></pre>
+                <p>Note: the above uses Python 3's <a href="https://www.python.org/dev/peps/pep-0498/">f-string</a> syntax to make the output JSON filename.</p>
+            </section>
+            <section class="help-topic panel panel-default" data-category="question">
+                <div class="panel-heading">
+                    <h3>Plotting with Plotly</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Plotly is slightly different from Matplotlib, but the difference is mostly in the syntax, while the fundamental features remain the same.
+                    As long as Plotly successfully serialises the plot <code>to_json</code>, it should also work in the webapp.</p>
+                    <p>Because Mantid integrates Matplotlib, it is <strong>not possible</strong> to plot workspaces directly into Plotly. You will have to extract the data manually via the <code>readX</code>, <code>readY</code>, and similar methods.</p>
+                    <p>To avoid adding plotting code here that will get out of date, it is recommended to have a look at the <a href="https://plotly.com/python/line-and-scatter/#scatter-and-line-plot-with-goscatter">documentation</a>.</p>
+                <section class="help-topic panel panel-default" data-category="question">
+                  <div class="panel-heading">
+                      <h3>Plotly express or graphics_objects (go)?</h3>
+                  </div>
+                  <div class="panel-body">
+                  <p>Both of Plotly's plotting APIs should work. Just use whatever works best for your case.</p>
+                  </div>
+                </section>
+            </section>
+            <section class="help-topic panel panel-default" data-category="question"
                      data-topics="output type structure reduction directory format">
                 <div class="panel-heading">
                     <h3>What are the output structures available in autoreduction?</h3>
