@@ -60,6 +60,12 @@
                 "${workspaceFolder}:/autoreduce",
                 "-v",
                 "~/.autoreduce:/root/.autoreduce",
+                "-v",
+                "${workspaceFolder}/data-archive:/isis",
+                "-v",
+                "${workspaceFolder}/data-archive:/archive",
+                "-v",
+                "${workspaceFolder}/reduced-data:/instrument",
                 "--name",
                 "queue-processor-debugpy",
                 "-it",
@@ -103,6 +109,8 @@
                 "${workspaceFolder}:/autoreduce",
                 "-v",
                 "~/.autoreduce:/root/.autoreduce",
+                "-v",
+                "${workspaceFolder}/reduced-data:/instrument",
                 "--name",
                 "webapp-debugpy",
                 "-it",
@@ -139,7 +147,7 @@
                 "-v",
                 "${workspaceFolder}:/autoreduce",
                 "--name",
-                "webapp-debugpy",
+                "webapp-debugpy-pytest",
                 "-it",
                 "autoreduction/devtest",
                 "python3",
@@ -248,7 +256,7 @@
             }
         },
         {
-            "label": "Migrate database (with fixtures via setup.py)",
+            "label": "Migrate database (with PR fixtures)",
             "type": "shell",
             "command": "source ~/.userid.sh && docker run --rm -v ${workspaceFolder}:/autoreduce -v ~/.autoreduce:/tmp/.autoreduce -e AUTOREDUCTION_CREDENTIALS=/tmp/.autoreduce/credentials.ini --user $USERID -it autoreduction/qp bash -c 'python3 /autoreduce/WebApp/autoreduce_webapp/manage.py migrate && python3 /autoreduce/WebApp/autoreduce_webapp/manage.py loaddata super_user_fixture status_fixture pr_test'",
             "problemMatcher": [],
@@ -261,7 +269,7 @@
             }
         },
         {
-            "label": "Migrate database (clean via manage.py)",
+            "label": "Migrate database (clean)",
             "type": "shell",
             "command": "source ~/.userid.sh && docker run --rm -v ${workspaceFolder}:/autoreduce -v ~/.autoreduce:/tmp/.autoreduce -e AUTOREDUCTION_CREDENTIALS=/tmp/.autoreduce/credentials.ini --user $USERID -it autoreduction/webapp python3 /autoreduce/WebApp/autoreduce_webapp/manage.py migrate",
             "isBackground": true,
@@ -271,7 +279,7 @@
             ]
         },
         {
-            "label": "Selenium Docker",
+            "label": "Run Selenium Docker",
             "type": "shell",
             "command": "docker run --rm -it --network=host -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-beta-3-prerelease-20210422",
             "problemMatcher": []

@@ -162,17 +162,20 @@ class TestRunSummaryPagePlots(BaseTestCase):
         self.instrument_name = "TestInstrument"
 
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
+        self.run = ReductionRun.objects.first()
 
-    def test_plot_files(self):
+    def test_plot_files_png(self):
         """
-        Test: Local plot files are fetched and shown
+        Test: PNG plot files are fetched and shown
         """
-        run = ReductionRun.objects.first()
-
         # the plot files are expected to be in the reduction location, so we write them there for the test to work
         plot_files = [
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=run.reduction_location.first().file_path),
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=run.reduction_location.first().file_path)
+            tempfile.NamedTemporaryFile(prefix="data_",
+                                        suffix=".png",
+                                        dir=self.run.reduction_location.first().file_path),
+            tempfile.NamedTemporaryFile(prefix="data_",
+                                        suffix=".png",
+                                        dir=self.run.reduction_location.first().file_path)
         ]
         self.page.launch()
 
@@ -183,3 +186,57 @@ class TestRunSummaryPagePlots(BaseTestCase):
             alt_text = img.get_attribute("alt")
             assert "Plot image stored at" in alt_text
             assert any(os.path.basename(f.name) in alt_text for f in plot_files)
+
+    def test_plot_files_json(self):
+        """
+        Test: JSON plot files are fetched and rendered by plotly
+        """
+        # the plot files are expected to be in the reduction location, so we write them there for the test to work
+        plot_files = []
+
+        for _ in range(2):
+            # pylint:disable=consider-using-with
+            tfile = tempfile.NamedTemporaryFile('w',
+                                                prefix="data_",
+                                                suffix=".json",
+                                                dir=self.run.reduction_location.first().file_path)
+            tfile.write("""{"data": [{"type": "bar","x": [1,2,3],"y": [1,3,2]}]}""")
+            tfile.flush()
+            plot_files.append(tfile)
+
+        self.page.launch()
+
+        plots = self.page.plotly_plots()
+        assert len(plots) == 2
+        for plot in plots:
+            assert any(plot.get_attribute("id") in file.name for file in plot_files)
+
+    def test_plot_files_mix(self):
+        """Test that both static and interactive plots are rendered"""
+        plot_files = [
+            tempfile.NamedTemporaryFile(prefix="data_",
+                                        suffix=".png",
+                                        dir=self.run.reduction_location.first().file_path),
+            tempfile.NamedTemporaryFile('w',
+                                        prefix="data_",
+                                        suffix=".json",
+                                        dir=self.run.reduction_location.first().file_path)
+        ]
+        # write the interactive plot data
+        plot_files[1].write("""{"data": [{"type": "bar","x": [1,2,3],"y": [1,3,2]}]}""")
+        plot_files[1].flush()
+
+        self.page.launch()
+
+        images = self.page.images()
+        # 1 is the logo, the other is the static plot
+        assert len(images) == 2
+
+        img = images[1]
+        alt_text = img.get_attribute("alt")
+        assert "Plot image stored at" in alt_text
+        assert any(os.path.basename(f.name) in alt_text for f in plot_files)
+
+        plots = self.page.plotly_plots()
+        assert len(plots) == 1
+        assert plots[0].get_attribute("id") in plot_files[1].name

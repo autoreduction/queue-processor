@@ -126,3 +126,9 @@ class RunSummaryPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
         Returns all image elements on the page.
         """
         return self.driver.find_elements_by_tag_name("img")
+
+    def plotly_plots(self) -> List[WebElement]:
+        """
+        Returns all image elements on the page.
+        """
+        return self.driver.find_elements_by_class_name("js-plotly-plot")

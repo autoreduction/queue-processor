@@ -47,6 +47,7 @@
             },
             "preLaunchTask": "(don't use) Run Docker Web App",
             "postDebugTask": "Kill webapp-debugpy"
+            "django": true
         },
         {
             "name": "pytest Docker Attach",
@@ -124,7 +125,8 @@
             },
             "env": {
                 "DISPLAY": ":1",
-                "RUNNING_VIA_PYTEST": "true"
+                "RUNNING_VIA_PYTEST": "true",
+                "SELENIUM_REMOTE": "1"
             }
         },
         {
