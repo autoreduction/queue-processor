@@ -43,59 +43,6 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-  selenium:
-    name: Selenium
-    runs-on: ubuntu-18.04
-    strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - uses: ./.github/actions/build-autoreduction
-
-      - name: Set up chromedriver
-        run: |
-          wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          export PATH=$PATH:./chromedriver_linux64/
-
-      - name: Install chrome
-        run: sudo apt-get install -y google-chrome-stable
-
-      - name: Run tests
-        run: |
-          pytest WebApp/autoreduce_webapp/selenium_tests --cov-report=xml --cov=WebApp/autoreduce_webapp
-
-      - uses: codecov/codecov-action@v1
-        with:
-          files: ./coverage.xml
-          name: codecov-umbrella
-          flags: webapp
-          fail_ci_if_error: true
-          verbose: true
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: screenshots_and_reports
-          path: |
-            WebApp/autoreduce_webapp/selenium_tests/screenshots
-            WebApp/autoreduce_webapp/selenium_tests/a11y_reports
-
-
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-18.04
