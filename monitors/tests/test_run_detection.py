@@ -4,13 +4,12 @@ Unit tests for the end of run monitor
 import csv
 import os
 import unittest
-from unittest.mock import (Mock, patch, call)
+from unittest.mock import Mock, call, patch
 
-from filelock import FileLock
-
-import monitors.run_detection
 from autoreduce_utils.message.message import Message
-from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
+from filelock import FileLock
+import monitors.run_detection
+from monitors.settings import CYCLE_FOLDER, LAST_RUNS_CSV
 
 # Test data
 SUMMARY_FILE = ("WIS44731Smith,Smith,"

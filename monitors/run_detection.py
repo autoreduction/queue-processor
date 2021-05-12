@@ -6,15 +6,15 @@ sends them off to the autoreduction service.
 import csv
 import logging
 import os
-import h5py
-from filelock import (FileLock, Timeout)
 from pathlib import Path
 
-from autoreduce_utils.message.message import Message
+import h5py
 from autoreduce_utils.clients.queue_client import QueueClient
-
+from autoreduce_utils.message.message import Message
+from filelock import FileLock, Timeout
 from queue_processors.queue_processor.settings import PROJECT_ROOT
-from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
+
+from monitors.settings import CYCLE_FOLDER, LAST_RUNS_CSV
 
 # Setup logging
 EORM_LOG = logging.getLogger('run_detection')
