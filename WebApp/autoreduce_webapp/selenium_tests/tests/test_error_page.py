@@ -30,3 +30,4 @@ class TestErrorPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         self.page.launch_with_session()
         self.assertEqual(DEFAULT_MESSAGE, self.page.get_error_message())
         authenticate.assert_called_once_with(token=self.page.fake_token)
+        reduction_viewer.views.DEVELOPMENT_MODE = True
