@@ -27,6 +27,6 @@ class TestErrorPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Test that the page error message matches the expected error
         """
         reduction_viewer.views.DEVELOPMENT_MODE = False
-        self.page.launch()
+        self.page.launch_with_session()
         self.assertEqual(DEFAULT_MESSAGE, self.page.get_error_message())
         authenticate.assert_called_once_with(token=self.page.fake_token)
