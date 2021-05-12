@@ -31,7 +31,7 @@ class ErrorPage(Page, NavbarMixin, FooterMixin):
 
         :return: (str) the url path
         """
-        return "non-existant-url"
+        return reverse("overview")
 
     def get_error_message(self) -> str:
         """
