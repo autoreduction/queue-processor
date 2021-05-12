@@ -50,8 +50,8 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNotNone(client.data_model.Instrument.objects.all())
         self.assertIsNotNone(client.variable_model.Variable.objects.all())
 
-    @patch('utils.clients.django_database_client.DatabaseClient.data_model')
-    @patch('utils.clients.django_database_client.DatabaseClient.variable_model')
+    @patch('model.database.django_database_client.DatabaseClient.data_model')
+    @patch('model.database.django_database_client.DatabaseClient.variable_model')
     def test_invalid_connection(self, mock_var_query, mock_data_query):
         """
         Test: A ConnectionException is raised

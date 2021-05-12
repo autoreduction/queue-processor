@@ -30,9 +30,9 @@ class TestQueueProcessor(TestCase):
     def setUp(self):
         self.test_consumer_name = "Test_Autoreduction_QueueProcessor"
 
-    @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
-    @patch('utils.clients.queue_client.QueueClient.connect')
-    @patch('utils.clients.queue_client.QueueClient.subscribe')
+    @patch('queue_processors.queue_processor.queue_listener.QueueClient.__init__', return_value=None)
+    @patch('queue_processors.queue_processor.queue_listener.QueueClient.connect')
+    @patch('queue_processors.queue_processor.queue_listener.QueueClient.subscribe')
     def test_setup_connection(self, mock_subscribe, mock_connect, mock_client):  # pylint:disable=no-self-use
         """
         Test: Connection to ActiveMQ setup, along with subscription to queues

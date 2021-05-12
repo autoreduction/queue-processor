@@ -193,7 +193,7 @@ class TestManualSubmission(unittest.TestCase):
         self.sub_run_args[0].send.assert_called_with('/queue/DataReady', message, priority=1)
 
     @patch('icat.Client')
-    @patch('utils.clients.icat_client.ICATClient.connect')
+    @patch('scripts.manual_operations.manual_submission.ICATClient.connect')
     def test_icat_login_valid(self, mock_connect, _):
         """
         Test: A valid ICAT client is returned
@@ -205,7 +205,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_connect.assert_called_once()
 
     @patch('icat.Client')
-    @patch('utils.clients.icat_client.ICATClient.connect')
+    @patch('scripts.manual_operations.manual_submission.ICATClient.connect')
     def test_icat_login_invalid(self, mock_connect, _):
         """
         Test: None is returned
@@ -215,7 +215,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_connect.side_effect = con_exp
         self.assertIsNone(ms.login_icat())
 
-    @patch('utils.clients.django_database_client.DatabaseClient.connect')
+    @patch('model.database.django_database_client.DatabaseClient.connect')
     def test_database_login_valid(self, _):
         """
         Test: A valid Database client is returned
@@ -225,7 +225,7 @@ class TestManualSubmission(unittest.TestCase):
         actual = ms.login_database()
         self.assertIsInstance(actual, DatabaseClient)
 
-    @patch('utils.clients.django_database_client.DatabaseClient.connect')
+    @patch('model.database.django_database_client.DatabaseClient.connect')
     def test_database_login_invalid(self, mock_connect):
         """
         Test: None is returned
@@ -235,7 +235,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_connect.side_effect = con_exp
         self.assertIsNone(ms.login_database())
 
-    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('scripts.manual_operations.manual_submission.QueueClient.connect')
     def test_queue_login_valid(self, _):
         """
         Test: A valid Queue client is returned
@@ -245,7 +245,7 @@ class TestManualSubmission(unittest.TestCase):
         actual = ms.login_queue()
         self.assertIsInstance(actual, QueueClient)
 
-    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('scripts.manual_operations.manual_submission.QueueClient.connect')
     def test_queue_login_invalid(self, mock_connect):
         """
         Test: An exception is raised
