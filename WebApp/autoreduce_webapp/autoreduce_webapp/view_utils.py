@@ -10,12 +10,14 @@ Utility functions for the Django views
 import logging
 
 from django.core.exceptions import PermissionDenied
+from django.http import HttpRequest
 from django.shortcuts import redirect
 from django.shortcuts import render
 from reduction_viewer.models import Notification, Setting
 from reduction_viewer.models import ReductionRun, Experiment
 
-from .icat_cache import ICATCache
+from .views import render_error
+from .icat_cache import ICATCache, ICATConnectionException
 # The below is a template on the repository
 from .settings import (DEVELOPMENT_MODE, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 
@@ -205,36 +207,56 @@ def check_permissions(func):
                     # failing that, 'instrument'.
                     owned_instrument_name = kwargs.get("instrument_name", kwargs.get("instrument"))
 
-            with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
-                # pylint: disable=no-member
-                owned_instrument_list = icat.get_owned_instruments(int(request.user.username))
-                valid_instrument_list = icat.get_valid_instruments(int(request.user.username))
-
-                # Check for access to the instrument
-                if owned_instrument_name or viewed_instrument_name:
-                    optional_instrument_names.add(
-                        owned_instrument_name if owned_instrument_name is not None else viewed_instrument_name)
-
-                    # Check access to an owned instrument.
-                    if owned_instrument_name is not None \
-                            and owned_instrument_name not in owned_instrument_list:
-                        raise PermissionDenied()  # No access allowed
-
-                    # Check access to a valid instrument (able to view some runs, etc.).
-                    if viewed_instrument_name is not None\
-                            and viewed_instrument_name not in \
-                            owned_instrument_list + valid_instrument_list:
-                        raise PermissionDenied()  # No access allowed
-
-                # Check for access to the experiment; if the user owns one
-                # of the associated instruments, we don't need to check this.
-                if optional_instrument_names and optional_instrument_names.intersection(owned_instrument_list):
-                    pass
-                elif experiment_reference is not None and experiment_reference not in \
-                        icat.get_associated_experiments(int(request.user.username)):
-                    raise PermissionDenied()
+            try:
+                check_icat_permissions(request, experiment_reference, owned_instrument_name, viewed_instrument_name,
+                                       optional_instrument_names)
+            except ICATConnectionException as excep:
+                return render_error(request, str(excep))
 
         # If we're here, the access checks have passed.
         return func(request, *args, **kwargs)
 
     return request_processor
+
+
+def check_icat_permissions(request: HttpRequest,
+                           experiment_reference: int,
+                           owned_instrument_name: str = None,
+                           viewed_instrument_name: str = None,
+                           optional_instrument_names: set = None):
+    """
+    Checks ICAT instrument and experiment permissions from request.
+    :param request: (HttpRequest) The sent HTTP request
+    :param experiment_reference: (int) The experiment reference number
+    :param owned_instrument_name: (str) The name of the instrument found from the experiment reference number
+    :param viewed_instrument_name: (str) The name of the instrument found from the run number
+    :param optional_instrument_names: (set) A set of instruments names found from the experiment
+    """
+    with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
+        # pylint: disable=no-member
+        owned_instrument_list = icat.get_owned_instruments(int(request.user.username))
+        valid_instrument_list = icat.get_valid_instruments(int(request.user.username))
+
+        # Check for access to the instrument
+        if owned_instrument_name or viewed_instrument_name:
+            optional_instrument_names.add(
+                owned_instrument_name if owned_instrument_name is not None else viewed_instrument_name)
+
+            # Check access to an owned instrument.
+            if owned_instrument_name is not None \
+                    and owned_instrument_name not in owned_instrument_list:
+                raise PermissionDenied()  # No access allowed
+
+            # Check access to a valid instrument (able to view some runs, etc.).
+            if viewed_instrument_name is not None \
+                    and viewed_instrument_name not in \
+                    owned_instrument_list + valid_instrument_list:
+                raise PermissionDenied()  # No access allowed
+
+        # Check for access to the experiment; if the user owns one
+        # of the associated instruments, we don't need to check this.
+        if optional_instrument_names and optional_instrument_names.intersection(owned_instrument_list):
+            pass
+        elif experiment_reference is not None and experiment_reference not in \
+                icat.get_associated_experiments(int(request.user.username)):
+            raise PermissionDenied()

@@ -7,7 +7,7 @@
 """
 Handle page responses for WebApp
 """
-
+from django.http import HttpRequest
 from django.shortcuts import render
 from django.template import RequestContext
 
@@ -52,3 +52,13 @@ def handler500(request):
     response = render(RequestContext(request), '500.html', {'admin_email': get_admin_email()})
     response.status_code = 500
     return response
+
+
+def render_error(request: HttpRequest, message: str):
+    """
+    Return the error page with a message displayed.
+    :param request: (HttpRequest) The original sent request
+    :param message: (str) The message that will be displayed
+    :return: (HttpResponse) The error page
+    """
+    return render(request, 'error.html', {'message': message, 'admin_email': get_admin_email()}, status=500)
