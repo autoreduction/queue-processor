@@ -40,7 +40,7 @@ class ErrorPage(Page, NavbarMixin, FooterMixin):
         """
         return self.driver.find_element_by_id("error-message").text
 
-    def launch(self):
+    def launch_with_session(self):
         """
         Navigate the webdriver to this page.
 
