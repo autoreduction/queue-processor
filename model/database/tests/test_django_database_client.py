@@ -10,9 +10,9 @@ Test cases for the django database client
 import unittest
 
 from unittest.mock import patch
-
-from models.database.django_database_client import DatabaseClient
 from autoreduce_utils.clients.connection_exception import ConnectionException
+
+from model.database.django_database_client import DatabaseClient
 
 
 # pylint:disable=protected-access
