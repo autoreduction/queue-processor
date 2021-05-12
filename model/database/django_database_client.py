@@ -7,14 +7,9 @@
 """
 Creates a database session for the reduction database
 """
-import logging
+from autoreduce_utils.clients.connection_exception import ConnectionException
 
 from model.database import DjangoORM
-from utils.clients.connection_exception import ConnectionException
-from utils.project.static_content import LOG_FORMAT
-from utils.project.structure import get_log_file
-
-logging.basicConfig(filename=get_log_file('django_database_client.log'), level=logging.INFO, format=LOG_FORMAT)
 
 
 class DatabaseClient:

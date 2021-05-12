@@ -10,9 +10,9 @@ Test cases for the django database client
 import unittest
 
 from unittest.mock import patch
+from autoreduce_utils.clients.connection_exception import ConnectionException
 
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
+from model.database.django_database_client import DatabaseClient
 
 
 # pylint:disable=protected-access
@@ -50,8 +50,8 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNotNone(client.data_model.Instrument.objects.all())
         self.assertIsNotNone(client.variable_model.Variable.objects.all())
 
-    @patch('utils.clients.django_database_client.DatabaseClient.data_model')
-    @patch('utils.clients.django_database_client.DatabaseClient.variable_model')
+    @patch('model.database.django_database_client.DatabaseClient.data_model')
+    @patch('model.database.django_database_client.DatabaseClient.variable_model')
     def test_invalid_connection(self, mock_var_query, mock_data_query):
         """
         Test: A ConnectionException is raised

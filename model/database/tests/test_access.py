@@ -25,7 +25,7 @@ class TestAccess(unittest.TestCase):
         self.database = access.start_database()
 
     # pylint:disable=no-self-use
-    @patch('utils.clients.django_database_client.DatabaseClient.connect')
+    @patch('model.database.access.DatabaseClient.connect')
     def test_start_database(self, mock_connect):
         """
         Test: The database is initialised

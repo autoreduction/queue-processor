@@ -17,7 +17,7 @@ runs:
 
     - name: Setup test environment
       run: |
-        python setup.py test_settings
+        autoreduce-creds-migrate
         # Externals must be after test_settings
         python setup.py externals -s activemq
         python setup.py database

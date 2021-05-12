@@ -14,12 +14,13 @@ from unittest import TestCase, mock
 from unittest.mock import patch, MagicMock
 from copy import deepcopy
 
-from model.message.message import Message
+from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.clients.queue_client import QueueClient
+from autoreduce_utils.message.message import Message
+
 from queue_processors.queue_processor import queue_listener
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.queue_listener import QueueListener
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.queue_client import QueueClient
 
 
 class TestQueueProcessor(TestCase):
@@ -29,9 +30,9 @@ class TestQueueProcessor(TestCase):
     def setUp(self):
         self.test_consumer_name = "Test_Autoreduction_QueueProcessor"
 
-    @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
-    @patch('utils.clients.queue_client.QueueClient.connect')
-    @patch('utils.clients.queue_client.QueueClient.subscribe')
+    @patch('queue_processors.queue_processor.queue_listener.QueueClient.__init__', return_value=None)
+    @patch('queue_processors.queue_processor.queue_listener.QueueClient.connect')
+    @patch('queue_processors.queue_processor.queue_listener.QueueClient.subscribe')
     def test_setup_connection(self, mock_subscribe, mock_connect, mock_client):  # pylint:disable=no-self-use
         """
         Test: Connection to ActiveMQ setup, along with subscription to queues

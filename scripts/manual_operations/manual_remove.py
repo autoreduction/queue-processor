@@ -14,8 +14,8 @@ import sys
 import fire
 from django.db import IntegrityError
 from model.database import access as db
+from model.database.django_database_client import DatabaseClient
 from scripts.manual_operations.util import get_run_range
-from utils.clients.django_database_client import DatabaseClient
 
 
 class ManualRemove:

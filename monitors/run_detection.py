@@ -6,28 +6,21 @@ sends them off to the autoreduction service.
 import csv
 import logging
 import os
+from pathlib import Path
+
 import h5py
-from filelock import (FileLock, Timeout)
+from autoreduce_utils.clients.queue_client import QueueClient
+from autoreduce_utils.message.message import Message
+from filelock import FileLock, Timeout
+from queue_processors.queue_processor.settings import PROJECT_ROOT
 
-from model.message.message import Message
-from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
-
-from utils.clients.queue_client import QueueClient
-from utils.project.structure import get_log_file
-from utils.project.static_content import LOG_FORMAT
+from monitors.settings import CYCLE_FOLDER, LAST_RUNS_CSV
 
 # Setup logging
 EORM_LOG = logging.getLogger('run_detection')
 EORM_LOG.setLevel(logging.INFO)
-
-FH = logging.FileHandler(get_log_file('run_detection.log'))
-CH = logging.StreamHandler()
-FORMATTER = logging.Formatter(LOG_FORMAT)
-FH.setFormatter(FORMATTER)
-FH.setFormatter(FORMATTER)
-
-EORM_LOG.addHandler(FH)
-EORM_LOG.addHandler(CH)
+EORM_LOG.addHandler(logging.FileHandler(str(Path(PROJECT_ROOT, 'logs', 'run_detection.log'))))
+EORM_LOG.addHandler(logging.StreamHandler())
 
 
 class InstrumentMonitorError(Exception):

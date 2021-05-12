@@ -10,12 +10,13 @@ from django.urls.base import reverse
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.support.wait import WebDriverWait
 
+from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.clients.queue_client import QueueClient
+
 from model.database import access as db
+from model.database.django_database_client import DatabaseClient
 from queue_processors.queue_processor.queue_listener import main, QueueListener
 from systemtests.utils.data_archive import DataArchive
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
-from utils.clients.queue_client import QueueClient
 
 
 def find_run_in_database(test):

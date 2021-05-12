@@ -9,15 +9,16 @@ Test cases for the manual job submission script
 """
 import unittest
 from unittest.mock import patch, Mock, MagicMock
+
+from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.clients.icat_client import ICATClient
+from autoreduce_utils.clients.queue_client import QueueClient
+from autoreduce_utils.message.message import Message
+
 import scripts.manual_operations.manual_submission as ms
 
-from model.message.message import Message
-
 from queue_processors.queue_processor.status_utils import StatusUtils
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
-from utils.clients.icat_client import ICATClient
-from utils.clients.queue_client import QueueClient
+from model.database.django_database_client import DatabaseClient
 from scripts.manual_operations.tests.test_manual_remove import create_experiment_and_instrument, make_test_run
 
 STATUS = StatusUtils()
@@ -192,7 +193,7 @@ class TestManualSubmission(unittest.TestCase):
         self.sub_run_args[0].send.assert_called_with('/queue/DataReady', message, priority=1)
 
     @patch('icat.Client')
-    @patch('utils.clients.icat_client.ICATClient.connect')
+    @patch('scripts.manual_operations.manual_submission.ICATClient.connect')
     def test_icat_login_valid(self, mock_connect, _):
         """
         Test: A valid ICAT client is returned
@@ -204,7 +205,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_connect.assert_called_once()
 
     @patch('icat.Client')
-    @patch('utils.clients.icat_client.ICATClient.connect')
+    @patch('scripts.manual_operations.manual_submission.ICATClient.connect')
     def test_icat_login_invalid(self, mock_connect, _):
         """
         Test: None is returned
@@ -214,7 +215,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_connect.side_effect = con_exp
         self.assertIsNone(ms.login_icat())
 
-    @patch('utils.clients.django_database_client.DatabaseClient.connect')
+    @patch('model.database.django_database_client.DatabaseClient.connect')
     def test_database_login_valid(self, _):
         """
         Test: A valid Database client is returned
@@ -224,7 +225,7 @@ class TestManualSubmission(unittest.TestCase):
         actual = ms.login_database()
         self.assertIsInstance(actual, DatabaseClient)
 
-    @patch('utils.clients.django_database_client.DatabaseClient.connect')
+    @patch('model.database.django_database_client.DatabaseClient.connect')
     def test_database_login_invalid(self, mock_connect):
         """
         Test: None is returned
@@ -234,7 +235,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_connect.side_effect = con_exp
         self.assertIsNone(ms.login_database())
 
-    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('scripts.manual_operations.manual_submission.QueueClient.connect')
     def test_queue_login_valid(self, _):
         """
         Test: A valid Queue client is returned
@@ -244,7 +245,7 @@ class TestManualSubmission(unittest.TestCase):
         actual = ms.login_queue()
         self.assertIsInstance(actual, QueueClient)
 
-    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('scripts.manual_operations.manual_submission.QueueClient.connect')
     def test_queue_login_invalid(self, mock_connect):
         """
         Test: An exception is raised
