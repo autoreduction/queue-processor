@@ -7,26 +7,21 @@
 """
 Module for the error page model
 """
-from __future__ import annotations
-
 from django.urls.base import reverse
 
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
 from selenium_tests.pages.page import Page
+from selenium_tests import configuration
 
 
 class ErrorPage(Page, NavbarMixin, FooterMixin):
     """
     Page model class for the error view
     """
-    @staticmethod
-    def url_path() -> str:
-        """
-        Return the current URL of the page. Overview will be used to test the error.
-        :return: (str) the url path
-        """
-        return reverse("overview")  # /overview is used to test the error view
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.fake_token = "r07v2h39q453928"
 
     def get_error_message(self) -> str:
         """
@@ -34,3 +29,14 @@ class ErrorPage(Page, NavbarMixin, FooterMixin):
         :return: (str) The text in #error-message
         """
         return self.driver.find_element_by_id("error-message").text
+
+    def launch(self):
+        """
+        Navigate the webdriver to this page.
+
+        This overrides the default launch in order to provide a testing `sessionid` parameter.
+
+        :return: The page object
+        """
+        self.driver.get(f"{configuration.get_url()}?sessionid={self.fake_token}")
+        return self
