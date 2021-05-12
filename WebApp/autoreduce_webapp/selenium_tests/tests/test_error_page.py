@@ -25,6 +25,11 @@ class TestErrorPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     def test_error_message(self, authenticate: Mock):
         """
         Test that the page error message matches the expected error
+
+        This turns off development mode - this will attempt to use UOWS authentication
+        but it's mocked out to raise the ICATConnectionException, so we test the error path.
+
+        At the end it turns it back on or following tests will fail
         """
         reduction_viewer.views.DEVELOPMENT_MODE = False
         self.page.launch_with_session()
