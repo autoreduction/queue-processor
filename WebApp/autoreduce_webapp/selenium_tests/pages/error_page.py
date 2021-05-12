@@ -23,6 +23,16 @@ class ErrorPage(Page, NavbarMixin, FooterMixin):
         super().__init__(driver)
         self.fake_token = "r07v2h39q453928"
 
+    @staticmethod
+    def url_path() -> str:
+        """
+        This needs to be overriden because the basemethod is abstract, but it isn't used
+        because the launch method is overriden here too.
+
+        :return: (str) the url path
+        """
+        return "non-existant-url"
+
     def get_error_message(self) -> str:
         """
         Get the error message from the page
