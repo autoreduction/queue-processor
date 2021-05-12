@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
-from autoreduce_webapp import settings
+import reduction_viewer.views
+# from autoreduce_webapp import settings
 from autoreduce_webapp.icat_cache import DEFAULT_MESSAGE
 from autoreduce_webapp.view_utils import ICATConnectionException
 from selenium_tests.pages.error_page import ErrorPage
@@ -25,7 +26,7 @@ class TestErrorPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         """
         Test that the page error message matches the expected error
         """
-        settings.DEVELOPMENT_MODE = False
+        reduction_viewer.views.DEVELOPMENT_MODE = False
         self.page.launch()
         self.assertEqual(DEFAULT_MESSAGE, self.page.get_error_message())
         authenticate.assert_called_once_with(token=self.page.fake_token)
