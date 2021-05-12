@@ -19,12 +19,14 @@ from .settings import CACHE_LIFETIME
 
 LOGGER = logging.getLogger("app")
 
+DEFAULT_MESSAGE = "ISIS ICAT is currently unavailable"
+
 
 class ICATConnectionException(Exception):
     """
     Used to handle exceptions that we might expect from ICAT
     """
-    def __init__(self, message='ISIS ICAT is currently unavailable'):  # pylint:disable=useless-super-delegation
+    def __init__(self, message=DEFAULT_MESSAGE):  # pylint:disable=useless-super-delegation
         super().__init__(message)
 
 
