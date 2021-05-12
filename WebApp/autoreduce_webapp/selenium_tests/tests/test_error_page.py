@@ -1,7 +1,6 @@
 from unittest.mock import Mock, patch
 
 import reduction_viewer.views
-# from autoreduce_webapp import settings
 from autoreduce_webapp.icat_cache import DEFAULT_MESSAGE
 from autoreduce_webapp.view_utils import ICATConnectionException
 from selenium_tests.pages.error_page import ErrorPage
