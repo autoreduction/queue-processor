@@ -14,7 +14,7 @@ import os
 from unittest.mock import DEFAULT, patch
 
 from model.database import DjangoORM
-from utils.project.structure import get_project_root
+from queue_processors.queue_processor.settings import PROJECT_ROOT
 
 
 class TestDjangoORM(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestDjangoORM(unittest.TestCase):
         Test: The webapp path is not added to sys.path
         When: webapp path already exists and add_webapp_path is called
         """
-        webapp_path = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
+        webapp_path = os.path.join(PROJECT_ROOT, 'WebApp', 'autoreduce_webapp')
         sys.path.append(webapp_path)
         expected = sys.path.count(webapp_path)
         DjangoORM.add_webapp_path()
@@ -35,7 +35,7 @@ class TestDjangoORM(unittest.TestCase):
         Test: The webapp path is added to sys.path
         When: webapp path does not already exist and add_webapp_path is called
         """
-        expected = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
+        expected = os.path.join(PROJECT_ROOT, 'WebApp', 'autoreduce_webapp')
         old_sys_path = sys.path.copy()
         if expected in sys.path:
             # Remove all expected from sys.path
