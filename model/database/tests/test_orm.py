@@ -135,14 +135,14 @@ class TestDjangoORM(unittest.TestCase):
         Test that old db connections are not touched if they are usable
         """
         connection.is_usable.return_value = True
-        with patch("WebApp.autoreduce_webapp.autoreduce_webapp.settings.DATABASES") as dbmock:
+        with patch("autoreduce_db.autoreduce_db.settings.DATABASES") as dbmock:
             # mocks the dict access to the DATABASE setting
             setattr(dbmock, "__getitem__", lambda self, key: {"ENGINE": "django.db.backends.mysql"})
             DjangoORM.setup_django()
             connection.is_usable.assert_called_once()
             close_old_connections.assert_not_called()
 
-        with patch("WebApp.autoreduce_webapp.autoreduce_webapp.settings.DATABASES") as dbmock:
+        with patch("autoreduce_db.autoreduce_db.settings.DATABASES") as dbmock:
             # mocks the dict access to the DATABASE setting
             setattr(dbmock, "__getitem__", lambda self, key: {"ENGINE": "django.db.backends.sqlite3"})
             DjangoORM.setup_django()
