@@ -19,10 +19,8 @@ runs:
       run: |
         autoreduce-creds-migrate
         # Externals must be after test_settings
-        python setup.py externals -s activemq
-        PYTHONPATH=. python WebApp/autoreduce_webapp/manage.py migrate
+        docker run --name activemq -p 61613:61613 -p 8161:8161 -it rmohr/activemq
+        PYTHONPATH=. python autoreduce_qp/manage.py migrate
         cat build.log
         _LOCAL_PYTHON_PATH=$(which python)
-        sudo $_LOCAL_PYTHON_PATH setup.py start
-        python WebApp/autoreduce_webapp/manage.py collectstatic
       shell: bash
