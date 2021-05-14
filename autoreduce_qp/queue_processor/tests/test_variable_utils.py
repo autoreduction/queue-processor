@@ -21,6 +21,8 @@ from queue_processor.variable_utils import VariableUtils as vu
 
 # pylint:disable=no-member
 class TestVariableUtils(TestCase):
+    fixtures = ["status_fixture"]
+
     def setUp(self):
         self.valid_variable = Variable(name='test',
                                        value='value',

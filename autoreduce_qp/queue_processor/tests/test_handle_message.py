@@ -52,7 +52,6 @@ class FakeMessage:
     description = "This is a fake description"
 
 
-# pylint:disable=no-member
 class TestHandleMessage(TestCase):
     """
     Directly tests the message handling classes

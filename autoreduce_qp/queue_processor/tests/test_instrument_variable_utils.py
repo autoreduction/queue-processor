@@ -71,6 +71,8 @@ class FakeModule:
 
 # pylint:disable=no-member
 class TestInstrumentVariableUtils(TestCase):
+    fixtures = ["status_fixture"]
+
     def __init__(self, methodName: str) -> None:
         super().__init__(methodName=methodName)
         self.fake_script_text = "somescripttext"
