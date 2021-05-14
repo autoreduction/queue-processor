@@ -27,7 +27,7 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          pytest --ignore=systemtests --cov=autoreduce_qp --cov-report=xml autoreduce_qp
+          pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml autoreduce_qp
 
       - name: Run system tests
         run: |
