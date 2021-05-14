@@ -18,6 +18,8 @@ from django.db import close_old_connections, connection
 
 from queue_processors.queue_processor.settings import PROJECT_ROOT
 
+# pylint:disable=no-member
+
 
 class DjangoORM:
     """

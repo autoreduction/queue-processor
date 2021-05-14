@@ -14,8 +14,10 @@ from autoreduce_utils.clients.connection_exception import ConnectionException
 
 from model.database.django_database_client import DatabaseClient
 
-
 # pylint:disable=protected-access
+# pylint:disable=no-member
+
+
 class TestDatabaseClient(unittest.TestCase):
     """
     Exercises the database client
