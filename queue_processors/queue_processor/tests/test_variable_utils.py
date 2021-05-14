@@ -17,6 +17,7 @@ from model.database import access
 from queue_processors.queue_processor.variable_utils import VariableUtils as vu
 
 
+# pylint:disable=no-member
 class TestVariableUtils(unittest.TestCase):
     def setUp(self):
         self.var_model = access.start_database().variable_model
