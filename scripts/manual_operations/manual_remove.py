@@ -17,6 +17,8 @@ from model.database import access as db
 from model.database.django_database_client import DatabaseClient
 from scripts.manual_operations.util import get_run_range
 
+# pylint:disable=no-member
+
 
 class ManualRemove:
     """
