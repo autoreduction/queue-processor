@@ -92,14 +92,7 @@ jobs:
 
       - name: Pylint tests
         run: |
-          pylint build
-          pylint model
-          pylint monitors
-          pylint queue_processors
-          pylint scripts
-          pylint systemtests
-          pylint plotting
-          pylint --disable=django-not-configured,import-error,no-name-in-module --load-plugins pylint_django WebApp
+          pylint autoreduce_qp
 
       - name: YAPF
         run: python -m yapf --parallel --diff --recursive .
