@@ -67,6 +67,7 @@ class FakeModule:
             self.variable_help.update(variable_help)
 
 
+# pylint:disable=no-member
 class TestInstrumentVariableUtils(unittest.TestCase):
     def __init__(self, methodName: str) -> None:
         super().__init__(methodName=methodName)

@@ -12,7 +12,7 @@ import os
 import tempfile
 
 from django.urls import reverse
-from reduction_viewer.models import ReductionRun
+from autoreduce_db.reduction_viewer.models import ReductionRun
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.tests.base_tests import BaseTestCase, FooterTestMixin, NavbarTestMixin, \

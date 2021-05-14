@@ -17,6 +17,7 @@ from model.database.records import create_reduction_run_record
 from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 
 
+# pylint:disable=no-member
 class TestAccess(unittest.TestCase):
     """
     Test the access functionality for the database

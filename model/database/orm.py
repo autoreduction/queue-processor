@@ -18,6 +18,8 @@ from django.db import close_old_connections, connection
 
 from queue_processors.queue_processor.settings import PROJECT_ROOT
 
+# pylint:disable=no-member
+
 
 class DjangoORM:
     """
@@ -65,12 +67,17 @@ class DjangoORM:
         try:
             # import here to avoid failure without calling add_webapp_path first
             # pylint:disable=import-outside-toplevel
-            from WebApp.autoreduce_webapp.autoreduce_webapp.settings import DATABASES, ORM_INSTALL
+            from autoreduce_db.autoreduce_db.settings import DATABASES
+            if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+                DATABASES["default"]["NAME"] = f'{PROJECT_ROOT}/sqlite3.db'
 
             if not settings.configured:
                 settings.configure(
                     DATABASES=DATABASES,
-                    INSTALLED_APPS=ORM_INSTALL,
+                    INSTALLED_APPS=[
+                        "autoreduce_db.reduction_viewer",
+                        "autoreduce_db.instrument",
+                    ],
                 )
                 django.setup()
 
@@ -85,7 +92,7 @@ class DjangoORM:
         """
         if not self.data_model:
             # pylint:disable=import-outside-toplevel,import-error
-            import reduction_viewer.models as data_model
+            import autoreduce_db.reduction_viewer.models as data_model
             self.data_model = data_model
         return self.data_model
 
@@ -95,7 +102,7 @@ class DjangoORM:
         """
         if not self.variable_model:
             # pylint:disable=import-outside-toplevel,import-error
-            import instrument.models as variable_model
+            import autoreduce_db.instrument.models as variable_model
             self.variable_model = variable_model
         return self.variable_model
 

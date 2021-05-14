@@ -8,7 +8,7 @@
 # Use this to clear all objects in Experiment, Instrument and ReductionRun
 
 from autoreduce_webapp.settings import DATABASES
-from reduction_viewer.models import Experiment, Instrument, ReductionRun
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, ReductionRun
 
 if DATABASES["default"]["HOST"] != "127.0.0.1":
     raise RuntimeError("Trying to clear a DB that is not on 127.0.0.1/LOCALHOST."

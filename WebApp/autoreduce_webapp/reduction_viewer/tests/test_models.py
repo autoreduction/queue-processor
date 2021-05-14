@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Test reduction_viewer.models
+Test autoreduce_db.reduction_viewer.models
 """
 import unittest
 
@@ -14,7 +14,7 @@ from model.database.django_database_client import DjangoORM
 
 class TestModels(unittest.TestCase):
     """
-    Test reduction_viewer.models
+    Test autoreduce_db.reduction_viewer.models
     """
     def setUp(self):
         self.database = DjangoORM()

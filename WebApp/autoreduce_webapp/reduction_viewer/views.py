@@ -31,7 +31,7 @@ from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.http import url_has_allowed_host_and_scheme
-from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
+from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
 from reduction_viewer.utils import ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments, get_interactive_plot_data
 from utilities.pagination import CustomPaginator

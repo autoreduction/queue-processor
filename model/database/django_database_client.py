@@ -11,6 +11,8 @@ from autoreduce_utils.clients.connection_exception import ConnectionException
 
 from model.database import DjangoORM
 
+# pylint:disable=no-member
+
 
 class DatabaseClient:
     """

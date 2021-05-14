@@ -48,8 +48,8 @@ INTERNAL_IPS = ['localhost', '127.0.0.1']
 # Application definition
 ORM_INSTALL = [  # Minimal apps required to setup JUST the ORM - (increases ORM setup speed)
     'autoreduce_webapp',
-    'reduction_viewer',
-    'instrument',
+    'autoreduce_db.reduction_viewer',
+    'autoreduce_db.instrument',
 ]
 
 INSTALLED_APPS = [

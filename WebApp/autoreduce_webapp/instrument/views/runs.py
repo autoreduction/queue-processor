@@ -10,9 +10,9 @@ from itertools import chain
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.db.models.query import QuerySet
 from django.shortcuts import redirect
-from instrument.models import InstrumentVariable
+from autoreduce_db.instrument.models import InstrumentVariable
 
-from reduction_viewer.models import Instrument, ReductionRun
+from autoreduce_db.reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
 from utilities import input_processing
 

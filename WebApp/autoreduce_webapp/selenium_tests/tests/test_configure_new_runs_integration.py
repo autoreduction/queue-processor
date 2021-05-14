@@ -10,7 +10,7 @@ from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from selenium_tests.pages.variables_summary_page import VariableSummaryPage
 from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 
-from instrument.models import InstrumentVariable
+from autoreduce_db.instrument.models import InstrumentVariable
 from model.database import access as db
 from WebApp.autoreduce_webapp.selenium_tests.utils import \
     setup_external_services

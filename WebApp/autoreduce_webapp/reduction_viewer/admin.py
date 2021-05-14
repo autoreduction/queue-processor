@@ -8,8 +8,8 @@
 Register all the django models for reduction viewer
 """
 from django.contrib import admin
-from reduction_viewer.models import (Instrument, Experiment, Status, ReductionRun, DataLocation, ReductionLocation,
-                                     Setting, Notification)
+from autoreduce_db.reduction_viewer.models import (Instrument, Experiment, Status, ReductionRun, DataLocation,
+                                                   ReductionLocation, Setting, Notification)
 
 admin.site.register(Instrument)
 admin.site.register(Experiment)

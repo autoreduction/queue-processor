@@ -27,13 +27,13 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
+          PYTHONPATH=. pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
           --cov=scripts --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
           --cov-report=xml
 
       - name: Run system tests
         run: |
-          pytest -pno:django systemtests --cov-append
+          PYTHONPATH=. pytest -pno:django systemtests --cov-append
 
       - uses: codecov/codecov-action@v1
         with:
@@ -77,7 +77,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest WebApp/autoreduce_webapp/selenium_tests --cov-report=xml --cov=WebApp/autoreduce_webapp
+          PYTHONPATH=. pytest WebApp/autoreduce_webapp/selenium_tests --cov-report=xml --cov=WebApp/autoreduce_webapp
 
       - uses: codecov/codecov-action@v1
         with:

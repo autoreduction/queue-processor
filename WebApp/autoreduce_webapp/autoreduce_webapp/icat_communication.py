@@ -13,7 +13,7 @@ import sys
 
 import icat
 from django.utils.encoding import smart_str
-from reduction_viewer.models import Setting
+from autoreduce_db.reduction_viewer.models import Setting
 
 from .settings import ICAT, BASE_DIR
 

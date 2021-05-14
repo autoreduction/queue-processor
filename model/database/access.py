@@ -12,6 +12,8 @@ from django.db import transaction
 
 from model.database.django_database_client import DatabaseClient
 
+# pylint:disable=no-member
+
 
 def start_database():
     """

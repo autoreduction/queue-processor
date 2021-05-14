@@ -8,7 +8,7 @@
 Register models variables here
 """
 from django.contrib import admin
-from instrument.models import InstrumentVariable, RunVariable
+from autoreduce_db.instrument.models import InstrumentVariable, RunVariable
 
 # Register your models here.
 admin.site.register(InstrumentVariable)
