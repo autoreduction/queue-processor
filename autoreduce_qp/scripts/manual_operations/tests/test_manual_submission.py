@@ -7,28 +7,24 @@
 """
 Test cases for the manual job submission script
 """
-import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.clients.icat_client import ICATClient
 from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.message.message import Message
-
-import scripts.manual_operations.manual_submission as ms
-
-from queue_processor.status_utils import StatusUtils
-from model.database.django_database_client import DatabaseClient
-from scripts.manual_operations.tests.test_manual_remove import create_experiment_and_instrument, make_test_run
-
-STATUS = StatusUtils()
+from django.test import TestCase
+from scripts.manual_operations import manual_submission as ms
+from scripts.manual_operations.tests.test_manual_remove import (create_experiment_and_instrument, make_test_run)
 
 
 # pylint:disable=no-self-use
-class TestManualSubmission(unittest.TestCase):
+class TestManualSubmission(TestCase):
     """
     Test manual_submission.py
     """
+    fixtures = ["status_fixture"]
+
     def setUp(self):
         """ Creates test variables used throughout the test suite """
         self.loc_and_rb_args = [
@@ -42,11 +38,6 @@ class TestManualSubmission(unittest.TestCase):
 
         self.run1 = make_test_run(self.experiment, self.instrument, "1")
         self.run1.data_location.create(file_path='test/file/path/2.raw')
-
-    def tearDown(self) -> None:
-        self.experiment.delete()
-        self.instrument.delete()
-        self.run1.delete()
 
     def mock_database_query_result(self, side_effects):
         """ Sets the return value(s) of database queries to those provided
@@ -100,7 +91,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_database_client = Mock()
         mock_get_run.return_value = None
         self.assertIsNone(ms.get_location_and_rb_from_database(mock_database_client, 'GEM', 123))
-        mock_get_run.assert_called_once()
+        mock_get_run.assert_not_called()
 
     def test_get_from_database(self):
         """
@@ -108,9 +99,7 @@ class TestManualSubmission(unittest.TestCase):
         When: get_location_and_rb_from_database is called and the data is present
         in the database
         """
-        db_client = DatabaseClient()
-        db_client.connect()
-        actual = ms.get_location_and_rb_from_database(db_client, 'ARMI', 101)
+        actual = ms.get_location_and_rb_from_database(None, 'ARMI', 101)
         # Values from testing database
         expected = ('test/file/path/2.raw', 1231231)
         self.assertEqual(expected, actual)
@@ -214,26 +203,6 @@ class TestManualSubmission(unittest.TestCase):
         con_exp = ConnectionException('icat')
         mock_connect.side_effect = con_exp
         self.assertIsNone(ms.login_icat())
-
-    @patch('model.database.django_database_client.DatabaseClient.connect')
-    def test_database_login_valid(self, _):
-        """
-        Test: A valid Database client is returned
-        When: We can log in via the client
-        Note: We mock the connect so it does not actual perform the connect (default pass)
-        """
-        actual = ms.login_database()
-        self.assertIsInstance(actual, DatabaseClient)
-
-    @patch('model.database.django_database_client.DatabaseClient.connect')
-    def test_database_login_invalid(self, mock_connect):
-        """
-        Test: None is returned
-        When: We are unable to log in via the database client
-        """
-        con_exp = ConnectionException('MySQL')
-        mock_connect.side_effect = con_exp
-        self.assertIsNone(ms.login_database())
 
     @patch('scripts.manual_operations.manual_submission.QueueClient.connect')
     def test_queue_login_valid(self, _):

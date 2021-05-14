@@ -13,8 +13,11 @@ import sys
 
 import fire
 from django.db import IntegrityError
+from autoreduce_db.reduction_viewer.models import DataLocation, ReductionRun, ReductionLocation
+from autoreduce_db.instrument.models import RunVariable
+
 from model.database import access as db
-from model.database.django_database_client import DatabaseClient
+
 from scripts.manual_operations.util import get_run_range
 
 # pylint:disable=no-member
@@ -28,8 +31,7 @@ class ManualRemove:
         """
         :param instrument: (str) The name of the instrument associated with runs
         """
-        self.database = DatabaseClient()
-        self.database.connect()
+        self.database = object()
         self.to_delete = {}
         self.instrument = instrument
 
@@ -40,7 +42,7 @@ class ManualRemove:
         :return: (QuerySet) The result of the query
         """
         instrument_record = db.get_instrument(self.instrument)
-        result = self.database.data_model.ReductionRun.objects \
+        result = ReductionRun.objects \
             .filter(instrument=instrument_record.id) \
             .filter(run_number=run_number) \
             .order_by('-created')
@@ -119,18 +121,14 @@ class ManualRemove:
         Delete a ReductionLocation record from the database
         :param reduction_run_id: (int) The id of the associated reduction job
         """
-        self.database.data_model.ReductionLocation.objects \
-            .filter(reduction_run_id=reduction_run_id) \
-            .delete()
+        ReductionLocation.objects.filter(reduction_run_id=reduction_run_id).delete()
 
     def delete_data_location(self, reduction_run_id):
         """
         Delete a DataLocation record from the database
         :param reduction_run_id: (int) The id of the associated reduction job
         """
-        self.database.data_model.DataLocation.objects \
-            .filter(reduction_run_id=reduction_run_id) \
-            .delete()
+        DataLocation.objects.filter(reduction_run_id=reduction_run_id).delete()
 
     def delete_variables(self, reduction_run_id):
         """
@@ -139,9 +137,7 @@ class ManualRemove:
         """
         run_variables = self.find_variables_of_reduction(reduction_run_id)
         for record in run_variables:
-            self.database.variable_model.RunVariable.objects \
-                .filter(variable_ptr_id=record.variable_ptr_id) \
-                .delete()
+            RunVariable.objects.filter(variable_ptr_id=record.variable_ptr_id).delete()
 
     def find_variables_of_reduction(self, reduction_run_id):
         """
@@ -149,17 +145,14 @@ class ManualRemove:
         :param reduction_run_id: (int) The id of the reduction job to filter by
         :return: (QuerySet) of the associated RunVariables
         """
-        return self.database.variable_model.RunVariable.objects \
-            .filter(reduction_run_id=reduction_run_id)
+        return RunVariable.objects.filter(reduction_run_id=reduction_run_id)
 
     def delete_reduction_run(self, reduction_run_id):
         """
         Delete a ReductionRun record from the database
         :param reduction_run_id: (int) The id of the associated reduction job
         """
-        self.database.data_model.ReductionRun.objects \
-            .filter(id=reduction_run_id) \
-            .delete()
+        ReductionRun.objects.filter(id=reduction_run_id).delete()
 
     @staticmethod
     def validate_csv_input(user_input):

@@ -13,14 +13,14 @@ import sys
 
 import fire
 
+from autoreduce_db.reduction_viewer.models import ReductionRun
+
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.clients.icat_client import ICATClient
 from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.clients.tools.isisicat_prefix_mapping import get_icat_instrument_prefix
 from autoreduce_utils.message.message import Message
 
-from model.database import access as db
-from model.database.django_database_client import DatabaseClient
 from scripts.manual_operations.util import get_run_range
 
 
@@ -49,6 +49,7 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
 
 def get_location_and_rb_from_database(database_client, instrument, run_number):
     """
+    TODO: remove database_client parameter
     Retrieves a run's data-file location and rb_number from the auto-reduction database
     :param database_client: Client to access auto-reduction database
     :param instrument: (str) the name of the instrument associated with the run
@@ -56,11 +57,7 @@ def get_location_and_rb_from_database(database_client, instrument, run_number):
     :return: The data file location and rb_number, or None if this information is not
     in the database
     """
-    if database_client is None:
-        print("Database not connected")
-        return None
-
-    all_reduction_run_records = db.get_reduction_run(instrument, run_number)
+    all_reduction_run_records = ReductionRun.objects.filter(instrument__name=instrument, run_number=run_number)
 
     if not all_reduction_run_records:
         return None

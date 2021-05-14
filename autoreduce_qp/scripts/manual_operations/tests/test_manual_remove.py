@@ -8,33 +8,30 @@
 Test cases for the manual job submission script
 """
 import builtins
-import unittest
 from unittest.mock import DEFAULT, Mock, call, patch
 
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Status
 from django.db import IntegrityError
+from django.test import TestCase
 
-from model.database import access
 from model.database.records import create_reduction_run_record
-from queue_processor.status_utils import StatusUtils
 from queue_processor.tests.test_handle_message import FakeMessage
 from scripts.manual_operations.manual_remove import (ManualRemove, main, remove, user_input_check)
 
-STATUS = StatusUtils()
+# pylint:disable=no-member
 
 
 def create_experiment_and_instrument():
     "Creates a test experiment and instrument"
-    db_handle = access.start_database()
-    data_model = db_handle.data_model
 
-    experiment, _ = data_model.Experiment.objects.get_or_create(reference_number=1231231)
-    instrument, _ = data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+    experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
+    instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
     return experiment, instrument
 
 
 def make_test_run(experiment, instrument, run_version: str):
     "Creates a test run and saves it to the database"
-    status = STATUS.get_queued()
+    status = Status.get_queued()
     fake_script_text = "scripttext"
     msg1 = FakeMessage()
     msg1.run_number = 101
@@ -43,30 +40,21 @@ def make_test_run(experiment, instrument, run_version: str):
     return run
 
 
-class TestManualRemove(unittest.TestCase):
+class TestManualRemove(TestCase):
     """
     Test manual_remove.py
     """
+    fixtures = ["status_fixture"]
+
     def setUp(self):
         self.manual_remove = ManualRemove(instrument='ARMI')
         # Setup database connection so it is possible to use
         # ReductionRun objects with valid meta data
-        db_handle = access.start_database()
-        self.data_model = db_handle.data_model
-        self.variable_model = db_handle.variable_model
-
         self.experiment, self.instrument = create_experiment_and_instrument()
 
         self.run1 = make_test_run(self.experiment, self.instrument, "1")
         self.run2 = make_test_run(self.experiment, self.instrument, "2")
         self.run3 = make_test_run(self.experiment, self.instrument, "3")
-
-    def tearDown(self) -> None:
-        self.experiment.delete()
-        self.instrument.delete()
-        self.run1.delete()
-        self.run2.delete()
-        self.run3.delete()
 
     @staticmethod
     def _run_variable(reduction_run_id=None, variable_ptr_id=None):
@@ -351,32 +339,27 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct query is run and associated records are removed
         When: Calling delete_data_location
         """
-        mock_data_model = Mock()
-        self.manual_remove.database.data_model = mock_data_model
-        self.manual_remove.delete_data_location(123)
-        mock_data_model.DataLocation.objects.filter.\
-            assert_called_once_with(reduction_run_id=123)
+        with patch('scripts.manual_operations.manual_remove.DataLocation') as data_location:
+            self.manual_remove.delete_data_location(123)
+            data_location.objects.filter.assert_called_once_with(reduction_run_id=123)
 
     def test_delete_reduction_location(self):
         """
         Test: The correct query is run and associated records are removed
         When: Calling delete_reduction_location
         """
-        mock_data_model = Mock()
-        self.manual_remove.database.data_model = mock_data_model
-        self.manual_remove.delete_reduction_location(123)
-        mock_data_model.ReductionLocation.objects.filter.\
-            assert_called_once_with(reduction_run_id=123)
+        with patch('scripts.manual_operations.manual_remove.ReductionLocation') as red_location:
+            self.manual_remove.delete_reduction_location(123)
+            red_location.objects.filter.assert_called_once_with(reduction_run_id=123)
 
     def test_delete_reduction_run_location(self):
         """
         Test: The correct query is run and associated records are removed
         When: Calling delete_reduction_run_location
         """
-        mock_data_model = Mock()
-        self.manual_remove.database.data_model = mock_data_model
-        self.manual_remove.delete_reduction_run(123)
-        mock_data_model.ReductionRun.objects.filter.assert_called_once_with(id=123)
+        with patch('scripts.manual_operations.manual_remove.ReductionRun') as red_run:
+            self.manual_remove.delete_reduction_run(123)
+            red_run.objects.filter.assert_called_once_with(id=123)
 
     def test_delete_records(self):
         """
@@ -418,11 +401,9 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct query is run
         When: Calling find_variables_of_reduction
         """
-        mock_variable_model = Mock()
-        self.manual_remove.database.variable_model = mock_variable_model
-        self.manual_remove.find_variables_of_reduction(123)
-        mock_variable_model.RunVariable.objects.filter \
-            .assert_called_once_with(reduction_run_id=123)
+        with patch('scripts.manual_operations.manual_remove.RunVariable') as run_variable:
+            self.manual_remove.find_variables_of_reduction(123)
+            run_variable.objects.filter.assert_called_once_with(reduction_run_id=123)
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_variables_of_reduction')
     def test_delete_variables(self, mock_find_vars):
@@ -432,13 +413,13 @@ class TestManualRemove(unittest.TestCase):
         """
         mock_run_variables = [self._run_variable(variable_ptr_id=3), self._run_variable(variable_ptr_id=5)]
         mock_find_vars.return_value = mock_run_variables
-        mock_variable_model = Mock()
-        self.manual_remove.database.variable_model = mock_variable_model
-        self.manual_remove.delete_variables(20)
-        mock_find_vars.assert_called_once_with(20)
-        mock_variable_model.RunVariable.objects.filter \
-            .assert_has_calls(([call(variable_ptr_id=3), call().delete(),
-                                call(variable_ptr_id=5), call().delete()]))
+        with patch('scripts.manual_operations.manual_remove.RunVariable') as run_variable:
+            self.manual_remove.delete_variables(20)
+            mock_find_vars.assert_called_once_with(20)
+            run_variable.objects.filter.assert_has_calls(
+                ([call(variable_ptr_id=3),
+                  call().delete(), call(variable_ptr_id=5),
+                  call().delete()]))
 
     def test_user_input_check(self):
         """

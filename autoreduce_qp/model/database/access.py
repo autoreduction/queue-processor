@@ -10,19 +10,10 @@ Common functions for accessing and creating records in the database
 from typing import List
 from django.db import transaction
 
-from model.database.django_database_client import DatabaseClient
+from autoreduce_db.instrument.models import Instrument, ReductionRun
+from autoreduce_db.reduction_viewer.models import Software, Status, Experiment
 
 # pylint:disable=no-member
-
-
-def start_database():
-    """
-    Create and connect a database client
-    :return: The connected database client
-    """
-    database = DatabaseClient()
-    database.connect()
-    return database
 
 
 @transaction.atomic
@@ -32,8 +23,7 @@ def get_instrument(instrument_name):
     :param instrument_name: (str) The name of the instrument to search for
     :return: (Instrument) The instrument object from the database
     """
-    database = start_database()
-    instrument, _ = database.data_model.Instrument.objects.get_or_create(name=instrument_name)
+    instrument, _ = Instrument.objects.get_or_create(name=instrument_name)
     return instrument
 
 
@@ -43,9 +33,8 @@ def is_instrument_flat_output(instrument_name: str) -> bool:
     :param instrument_name: (str) The name of the instrument
     :return: (bool) True if flat instrument, False otherwise
     """
-    database = start_database()
 
-    return database.data_model.Instrument.objects.filter(name=instrument_name).first().is_flat_output
+    return Instrument.objects.filter(name=instrument_name).first().is_flat_output
 
 
 def get_all_instrument_names() -> List[str]:
@@ -53,8 +42,7 @@ def get_all_instrument_names() -> List[str]:
     Return the names of all instruments in the database
     :return: (List) instrument names from database
     """
-    database = start_database()
-    return list(database.data_model.Instrument.objects.values_list("name", flat=True))
+    return list(Instrument.objects.values_list("name", flat=True))
 
 
 @transaction.atomic
@@ -69,8 +57,7 @@ def get_status(status_value: str):
     if status_value not in ['e', 'q', 'p', 'c', 's']:
         raise ValueError("Invalid status value passed")
 
-    database = start_database()
-    return database.data_model.Status.objects.get_or_create(value=status_value)[0]
+    return Status.objects.get_or_create(value=status_value)[0]
 
 
 @transaction.atomic
@@ -80,8 +67,7 @@ def get_experiment(rb_number):
     :param rb_number: (str) The rb_number of the Experiment record e.g. 12345
     :return: (Experiment) The Experiment object from the database
     """
-    database = start_database()
-    return database.data_model.Experiment.objects.get_or_create(reference_number=rb_number)[0]
+    return Experiment.objects.get_or_create(reference_number=rb_number)[0]
 
 
 @transaction.atomic
@@ -93,12 +79,11 @@ def get_software(name, version):
     :param create: (bool) If True, then create the record if it does not exist
     :return: (Software) The Software object from the database
     """
-    database = start_database()
     if not version:
         # Hard-code a version if not provided unitl
         # https://autoreduce.atlassian.net/browse/AR-1230 is addressed
         version = "6"
-    return database.data_model.Software.objects.get_or_create(name=name, version=version)[0]
+    return Software.objects.get_or_create(name=name, version=version)[0]
 
 
 def get_reduction_run(instrument, run_number):
@@ -110,9 +95,8 @@ def get_reduction_run(instrument, run_number):
 
     Note: The query set could contain multiple records or None
     """
-    database = start_database()
     instrument_record = get_instrument(instrument)
-    return database.data_model.ReductionRun.objects.filter(instrument=instrument_record.id, run_number=run_number)
+    return ReductionRun.objects.filter(instrument=instrument_record.id, run_number=run_number)
 
 
 def find_highest_run_version(experiment, run_number) -> int:
@@ -137,7 +121,3 @@ def save_record(record):
     Note: This is mostly a wrapper to aid unit testing
     """
     record.save()
-
-
-# Initialises the DjangoORM immediately on importing this module
-start_database()

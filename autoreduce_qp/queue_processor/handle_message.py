@@ -15,15 +15,16 @@ update relevant DB fields or logging out the status.
 import logging
 from contextlib import contextmanager
 from typing import Optional
+from autoreduce_db.reduction_viewer.models import Status
 from django.db import transaction
 from django.utils import timezone
 
+from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation
 from autoreduce_utils.message.message import Message
 
 import model.database.records as db_records
 from model.database import access as db_access
 from queue_processor.instrument_variable_utils import InstrumentVariablesUtils
-from queue_processor.status_utils import StatusUtils
 from queue_processor.variable_utils import VariableUtils
 from queue_processor.reduction.process_manager import ReductionProcessManager
 from queue_processor.reduction.service import ReductionScript
@@ -35,7 +36,6 @@ class HandleMessage:
     stages depending on the message contents.
     """
     def __init__(self):
-        self.status = StatusUtils()
         self.instrument_variable = InstrumentVariablesUtils()
 
         self._logger = logging.getLogger("handle_queue_message")
@@ -47,16 +47,13 @@ class HandleMessage:
         """
         Starts a connection to the database
         """
-        self.database = db_access.start_database()
-        self.data_model = self.database.data_model
+        pass
 
     def disconnect(self):
         """
         Disconnects from the database
         """
-        self.database.disconnect()
-        self.database = None
-        self.data_model = None
+        pass
 
     @contextmanager
     def connected(self):
@@ -130,14 +127,14 @@ class HandleMessage:
                                                                message=message,
                                                                run_version=message.run_version,
                                                                script_text=script_text,
-                                                               status=self.status.get_queued(),
+                                                               status=Status.get_queued(),
                                                                db_handle=self.database)
         reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs")
-        data_location = self.data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
+        data_location = DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
         data_location.save()
 
         return reduction_run, message, instrument
@@ -223,7 +220,7 @@ class HandleMessage:
         Called when the run is ready to start. Updates the run as started/processing in the database.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
-        reduction_run.status = self.status.get_processing()
+        reduction_run.status = Status.get_processing()
         reduction_run.started = timezone.now()
         reduction_run.save()
 
@@ -234,13 +231,12 @@ class HandleMessage:
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
 
-        self._common_reduction_run_update(reduction_run, self.status.get_completed(), message)
+        self._common_reduction_run_update(reduction_run, Status.get_completed(), message)
 
         reduction_run.software = db_access.get_software("Mantid", message.software)
 
         if message.reduction_data is not None:
-            reduction_location = self.data_model.ReductionLocation(file_path=message.reduction_data,
-                                                                   reduction_run=reduction_run)
+            reduction_location = ReductionLocation(file_path=message.reduction_data, reduction_run=reduction_run)
             reduction_location.save()
         reduction_run.save()
 
@@ -254,7 +250,7 @@ class HandleMessage:
         else:
             self._logger.info("Run %s has been skipped - No error message was found", message.run_number)
 
-        self._common_reduction_run_update(reduction_run, self.status.get_skipped(), message)
+        self._common_reduction_run_update(reduction_run, Status.get_skipped(), message)
         reduction_run.save()
 
     def reduction_error(self, reduction_run, message: Message):
@@ -266,7 +262,7 @@ class HandleMessage:
         else:
             self._logger.info("Run %s has encountered an error - No error message was found", message.run_number)
 
-        self._common_reduction_run_update(reduction_run, self.status.get_error(), message)
+        self._common_reduction_run_update(reduction_run, Status.get_error(), message)
         reduction_run.save()
 
     @staticmethod
