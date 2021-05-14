@@ -16,6 +16,8 @@ from unittest.mock import DEFAULT, patch
 from model.database import DjangoORM
 from queue_processors.queue_processor.settings import PROJECT_ROOT
 
+# pylint:disable=no-member
+
 
 class TestDjangoORM(unittest.TestCase):
     def test_add_webapp_path_already_exist(self):
