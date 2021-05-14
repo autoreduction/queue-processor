@@ -20,7 +20,8 @@ runs:
         autoreduce-creds-migrate
         # Externals must be after test_settings
         python setup.py externals -s activemq
-        python setup.py database
+        PYTHONPATH=. python WebApp/autoreduce_webapp/manage.py migrate
+        PYTHONPATH=. python WebApp/autoreduce_webapp/manage.py loaddata super_user_fixture status_fixture run_with_one_variable
         cat build.log
         _LOCAL_PYTHON_PATH=$(which python)
         sudo $_LOCAL_PYTHON_PATH setup.py start
