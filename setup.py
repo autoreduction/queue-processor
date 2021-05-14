@@ -16,6 +16,7 @@ from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
 setup_requires = [
+    'autoreduce_db==0.1.1',
     'autoreduce_utils==0.1.2',
     'attrs==21.2.0',
     'dash==1.20.0',

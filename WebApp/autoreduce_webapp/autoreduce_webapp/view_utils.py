@@ -13,8 +13,8 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest
 from django.shortcuts import redirect
 from django.shortcuts import render
-from reduction_viewer.models import Notification, Setting
-from reduction_viewer.models import ReductionRun, Experiment
+from autoreduce_db.reduction_viewer.models import Notification, Setting
+from autoreduce_db.reduction_viewer.models import ReductionRun, Experiment
 
 from .views import render_error
 from .icat_cache import ICATCache, ICATConnectionException

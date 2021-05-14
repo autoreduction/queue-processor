@@ -12,8 +12,8 @@ import logging
 
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.shortcuts import redirect, render
-from instrument.models import InstrumentVariable
-from reduction_viewer.models import Instrument, ReductionRun
+from autoreduce_db.instrument.models import InstrumentVariable
+from autoreduce_db.reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
 
 from queue_processors.queue_processor.variable_utils import VariableUtils

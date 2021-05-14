@@ -11,7 +11,7 @@ from django.http import HttpRequest
 from django.shortcuts import render
 from django.template import RequestContext
 
-from reduction_viewer.models import Setting
+from autoreduce_db.reduction_viewer.models import Setting
 
 # pylint: disable=unused-argument
 

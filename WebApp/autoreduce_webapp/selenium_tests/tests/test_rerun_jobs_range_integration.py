@@ -6,7 +6,7 @@
 # ############################################################################### #
 
 from django.urls import reverse
-from instrument.models import InstrumentVariable
+from autoreduce_db.instrument.models import InstrumentVariable
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.pages.runs_list_page import RunsListPage

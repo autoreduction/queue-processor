@@ -7,7 +7,7 @@
 
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid)
 from django.http.response import JsonResponse
-from reduction_viewer.models import Instrument
+from autoreduce_db.reduction_viewer.models import Instrument
 
 
 @login_and_uows_valid
