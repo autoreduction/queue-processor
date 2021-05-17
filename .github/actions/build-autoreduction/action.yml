@@ -19,7 +19,7 @@ runs:
       run: |
         autoreduce-creds-migrate
         # Externals must be after test_settings
-        docker run --name activemq -p 61613:61613 -p 8161:8161 -d rmohr/activemq
+        docker run --rm --name activemq -p 61613:61613 -p 8161:8161 -d rmohr/activemq
         PYTHONPATH=. python autoreduce_qp/manage.py migrate
         cat build.log
         _LOCAL_PYTHON_PATH=$(which python)
