@@ -160,7 +160,19 @@ class TestEndToEnd(TransactionTestCase):
                 break
 
         # Get Result from database
-        results = self._find_run_in_database()
+        def retry(action, times=5):
+            attempt = 0
+            result = None
+            while attempt != times:
+                attempt += 1
+                result = action()
+                if len(result) != 0:
+                    return result
+                elif attempt == times:
+                    pass
+                time.sleep(5)
+                    
+        results = retry(self._find_run_in_database, 5)
 
         assert results
         return results
@@ -180,26 +192,13 @@ class TestEndToEnd(TransactionTestCase):
         Test: Listener is still listening
         When: ActiveMQ has started after stopping
         """
-        def retry(action, times=5):
-            attempt = 0
-            result = None
-            while attempt != times:
-                attempt += 1
-                try:
-                    result = action()
-                    return result
-                except ConnectFailedException:
-                    if attempt == times:
-                        raise
-                    time.sleep(3)
-
         self._stop_activemq()
         self._start_activemq()
 
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
         self.data_ready_message.data = file_location
 
-        results = retry(partial(self.send_and_wait_for_result, self.data_ready_message), 5)
+        self.send_and_wait_for_result(self.data_ready_message)
 
         assert results is not None
         assert len(results) == 1
