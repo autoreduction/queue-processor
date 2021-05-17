@@ -15,20 +15,19 @@ import time
 from pathlib import Path
 from typing import Union
 
-from parameterized.parameterized import parameterized
-
-from django.test import TestCase
-
-from autoreduce_utils.message.message import Message
 from autoreduce_utils.clients.connection_exception import ConnectionException
-
-from build.settings import ACTIVEMQ_EXECUTABLE
+from autoreduce_utils.message.message import Message
+from django.test import TransactionTestCase
 from model.database import access as db
-from model.database.django_database_client import DatabaseClient
+from parameterized.parameterized import parameterized
 from queue_processor.queue_listener import main
 from queue_processor.settings import MANTID_PATH, PROJECT_ROOT
 from scripts.manual_operations import manual_remove as remove
+
 from systemtests.utils.data_archive import DataArchive
+
+ACTIVEMQ_EXECUTABLE = os.path.join('/opt/autoreduce_deps/activemq', 'apache-activemq-5.15.9', 'bin', 'activemq')
+
 
 REDUCE_SCRIPT = \
     'def main(input_file, output_dir):\n' \
@@ -53,15 +52,14 @@ __version__ = "5.1.0"
 """
 
 
-class TestEndToEnd(TestCase):
+class TestEndToEnd(TransactionTestCase):
     """ Class to test pipelines in autoreduction"""
     DIR = "queue_processor.reduction"
+    fixtures = ["status_fixture"]
 
     def setUp(self):
         """ Start all external services """
         # Get all clients
-        self.database_client = DatabaseClient()
-        self.database_client.connect()
         try:
             self.queue_client, self.listener = main()
         except ConnectionException as err:
@@ -99,7 +97,6 @@ class TestEndToEnd(TestCase):
     def tearDown(self):
         """ Disconnect from services, stop external services and delete data archive """
         self.queue_client.disconnect()
-        self.database_client.disconnect()
         self._remove_run_from_database(self.instrument, self.run_number)
         self.data_archive.delete()
 
@@ -168,11 +165,13 @@ class TestEndToEnd(TestCase):
 
     @staticmethod
     def _start_activemq():
-        subprocess.Popen([ACTIVEMQ_EXECUTABLE, "start"]).wait(timeout=60)
+        subprocess.Popen(
+            ["docker", "run", "--name", "activemq", "-p", "61613:61613", "-p", "8161:8161", "-d",
+             "rmohr/activemq"]).wait(timeout=60)
 
     @staticmethod
     def _stop_activemq():
-        subprocess.Popen([ACTIVEMQ_EXECUTABLE, "stop"]).wait(timeout=60)
+        subprocess.Popen(["docker", "kill", "activemq"]).wait(timeout=60)
 
     def test_reconnect_on_activemq_failure(self):
         """

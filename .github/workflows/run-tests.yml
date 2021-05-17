@@ -31,7 +31,7 @@ jobs:
 
       - name: Run system tests
         run: |
-          pytest systemtests --cov-append
+          pytest autoreduce_qp/systemtests --cov-append
 
       - uses: codecov/codecov-action@v1
         with:
