@@ -12,19 +12,21 @@ import os
 import shutil
 import subprocess
 import time
+from functools import partial
 from pathlib import Path
 from typing import Union
 
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from django.test import TransactionTestCase
-from model.database import access as db
 from parameterized.parameterized import parameterized
+from stomp.connect import ConnectFailedException
+
 from queue_processor.queue_listener import main
 from queue_processor.settings import MANTID_PATH, PROJECT_ROOT
-from scripts.manual_operations import manual_remove as remove
-
 from systemtests.utils.data_archive import DataArchive
+from scripts.manual_operations import manual_remove as remove
+from model.database import access as db
 
 ACTIVEMQ_EXECUTABLE = os.path.join('/opt/autoreduce_deps/activemq', 'apache-activemq-5.15.9', 'bin', 'activemq')
 
@@ -178,14 +180,29 @@ class TestEndToEnd(TransactionTestCase):
         Test: Listener is still listening
         When: ActiveMQ has started after stopping
         """
+        def retry(action, times=5):
+            attempt = 0
+            result = None
+            while attempt != times:
+                attempt += 1
+                try:
+                    result = action()
+                    return result
+                except ConnectFailedException:
+                    if attempt == times:
+                        raise
+                    time.sleep(1)
+
         self._stop_activemq()
         self._start_activemq()
 
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
         self.data_ready_message.data = file_location
 
-        results = self.send_and_wait_for_result(self.data_ready_message)
-        self.assertEqual(1, len(results))
+        results = retry(partial(self.send_and_wait_for_result, self.data_ready_message), 5)
+
+        assert results is not None
+        assert len(results) == 1
 
     @parameterized.expand([
         [222, 222],
