@@ -18,7 +18,7 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.core.exceptions import ObjectDoesNotExist
 
-from model.database import access as db
+from autoreduce_db.instrument.models import InstrumentVariable
 
 from queue_processor.variable_utils import VariableUtils
 from queue_processor.reduction.service import ReductionScript
@@ -39,9 +39,6 @@ def _replace_special_chars(help_text):
 
 class InstrumentVariablesUtils:
     """ Class used to parse and process instrument reduction variables. """
-    def __init__(self) -> None:
-        self.model = db.start_database()
-
     @transaction.atomic
     def create_run_variables(self, reduction_run, message_reduction_arguments: dict = None) -> List:
         """
@@ -65,13 +62,12 @@ class InstrumentVariablesUtils:
             message_reduction_arguments = {}
         instrument_name = reduction_run.instrument.name
 
-        model = self.model.variable_model
         experiment_reference = reduction_run.experiment.reference_number
         run_number = reduction_run.run_number
         instrument_id = reduction_run.instrument.id
-        possible_variables = model.InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
-                                                                     | Q(start_run__lte=run_number),
-                                                                     instrument_id=instrument_id)
+        possible_variables = InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
+                                                               | Q(start_run__lte=run_number),
+                                                               instrument_id=instrument_id)
 
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
         reduce_vars_module = reduce_vars.load()

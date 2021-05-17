@@ -18,21 +18,6 @@ class TestDatabaseRecords(TestCase):
     """
     Tests the Record helpers for the ORM layer
     """
-    @staticmethod
-    @mock.patch("model.database.access")
-    def test_create_reduction_record_starts_db(db_layer):
-        """
-        Test: The correct DB accesses are made
-        When: Creating the reduction record
-        """
-        # We do not actually care about what was passed in for this test
-        arg = mock.NonCallableMock()
-        records.create_reduction_run_record(arg, arg, arg, arg, arg, arg)
-
-        db_layer.start_database.assert_called_once()
-        db_layer.start_database.return_value.data_model\
-            .ReductionRun.assert_called_once()
-
     @mock.patch("model.database.records.timezone")
     def test_create_reduction_record_forwards_correctly(self, timezone_mock):
         """
@@ -50,7 +35,7 @@ class TestDatabaseRecords(TestCase):
         mock_script_text = mock.NonCallableMock()
         mock_status = mock.NonCallableMock()
 
-        with mock.patch("model.database") as db_layer:
+        with mock.patch("model.database.records.ReductionRun") as reduction_run:
             returned = records.create_reduction_run_record(experiment=mock_experiment,
                                                            instrument=mock_inst,
                                                            message=mock_msg,
@@ -58,23 +43,21 @@ class TestDatabaseRecords(TestCase):
                                                            script_text=mock_script_text,
                                                            status=mock_status)
 
-            mock_record_orm = db_layer.access.start_database.return_value.data_model
+            self.assertEqual(reduction_run.return_value, returned)
 
-        self.assertEqual(mock_record_orm.ReductionRun.return_value, returned)
-
-        mock_record_orm.ReductionRun.assert_called_once_with(
-            run_number=mock_msg.run_number,
-            run_version=mock_run_version,
-            created=timezone_mock.now.return_value,
-            last_updated=timezone_mock.now.return_value,
-            experiment=mock_experiment,
-            instrument=mock_inst,
-            status_id=mock_status.id,
-            script=mock_script_text,
-            started_by=mock_msg.started_by,
-            # Hardcoded below
-            run_description=mock.ANY,
-            hidden_in_failviewer=mock.ANY,
-            admin_log=mock.ANY,
-            reduction_log=mock.ANY,
-            reduction_host=socket.getfqdn())
+            reduction_run.assert_called_once_with(
+                run_number=mock_msg.run_number,
+                run_version=mock_run_version,
+                created=timezone_mock.now.return_value,
+                last_updated=timezone_mock.now.return_value,
+                experiment=mock_experiment,
+                instrument=mock_inst,
+                status_id=mock_status.id,
+                script=mock_script_text,
+                started_by=mock_msg.started_by,
+                # Hardcoded below
+                run_description=mock.ANY,
+                hidden_in_failviewer=mock.ANY,
+                admin_log=mock.ANY,
+                reduction_log=mock.ANY,
+                reduction_host=socket.getfqdn())

@@ -7,10 +7,10 @@
 """
 Unit tests to exercise the code responsible for common database access methods
 """
-import unittest
+from unittest.mock import Mock
+from django.test import TestCase
 
-from unittest.mock import patch, Mock
-
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument
 from model.database import access
 from model.database.access import get_all_instrument_names, is_instrument_flat_output
 from model.database.records import create_reduction_run_record
@@ -18,23 +18,10 @@ from queue_processor.tests.test_handle_message import FakeMessage
 
 
 # pylint:disable=no-member
-class TestAccess(unittest.TestCase):
+class TestAccess(TestCase):
     """
     Test the access functionality for the database
     """
-    def setUp(self) -> None:
-        self.database = access.start_database()
-
-    # pylint:disable=no-self-use
-    @patch('model.database.access.DatabaseClient.connect')
-    def test_start_database(self, mock_connect):
-        """
-        Test: The database is initialised
-        When:  start_database is called
-        """
-        access.start_database()
-        mock_connect.assert_called_once()
-
     def test_get_instrument_valid(self):
         """
         Test: The correct instrument object is returned
@@ -48,7 +35,7 @@ class TestAccess(unittest.TestCase):
         """
         Test: Correct instument names returned
         """
-        instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
 
         self.assertEqual(["ARMI"], get_all_instrument_names())
 
@@ -58,15 +45,15 @@ class TestAccess(unittest.TestCase):
         """
         Test: returns true for flat, False otherwise
         """
-        flat_instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="flat_instrument",
-                                                                                       is_active=1,
-                                                                                       is_paused=0,
-                                                                                       is_flat_output=1)
+        flat_instrument, _ = Instrument.objects.get_or_create(name="flat_instrument",
+                                                              is_active=1,
+                                                              is_paused=0,
+                                                              is_flat_output=1)
 
-        non_flat_instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="non_flat_instrument",
-                                                                                           is_active=1,
-                                                                                           is_paused=1,
-                                                                                           is_flat_output=0)
+        non_flat_instrument, _ = Instrument.objects.get_or_create(name="non_flat_instrument",
+                                                                  is_active=1,
+                                                                  is_paused=1,
+                                                                  is_flat_output=0)
 
         self.assertTrue(is_instrument_flat_output("flat_instrument"))
         self.assertFalse(is_instrument_flat_output("non_flat_instrument"))
@@ -98,7 +85,7 @@ class TestAccess(unittest.TestCase):
         When: get_experiment is called with create option True
         """
         actual = access.get_experiment(rb_number=9999999)
-        self.assertIsInstance(actual, self.database.data_model.Experiment)
+        self.assertIsInstance(actual, Experiment)
         actual.delete()
 
     def test_get_software(self):
@@ -118,8 +105,8 @@ class TestAccess(unittest.TestCase):
         Test: A ReductionRun record is returned
         When: get_reduction_run is called with values that match a database record
         """
-        experiment, _ = self.database.data_model.Experiment.objects.get_or_create(reference_number=1231231)
-        instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
+        instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
         status = access.get_status("q")
         fake_script_text = "scripttext"
         reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
@@ -145,8 +132,8 @@ class TestAccess(unittest.TestCase):
         When: Calling find_highest_run_version
         """
 
-        experiment, _ = self.database.data_model.Experiment.objects.get_or_create(reference_number=1231231)
-        instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
+        instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
         status = access.get_status("q")
         fake_script_text = "scripttext"
         reduction_run_v0 = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text,

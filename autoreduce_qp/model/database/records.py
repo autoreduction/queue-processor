@@ -17,6 +17,8 @@ from autoreduce_db.instrument.models import ReductionRun
 
 def create_reduction_run_record(experiment, instrument, message, run_version, script_text, status, db_handle=None):
     """
+    TODO: Remove db_handle
+
     Creates an ORM record for the given reduction run and returns
     this record without saving it to the DB
     """

@@ -91,7 +91,6 @@ class TestQueueListener(TestCase):
         self.mocked_logger.info.assert_called_once()
         self.mocked_client.ack.assert_called_once_with(self.headers["message-id"], self.headers["subscription"])
         self.mocked_handler.data_ready.assert_called_once()
-        self.mocked_handler.connected.assert_called_once()
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
     def test_on_message_handler_catches_exceptions(self):

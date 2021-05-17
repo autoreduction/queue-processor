@@ -40,32 +40,6 @@ class HandleMessage:
 
         self._logger = logging.getLogger("handle_queue_message")
 
-        self.database = None
-        self.data_model = None
-
-    def connect(self):
-        """
-        Starts a connection to the database
-        """
-        pass
-
-    def disconnect(self):
-        """
-        Disconnects from the database
-        """
-        pass
-
-    @contextmanager
-    def connected(self):
-        """
-        Context manager for the connection state to the DB
-        """
-        self.connect()
-        try:
-            yield
-        finally:
-            self.disconnect()
-
     def data_ready(self, message: Message):
         """
         Called when destination queue was data_ready.
@@ -127,8 +101,7 @@ class HandleMessage:
                                                                message=message,
                                                                run_version=message.run_version,
                                                                script_text=script_text,
-                                                               status=Status.get_queued(),
-                                                               db_handle=self.database)
+                                                               status=Status.get_queued())
         reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current

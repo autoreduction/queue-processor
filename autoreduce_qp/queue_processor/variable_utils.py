@@ -11,9 +11,8 @@ import re
 import logging
 from typing import Dict, List
 
-from autoreduce_db.instrument.models import Variable
+from autoreduce_db.instrument.models import Variable, RunVariable
 
-from model.database import access
 from queue_processor.reduction.service import ReductionScript
 
 
@@ -21,11 +20,10 @@ class VariableUtils:
     @staticmethod
     def save_run_variables(variables, reduction_run):
         """ Save reduction run variables in the database. """
-        model = access.start_database().variable_model
         logging.info('Saving run variables for %s', str(reduction_run.run_number))
         run_variables = []
         for variable in variables:
-            run_var = model.RunVariable(variable=variable, reduction_run=reduction_run)
+            run_var = RunVariable(variable=variable, reduction_run=reduction_run)
             run_var.save()
             run_variables.append(run_var)
         return run_variables
