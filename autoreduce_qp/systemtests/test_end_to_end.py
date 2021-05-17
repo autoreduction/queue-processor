@@ -191,7 +191,7 @@ class TestEndToEnd(TransactionTestCase):
                 except ConnectFailedException:
                     if attempt == times:
                         raise
-                    time.sleep(1)
+                    time.sleep(3)
 
         self._stop_activemq()
         self._start_activemq()
