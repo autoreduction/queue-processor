@@ -29,6 +29,9 @@ jobs:
         run: >-
           pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml autoreduce_qp
 
+      - name: Print docker containers
+        run: docker ps
+
       - name: Run system tests
         run: |
           pytest autoreduce_qp/systemtests --cov-append
