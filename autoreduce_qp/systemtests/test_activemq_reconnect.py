@@ -26,13 +26,6 @@ from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.scripts.manual_operations import manual_remove as remove
 from autoreduce_qp.model.database import access as db
 
-SETTINGS_FACTORY = ClientSettingsFactory()
-
-queue_client.ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
-                                                         username="admin",
-                                                         password="admin",
-                                                         host="127.0.0.1",
-                                                         port="62000")
 REDUCE_SCRIPT = \
     'def main(input_file, output_dir):\n' \
     '\tprint("WISH system test")\n' \
@@ -62,6 +55,13 @@ class TestActiveMQReconnect(TransactionTestCase):
 
     def setUp(self):
         """ Start all external services """
+        settings_factory = ClientSettingsFactory()
+
+        queue_client.ACTIVEMQ_SETTINGS = settings_factory.create('queue',
+                                                                 username="admin",
+                                                                 password="admin",
+                                                                 host="127.0.0.1",
+                                                                 port="62000")
         self._start_activemq()
         # Get all clients
         try:
@@ -170,6 +170,7 @@ class TestActiveMQReconnect(TransactionTestCase):
         subprocess.Popen(
             ["docker", "run", "--rm", "--name", "activemq_systemtest", "-p", "62000:61613", "-d",
              "rmohr/activemq"]).wait(timeout=60)
+        time.sleep(30)
 
     @staticmethod
     def _stop_activemq():
@@ -182,8 +183,6 @@ class TestActiveMQReconnect(TransactionTestCase):
         """
         self._stop_activemq()
         self._start_activemq()
-
-        time.sleep(30)
 
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
         self.data_ready_message.data = file_location
