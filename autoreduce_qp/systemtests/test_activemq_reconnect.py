@@ -61,7 +61,6 @@ class TestActiveMQReconnect(TransactionTestCase):
         except ConnectionException as err:
             raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
                                "ActiveMQ is running and started by `python setup.py start`") from err
-
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
         self.instrument = 'ARMI'
@@ -153,20 +152,7 @@ class TestActiveMQReconnect(TransactionTestCase):
             if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
                 break
 
-        # Get Result from database
-        def retry(action, times=5):
-            attempt = 0
-            result = None
-            while attempt != times:
-                attempt += 1
-                result = action()
-                if len(result) != 0:
-                    return result
-                elif attempt == times:
-                    pass
-                time.sleep(5)
-
-        results = retry(self._find_run_in_database, 5)
+        results = self._find_run_in_database()
 
         assert results
         return results
@@ -189,6 +175,8 @@ class TestActiveMQReconnect(TransactionTestCase):
         """
         self._stop_activemq()
         self._start_activemq()
+
+        time.sleep(30)
 
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
         self.data_ready_message.data = file_location
