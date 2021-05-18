@@ -113,7 +113,8 @@ class TestVariableUtils(TestCase):
         """
         self.assertIsNone(vu.convert_variable_to_type('string', 'number'))
 
-    def test_make_dict_with_unsaved_variables(self):
+    @staticmethod
+    def test_make_dict_with_unsaved_variables():
         """
         Test: the unsaved variables are correctly made
         """
@@ -133,8 +134,9 @@ class TestVariableUtils(TestCase):
         assert Variable.objects.filter(name="var2").count() == 0
         assert Variable.objects.filter(name="var3").count() == 0
 
+    @staticmethod
     @patch("autoreduce_qp.queue_processor.variable_utils.ReductionScript")
-    def test_get_default_variables(self, reduction_script):
+    def test_get_default_variables(reduction_script):
         """
         Test: Getting the default variables returns the expected keys
         """
@@ -172,8 +174,9 @@ class TestVariableUtils(TestCase):
             for var in variables:
                 assert var.help_text == "test_help"
 
+    @staticmethod
     @patch("autoreduce_qp.queue_processor.variable_utils.ReductionScript")
-    def test_get_default_variables_empty_help(self, reduction_script):
+    def test_get_default_variables_empty_help(reduction_script):
         """
         Test: Getting the default variables returns the expected keys
         """

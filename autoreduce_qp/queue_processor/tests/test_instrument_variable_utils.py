@@ -16,9 +16,9 @@ from unittest.mock import patch
 from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Status
 from autoreduce_db.instrument.models import InstrumentVariable, Variable
 from django.test import TestCase
+from parameterized import parameterized
 
 from autoreduce_qp.model.database.records import create_reduction_run_record
-from parameterized import parameterized
 from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 
 UTILS_PATH = "queue_processor."
@@ -319,7 +319,7 @@ class TestInstrumentVariableUtils(TestCase):
 
         with patch("autoreduce_qp.queue_processor.reduction.service.ReductionScript.load",
                    return_value=FakeModule(advanced_vars={})):
-            new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
+            InstrumentVariablesUtils().create_run_variables(reduction_run)
 
         after_creating_variables = InstrumentVariable.objects.count()
         assert after_creating_variables > before_creating_variables
@@ -610,7 +610,8 @@ class TestInstrumentVariableUtils(TestCase):
     @parameterized.expand([["text", "text"], ["", "text"], ["None", "text"], [None, "text"], [1, 'number'],
                            [1.0, 'number'], [True, 'boolean'], [False, 'boolean'], [[1, 2], 'list_number'],
                            [['s', 't', 'r'], 'list_text']])
-    def test_variable_not_updated(self, var_value, var_type):
+    @staticmethod
+    def test_variable_not_updated(var_value, var_type):
         """
         Test that the value does not get updated when it hasn't changed. Parameterized for all supported types
         """

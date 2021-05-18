@@ -30,8 +30,8 @@ REDUCTION_SERVICE_DIR = "autoreduce_qp.queue_processor.reduction.service"
 class TempDirPropertyMock(PropertyMock):
     def __init__(self, path_string, *args) -> None:
         super().__init__(*args)
-        directory = TemporaryDirectory()
-        self.return_value = directory.name + path_string
+        with TemporaryDirectory() as directory:
+            self.return_value = directory + path_string
 
 
 # pylint:disable=protected-access

@@ -253,6 +253,7 @@ class TestReductionRunner(unittest.TestCase):
         """
         Test: Getting the mantid version
         """
+        # pylint:disable=protected-access
         assert ReductionRunner._get_mantid_version() is None
         assert logger.error.call_count == 2
 

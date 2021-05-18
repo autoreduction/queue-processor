@@ -97,6 +97,7 @@ class TestHandleMessage(TestCase):
         self.msg.message = "I am a message"
         getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
+        # pylint:disable=protected-access
         assert self.reduction_run.status == Status._get_status(expected_status)
         assert self.reduction_run.message == "I am a message"
         assert self.reduction_run.run_description == "This is a fake description"
@@ -113,6 +114,7 @@ class TestHandleMessage(TestCase):
         """
         getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
+        # pylint:disable=protected-access
         assert self.reduction_run.status == Status._get_status(expected_status)
         self.mocked_logger.info.assert_called_once()
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
