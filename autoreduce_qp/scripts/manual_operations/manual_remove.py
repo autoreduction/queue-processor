@@ -20,8 +20,6 @@ from autoreduce_qp.model.database import access as db
 
 from autoreduce_qp.scripts.manual_operations.util import get_run_range
 
-# pylint:disable=no-member
-
 
 class ManualRemove:
     """
@@ -116,14 +114,16 @@ class ManualRemove:
                     self.delete_variables(version.id)
                     self.delete_reduction_run(version.id)
 
-    def delete_reduction_location(self, reduction_run_id):
+    @staticmethod
+    def delete_reduction_location(reduction_run_id):
         """
         Delete a ReductionLocation record from the database
         :param reduction_run_id: (int) The id of the associated reduction job
         """
         ReductionLocation.objects.filter(reduction_run_id=reduction_run_id).delete()
 
-    def delete_data_location(self, reduction_run_id):
+    @staticmethod
+    def delete_data_location(reduction_run_id):
         """
         Delete a DataLocation record from the database
         :param reduction_run_id: (int) The id of the associated reduction job
@@ -139,7 +139,8 @@ class ManualRemove:
         for record in run_variables:
             RunVariable.objects.filter(variable_ptr_id=record.variable_ptr_id).delete()
 
-    def find_variables_of_reduction(self, reduction_run_id):
+    @staticmethod
+    def find_variables_of_reduction(reduction_run_id):
         """
         Find all the RunVariable records in the database associated with a reduction job
         :param reduction_run_id: (int) The id of the reduction job to filter by
@@ -147,7 +148,8 @@ class ManualRemove:
         """
         return RunVariable.objects.filter(reduction_run_id=reduction_run_id)
 
-    def delete_reduction_run(self, reduction_run_id):
+    @staticmethod
+    def delete_reduction_run(reduction_run_id):
         """
         Delete a ReductionRun record from the database
         :param reduction_run_id: (int) The id of the associated reduction job
@@ -182,7 +184,7 @@ class ManualRemove:
         else:
             try:
                 user_input = int(user_input)
-                processed_input.append(user_input)
+                processed_input.append(user_input)  #
             except ValueError:
                 return False, []
         return True, processed_input
