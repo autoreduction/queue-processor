@@ -18,9 +18,9 @@ from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.message.message import Message
 
-from queue_processor import queue_listener
-from queue_processor.handle_message import HandleMessage
-from queue_processor.queue_listener import QueueListener
+from autoreduce_qp.queue_processor import queue_listener
+from autoreduce_qp.queue_processor.handle_message import HandleMessage
+from autoreduce_qp.queue_processor.queue_listener import QueueListener
 
 
 class TestQueueProcessor(TestCase):

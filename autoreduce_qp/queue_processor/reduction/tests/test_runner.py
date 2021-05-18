@@ -12,8 +12,8 @@ import tempfile
 from unittest.mock import patch, call, Mock
 
 from autoreduce_utils.message.message import Message
-from queue_processor.reduction.exceptions import ReductionScriptError
-from queue_processor.reduction.runner import ReductionRunner, main
+from autoreduce_qp.queue_processor.reduction.exceptions import ReductionScriptError
+from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main
 
 
 class TestReductionRunner(unittest.TestCase):

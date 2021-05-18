@@ -19,11 +19,11 @@ from autoreduce_utils.message.message import Message
 from django.test import TransactionTestCase
 from parameterized.parameterized import parameterized
 
-from queue_processor.queue_listener import main
-from queue_processor.settings import MANTID_PATH, PROJECT_ROOT
+from autoreduce_qp.queue_processor.queue_listener import main
+from autoreduce_qp.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
 from systemtests.utils.data_archive import DataArchive
-from scripts.manual_operations import manual_remove as remove
-from model.database import access as db
+from autoreduce_qp.scripts.manual_operations import manual_remove as remove
+from autoreduce_qp.model.database import access as db
 
 ACTIVEMQ_EXECUTABLE = os.path.join('/opt/autoreduce_deps/activemq', 'apache-activemq-5.15.9', 'bin', 'activemq')
 

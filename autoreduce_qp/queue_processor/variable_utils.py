@@ -13,7 +13,7 @@ from typing import Dict, List
 
 from autoreduce_db.instrument.models import Variable, RunVariable
 
-from queue_processor.reduction.service import ReductionScript
+from autoreduce_qp.queue_processor.reduction.service import ReductionScript
 
 
 class VariableUtils:

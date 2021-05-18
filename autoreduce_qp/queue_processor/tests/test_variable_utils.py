@@ -16,7 +16,7 @@ from django.test import TestCase
 
 from autoreduce_db.instrument.models import InstrumentVariable, Variable, ReductionRun
 
-from queue_processor.variable_utils import VariableUtils as vu
+from autoreduce_qp.queue_processor.variable_utils import VariableUtils as vu
 
 
 # pylint:disable=no-member

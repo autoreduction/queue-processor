@@ -15,7 +15,7 @@ import sys
 import requests
 
 # pylint: disable=import-error
-from scripts.nagios_checks.autoreduce_settings import ACTIVEMQ, ACTIVEMQ_URL, ACTIVEMQ_AUTH
+from autoreduce_qp.scripts.nagios_checks.autoreduce_settings import ACTIVEMQ, ACTIVEMQ_URL, ACTIVEMQ_AUTH
 
 
 # pylint: disable=invalid-name

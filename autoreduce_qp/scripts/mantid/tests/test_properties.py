@@ -11,7 +11,7 @@ import unittest
 import os
 from unittest.mock import patch
 
-from scripts.mantid.properties import generate_mantid_properties_file
+from autoreduce_qp.scripts.mantid.properties import generate_mantid_properties_file
 
 
 class TestProperties(unittest.TestCase):

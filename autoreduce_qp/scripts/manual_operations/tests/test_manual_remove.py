@@ -14,9 +14,9 @@ from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Status
 from django.db import IntegrityError
 from django.test import TestCase
 
-from model.database.records import create_reduction_run_record
-from queue_processor.tests.test_handle_message import FakeMessage
-from scripts.manual_operations.manual_remove import (ManualRemove, main, remove, user_input_check)
+from autoreduce_qp.model.database.records import create_reduction_run_record
+from autoreduce_qp.queue_processor.tests.test_handle_message import FakeMessage
+from autoreduce_qp.scripts.manual_operations.manual_remove import (ManualRemove, main, remove, user_input_check)
 
 # pylint:disable=no-member
 

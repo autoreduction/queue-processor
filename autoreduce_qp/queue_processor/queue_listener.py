@@ -21,7 +21,7 @@ from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 
-from queue_processor.handle_message import HandleMessage
+from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 
 class QueueListener(ConnectionListener):

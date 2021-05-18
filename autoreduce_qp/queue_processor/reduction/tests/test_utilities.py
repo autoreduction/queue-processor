@@ -12,7 +12,7 @@ from pathlib import Path
 
 from unittest.mock import patch
 
-from queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
+from autoreduce_qp.queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
 
 
 class TestReductionRunnerHelpers(unittest.TestCase):

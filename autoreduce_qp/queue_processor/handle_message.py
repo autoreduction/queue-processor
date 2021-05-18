@@ -23,11 +23,11 @@ from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocatio
 from autoreduce_utils.message.message import Message
 
 import model.database.records as db_records
-from model.database import access as db_access
-from queue_processor.instrument_variable_utils import InstrumentVariablesUtils
-from queue_processor.variable_utils import VariableUtils
-from queue_processor.reduction.process_manager import ReductionProcessManager
-from queue_processor.reduction.service import ReductionScript
+from autoreduce_qp.model.database import access as db_access
+from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
+from autoreduce_qp.queue_processor.variable_utils import VariableUtils
+from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
+from autoreduce_qp.queue_processor.reduction.service import ReductionScript
 
 
 class HandleMessage:

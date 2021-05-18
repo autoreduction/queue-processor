@@ -16,9 +16,9 @@ from django.db import IntegrityError
 from autoreduce_db.reduction_viewer.models import DataLocation, ReductionRun, ReductionLocation
 from autoreduce_db.instrument.models import RunVariable
 
-from model.database import access as db
+from autoreduce_qp.model.database import access as db
 
-from scripts.manual_operations.util import get_run_range
+from autoreduce_qp.scripts.manual_operations.util import get_run_range
 
 # pylint:disable=no-member
 

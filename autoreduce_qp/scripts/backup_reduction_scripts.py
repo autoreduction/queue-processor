@@ -35,7 +35,7 @@ from pathlib import Path
 
 from git import Git, exc
 
-from queue_processor.settings import PROJECT_ROOT
+from autoreduce_qp.queue_processor.settings import PROJECT_ROOT
 
 ISIS_MOUNT_PATH = Path("/isis")
 AUTOREDUCTION_PATH = Path("user/scripts/autoreduction")

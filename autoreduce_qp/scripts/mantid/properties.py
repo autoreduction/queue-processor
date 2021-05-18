@@ -10,7 +10,7 @@ Generate a mantid properties file
 import os
 from typing import List
 
-from model.database.access import get_all_instrument_names
+from autoreduce_qp.model.database.access import get_all_instrument_names
 
 CALIBRATION_DIRECTORIES = [
     r'/home/autoreduce/InstrumentFiles/WISH/Calibration/Cycle_11_4/', r'/isis/NDXENGINX/Instrument/data/cycle_14_3/',

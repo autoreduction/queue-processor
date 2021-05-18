@@ -8,7 +8,7 @@ from pathlib import Path
 from shutil import rmtree
 from unittest import TestCase
 
-from queue_processor.settings import CYCLE_DIRECTORY, ARCHIVE_ROOT, PROJECT_ROOT
+from autoreduce_qp.queue_processor.settings import CYCLE_DIRECTORY, ARCHIVE_ROOT, PROJECT_ROOT
 from systemtests.utils.data_archive import DataArchive
 
 

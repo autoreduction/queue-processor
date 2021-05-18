@@ -13,7 +13,7 @@ from unittest.mock import patch
 
 from dateutil.relativedelta import relativedelta
 
-from scripts.scheduler_ingest import Cycle, MaintenanceDay, SchedulerDataProcessor
+from autoreduce_qp.scripts.scheduler_ingest import Cycle, MaintenanceDay, SchedulerDataProcessor
 
 
 class TestCycle(unittest.TestCase):

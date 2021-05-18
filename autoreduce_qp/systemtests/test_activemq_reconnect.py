@@ -18,11 +18,11 @@ from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from django.test import TransactionTestCase
 
-from queue_processor.queue_listener import main
-from queue_processor.settings import MANTID_PATH, PROJECT_ROOT
+from autoreduce_qp.queue_processor.queue_listener import main
+from autoreduce_qp.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
 from systemtests.utils.data_archive import DataArchive
-from scripts.manual_operations import manual_remove as remove
-from model.database import access as db
+from autoreduce_qp.scripts.manual_operations import manual_remove as remove
+from autoreduce_qp.model.database import access as db
 
 from autoreduce_utils.clients import queue_client
 from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory

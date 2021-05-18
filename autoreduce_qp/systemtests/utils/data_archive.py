@@ -9,7 +9,7 @@ from shutil import rmtree
 from contextlib import ContextDecorator
 from typing import List, Optional
 
-from queue_processor.settings import SCRIPTS_DIRECTORY, CYCLE_DIRECTORY, ARCHIVE_ROOT
+from autoreduce_qp.queue_processor.settings import SCRIPTS_DIRECTORY, CYCLE_DIRECTORY, ARCHIVE_ROOT
 
 
 class DataArchive:

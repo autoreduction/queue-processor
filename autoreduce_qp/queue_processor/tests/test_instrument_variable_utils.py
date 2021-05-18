@@ -17,9 +17,9 @@ from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Status
 from autoreduce_db.instrument.models import InstrumentVariable, Variable
 from django.test import TestCase
 
-from model.database.records import create_reduction_run_record
+from autoreduce_qp.model.database.records import create_reduction_run_record
 from parameterized import parameterized
-from queue_processor.instrument_variable_utils import InstrumentVariablesUtils
+from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 
 UTILS_PATH = "queue_processor."
 MESSAGE_CLASS_PATH = UTILS_PATH + ".messaging_utils.MessagingUtils"

@@ -10,7 +10,7 @@ Unit tests for manual submission utility functions
 
 from unittest import TestCase
 
-from scripts.manual_operations.util import get_run_range
+from autoreduce_qp.scripts.manual_operations.util import get_run_range
 
 
 class TestUtil(TestCase):

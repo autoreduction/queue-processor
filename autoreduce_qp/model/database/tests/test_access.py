@@ -11,10 +11,10 @@ from unittest.mock import Mock
 from django.test import TestCase
 
 from autoreduce_db.reduction_viewer.models import Experiment, Instrument
-from model.database import access
-from model.database.access import get_all_instrument_names, is_instrument_flat_output
-from model.database.records import create_reduction_run_record
-from queue_processor.tests.test_handle_message import FakeMessage
+from autoreduce_qp.model.database import access
+from autoreduce_qp.model.database.access import get_all_instrument_names, is_instrument_flat_output
+from autoreduce_qp.model.database.records import create_reduction_run_record
+from autoreduce_qp.queue_processor.tests.test_handle_message import FakeMessage
 
 
 # pylint:disable=no-member

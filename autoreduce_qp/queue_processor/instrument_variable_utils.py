@@ -20,8 +20,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from autoreduce_db.instrument.models import InstrumentVariable
 
-from queue_processor.variable_utils import VariableUtils
-from queue_processor.reduction.service import ReductionScript
+from autoreduce_qp.queue_processor.variable_utils import VariableUtils
+from autoreduce_qp.queue_processor.reduction.service import ReductionScript
 
 # pylint:disable=too-many-locals,no-member
 

@@ -9,7 +9,7 @@ Test package for DatabaseReset
 """
 import unittest
 
-from scripts.database_management.reset_database_post_cycle import DatabaseReset
+from autoreduce_qp.scripts.database_management.reset_database_post_cycle import DatabaseReset
 
 
 # pylint:disable=missing-docstring,protected-access

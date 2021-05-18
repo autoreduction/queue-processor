@@ -18,11 +18,11 @@ from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, Statu
 from autoreduce_utils.message.message import Message
 from django.db.utils import IntegrityError
 from django.test import TestCase
-from model.database.records import create_reduction_run_record
+from autoreduce_qp.model.database.records import create_reduction_run_record
 from parameterized import parameterized
-from queue_processor.handle_message import HandleMessage
-from queue_processor.queue_listener import QueueListener
-from queue_processor.tests.test_instrument_variable_utils import FakeModule
+from autoreduce_qp.queue_processor.handle_message import HandleMessage
+from autoreduce_qp.queue_processor.queue_listener import QueueListener
+from autoreduce_qp.queue_processor.tests.test_instrument_variable_utils import FakeModule
 from systemtests.utils.data_archive import DefaultDataArchive
 
 TEST_REDUCE_VARS_CONTENT = """
