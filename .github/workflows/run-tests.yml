@@ -93,7 +93,7 @@ jobs:
 
       - name: Pylint tests
         run: |
-          pylint --load-plugins=pylint_django autoreduce_qp
+          PYTHONPATH=autoreduce_qp pylint --load-plugins=pylint_django autoreduce_qp
 
       - name: YAPF
         run: python -m yapf --parallel --diff --recursive .
