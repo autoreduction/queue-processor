@@ -5,6 +5,13 @@ runs:
   using: composite
 
   steps:
+    - name: Migrate credentials and run ActiveMQ Docker
+      run: |
+        autoreduce-creds-migrate
+        # Externals must be after migrating the credentials
+        docker run --rm --name activemq -p 61613:61613 -p 8161:8161 -d rmohr/activemq
+      shell: bash
+
     - name: Install Autoreduction
       run: |
         python -m pip install --upgrade pip
@@ -17,9 +24,6 @@ runs:
 
     - name: Setup test environment
       run: |
-        autoreduce-creds-migrate
-        # Externals must be after test_settings
-        docker run --rm --name activemq -p 61613:61613 -p 8161:8161 -d rmohr/activemq
         python autoreduce_qp/manage.py migrate
         cat build.log
         _LOCAL_PYTHON_PATH=$(which python)
