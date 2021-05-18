@@ -25,6 +25,4 @@ runs:
     - name: Setup test environment
       run: |
         python autoreduce_qp/manage.py migrate
-        cat build.log
-        _LOCAL_PYTHON_PATH=$(which python)
       shell: bash
