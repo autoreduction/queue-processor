@@ -54,7 +54,7 @@ class TestQueueListener(TestCase):
         self.mocked_handler = mock.MagicMock(spec=HandleMessage)
         self.headers = self._get_header()
 
-        with patch("queue_processor.queue_listener"
+        with patch("autoreduce_qp.queue_processor.queue_listener"
                    ".HandleMessage", return_value=self.mocked_handler), \
              patch("logging.getLogger") as patched_logger:
             self.listener = QueueListener(self.mocked_client)
@@ -114,7 +114,7 @@ class TestQueueListener(TestCase):
         mock_con.assert_called_once()
         mock_sub.assert_called_once()
 
-    @patch("queue_processor.queue_listener.time.sleep")
+    @patch("autoreduce_qp.queue_processor.queue_listener.time.sleep")
     def test_on_diconnected_fail_to_reconnect_retries(self, mock_sleep):
         """
         Test: Attempts to reconnect

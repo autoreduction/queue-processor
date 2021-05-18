@@ -18,7 +18,7 @@ class TestDatabaseRecords(TestCase):
     """
     Tests the Record helpers for the ORM layer
     """
-    @mock.patch("model.database.records.timezone")
+    @mock.patch("autoreduce_qp.model.database.records.timezone")
     def test_create_reduction_record_forwards_correctly(self, timezone_mock):
         """
         Test: Reduction Record uses args correctly.
@@ -35,7 +35,7 @@ class TestDatabaseRecords(TestCase):
         mock_script_text = mock.NonCallableMock()
         mock_status = mock.NonCallableMock()
 
-        with mock.patch("model.database.records.ReductionRun") as reduction_run:
+        with mock.patch("autoreduce_qp.model.database.records.ReductionRun") as reduction_run:
             returned = records.create_reduction_run_record(experiment=mock_experiment,
                                                            instrument=mock_inst,
                                                            message=mock_msg,

@@ -22,7 +22,7 @@ class TestProperties(unittest.TestCase):
         """ Store the path that the Mantid Properties file will be written to """
         self.expected_path = os.path.join(os.getcwd(), 'Mantid.user.properties')
 
-    @patch("scripts.mantid.properties.get_all_instrument_names", return_value=["GEM"])
+    @patch("autoreduce_qp.scripts.mantid.properties.get_all_instrument_names", return_value=["GEM"])
     def test_generate_default(self, _):
         """
         Test: A Mantid Properties file is generated that contains the default paths
@@ -42,7 +42,7 @@ class TestProperties(unittest.TestCase):
             r'/isis/NDXother/Instrument/data/cycle_19_3', r'/isis/NDXother/Instrument/data/cycle_19_3'
         ])
 
-    @patch("scripts.mantid.properties.get_all_instrument_names", return_value=["GEM"])
+    @patch("autoreduce_qp.scripts.mantid.properties.get_all_instrument_names", return_value=["GEM"])
     def test_cycle_subset(self, _):
         """
         Test: A Mantid Properties file is generated for a given set of years/cycles

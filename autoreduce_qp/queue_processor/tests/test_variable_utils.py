@@ -133,7 +133,7 @@ class TestVariableUtils(TestCase):
         assert Variable.objects.filter(name="var2").count() == 0
         assert Variable.objects.filter(name="var3").count() == 0
 
-    @patch("queue_processor.variable_utils.ReductionScript")
+    @patch("autoreduce_qp.queue_processor.variable_utils.ReductionScript")
     def test_get_default_variables(self, reduction_script):
         """
         Test: Getting the default variables returns the expected keys
@@ -172,7 +172,7 @@ class TestVariableUtils(TestCase):
             for var in variables:
                 assert var.help_text == "test_help"
 
-    @patch("queue_processor.variable_utils.ReductionScript")
+    @patch("autoreduce_qp.queue_processor.variable_utils.ReductionScript")
     def test_get_default_variables_empty_help(self, reduction_script):
         """
         Test: Getting the default variables returns the expected keys

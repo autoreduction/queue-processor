@@ -18,12 +18,13 @@ from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, Statu
 from autoreduce_utils.message.message import Message
 from django.db.utils import IntegrityError
 from django.test import TestCase
-from autoreduce_qp.model.database.records import create_reduction_run_record
 from parameterized import parameterized
+
+from autoreduce_qp.model.database.records import create_reduction_run_record
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 from autoreduce_qp.queue_processor.queue_listener import QueueListener
 from autoreduce_qp.queue_processor.tests.test_instrument_variable_utils import FakeModule
-from systemtests.utils.data_archive import DefaultDataArchive
+from autoreduce_qp.systemtests.utils.data_archive import DefaultDataArchive
 
 TEST_REDUCE_VARS_CONTENT = """
 standard_vars = {
@@ -156,7 +157,7 @@ class TestHandleMessage(TestCase):
 
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
 
-    @patch("queue_processor.handle_message.ReductionProcessManager")
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_success(self, rpm):
         "Tests do_reduction success path"
         rpm.return_value.run = self.do_post_started_assertions
@@ -178,7 +179,7 @@ class TestHandleMessage(TestCase):
         return self.msg
 
     # a bit of a nasty patch, but everything underneath should be unit tested separately
-    @patch("queue_processor.handle_message.ReductionProcessManager")
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_fail(self, rpm):
         "Tests do_reduction failure path"
         self.msg.message = "Something failed"
@@ -231,7 +232,7 @@ class TestHandleMessage(TestCase):
         """
         assert self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument) is None
 
-    @patch("queue_processor.handle_message.ReductionProcessManager")
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_send_message_onwards_ok(self, rpm):
         """
         Test that a run where all is OK is reduced
@@ -244,7 +245,7 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == Status.get_completed()
         assert self.instrument.is_active
 
-    @patch("queue_processor.handle_message.ReductionProcessManager")
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_send_message_onwards_skip_run(self, rpm):
         """
         Test that a run that fails validation is skipped
@@ -258,7 +259,7 @@ class TestHandleMessage(TestCase):
         assert "Validation error" in self.reduction_run.message
         assert "Validation error" in self.reduction_run.reduction_log
 
-    @patch("queue_processor.handle_message.ReductionScript")
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):
         "Test creating multiple version of the same run"
         self.instrument.is_active = False
@@ -298,7 +299,7 @@ class TestHandleMessage(TestCase):
         self.mocked_logger.warning.assert_called_once()
         assert message.reduction_arguments == expected_args
 
-    @patch('queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
+    @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     def test_create_run_variables(self, import_module: Mock):
         "Test the creation of RunVariables for the ReductionRun"
         expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
@@ -336,8 +337,8 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == Status.get_error()
         assert "Encountered error when saving run variables" in self.reduction_run.message
 
-    @patch('queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
-    @patch("queue_processor.handle_message.ReductionProcessManager")
+    @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
         "Test data_ready success path sends the message onwards for reduction"
         rpm.return_value.run = partial(self.do_post_started_assertions, 5)
@@ -348,8 +349,8 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == Status.get_completed()
         load.assert_called_once()
 
-    @patch('queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
-    @patch("queue_processor.handle_message.ReductionProcessManager")
+    @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
         "Test data_ready error path sends the message onwards to be marked as errored"
         self.msg.message = "I am error"

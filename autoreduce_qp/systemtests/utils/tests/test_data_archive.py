@@ -9,7 +9,7 @@ from shutil import rmtree
 from unittest import TestCase
 
 from autoreduce_qp.queue_processor.settings import CYCLE_DIRECTORY, ARCHIVE_ROOT, PROJECT_ROOT
-from systemtests.utils.data_archive import DataArchive
+from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 
 
 class TestDataArchive(TestCase):

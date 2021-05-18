@@ -14,18 +14,18 @@ import subprocess
 import time
 from pathlib import Path
 
+from autoreduce_utils.clients import queue_client
 from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory
 from autoreduce_utils.message.message import Message
 from django.test import TransactionTestCase
 
 from autoreduce_qp.queue_processor.queue_listener import main
 from autoreduce_qp.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
-from systemtests.utils.data_archive import DataArchive
+from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.scripts.manual_operations import manual_remove as remove
 from autoreduce_qp.model.database import access as db
 
-from autoreduce_utils.clients import queue_client
-from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory
 SETTINGS_FACTORY = ClientSettingsFactory()
 
 queue_client.ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',

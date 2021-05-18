@@ -21,7 +21,7 @@ from parameterized.parameterized import parameterized
 
 from autoreduce_qp.queue_processor.queue_listener import main
 from autoreduce_qp.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
-from systemtests.utils.data_archive import DataArchive
+from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.scripts.manual_operations import manual_remove as remove
 from autoreduce_qp.model.database import access as db
 
