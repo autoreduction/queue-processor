@@ -248,8 +248,9 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.message is None
         assert runner.message.software == "5.1.0"
 
+    @staticmethod
     @patch(f'{DIR}.runner.logger')
-    def test_get_mantid_version(self, logger: Mock):
+    def test_get_mantid_version(logger: Mock):
         """
         Test: Getting the mantid version
         """

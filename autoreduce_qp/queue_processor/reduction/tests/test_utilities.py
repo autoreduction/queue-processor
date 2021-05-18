@@ -49,4 +49,4 @@ class TestReductionRunnerHelpers(unittest.TestCase):
         out_stream = io.StringIO()
 
         actual = channels_redirected(out_file=script_out, error_file=mantid_out, out_stream=out_stream)
-        self.assertIsInstance(actual, contextlib._GeneratorContextManager)
+        self.assertIsInstance(actual, contextlib._GeneratorContextManager)  # pylint:disable=protected-access

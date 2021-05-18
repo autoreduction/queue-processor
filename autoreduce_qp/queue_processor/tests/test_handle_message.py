@@ -46,6 +46,7 @@ variable_help = {
 """
 
 
+# pylint:disable=no-member
 class FakeMessage:
     started_by = 0
     run_number = 1234567
