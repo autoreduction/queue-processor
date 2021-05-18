@@ -9,12 +9,6 @@ from setuptools import setup
 
 import platform
 
-from build.commands.database import InitialiseTestDatabase, LoadDBFixtures
-from build.commands.help import Help
-from build.commands.installs import InstallExternals
-from build.commands.migrate_settings import MigrateTestSettings
-from build.commands.start import Start
-
 setup_requires = [
     'autoreduce_db==0.1.2', 'autoreduce_utils==0.1.2', 'attrs==21.2.0', 'dash==1.20.0', 'dash_html_components==1.1.3',
     'dash_core_components==1.16.0', 'docker==5.0.0', 'Django==3.2.2', 'django_extensions==3.1.3',
@@ -29,18 +23,10 @@ if platform.system() == 'Windows':
 else:
     setup_requires.append('python-daemon==2.2.4')
 
-setup(name='AutoReduction',
+setup(name='autoreduce_qp',
       version='21.1',
-      description='ISIS AutoReduction service',
+      description='ISIS Autoreduction queue processor',
       author='ISIS Autoreduction Team',
       url='https://github.com/ISISScientificComputing/autoreduce/',
       install_requires=setup_requires,
-      cmdclass={
-          'test_settings': MigrateTestSettings,
-          'database': InitialiseTestDatabase,
-          'fixtures': LoadDBFixtures,
-          'externals': InstallExternals,
-          'start': Start,
-          'help': Help,
-      },
       packages=["autoreduce_qp"])
