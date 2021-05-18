@@ -167,21 +167,6 @@ def login_icat():
     return icat_client
 
 
-def login_database():
-    """
-    Log into the DatabaseClient
-    :return: The client connected, or None if failed
-    """
-    print("Logging into Database")
-    database_client = DatabaseClient()
-    try:
-        database_client.connect()
-    except ConnectionException:
-        print("Couldn't connect to Database. Continuing without Database connection.")
-        database_client = None
-    return database_client
-
-
 def login_queue():
     """
     Log into the QueueClient
