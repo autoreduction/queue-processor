@@ -14,7 +14,7 @@ import time
 from autoreduce_utils.clients import queue_client
 from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
-from systemtests.base_systemtest import BaseAutoreduceSystemTest, REDUCE_SCRIPT
+from autoreduce_qp.systemtests.base_systemtest import BaseAutoreduceSystemTest, REDUCE_SCRIPT
 
 
 class TestActiveMQReconnect(BaseAutoreduceSystemTest):
@@ -30,6 +30,10 @@ class TestActiveMQReconnect(BaseAutoreduceSystemTest):
                                                                  port="62000")
         self._start_activemq()
         super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self._stop_activemq()
 
     @staticmethod
     def _start_activemq():
