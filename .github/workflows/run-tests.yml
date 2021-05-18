@@ -99,5 +99,5 @@ jobs:
         run: python -m yapf --parallel --diff --recursive .
 
       - name: Vulture
-        run: vulture --min-confidence 100 build model monitors scripts queue_processors systemtests plotting
+        run: vulture --min-confidence 90 autoreduce_qp
 
