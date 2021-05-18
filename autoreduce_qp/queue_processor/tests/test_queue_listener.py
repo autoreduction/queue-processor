@@ -38,7 +38,7 @@ class TestQueueProcessor(TestCase):
         Test: Connection to ActiveMQ setup, along with subscription to queues
         When: setup_connection is called with a consumer name
         """
-        queue_listener.main()
+        queue_listener.setup_connection()
 
         mock_subscribe.assert_called_once()
         mock_client.assert_called_once()
