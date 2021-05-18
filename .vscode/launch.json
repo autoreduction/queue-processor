@@ -46,32 +46,11 @@
                 "order": 1
             },
             "preLaunchTask": "(don't use) Run Docker Web App",
-            "postDebugTask": "Kill webapp-debugpy"
+            "postDebugTask": "Kill webapp-debugpy",
             "django": true
         },
         {
             "name": "pytest Docker Attach",
-            "type": "python",
-            "request": "attach",
-            "connect": {
-                "host": "127.0.0.1",
-                "port": 5680
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/autoreduce"
-                }
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-docker",
-                "order": 1
-            },
-            "preLaunchTask": "(don't use) Run Docker pytest",
-        },
-        {
-            "name": "pytest django Docker Attach",
             "type": "python",
             "request": "attach",
             "connect": {
@@ -96,25 +75,7 @@
             "type": "python",
             "request": "launch",
             "module": "pytest",
-            "args": [
-                "-pno:django",
-                "-v",
-                "${file}"
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-native",
-            },
-            "env": {
-                "DISPLAY": ":1",
-            }
-        },
-        {
-            "name": "Pytest - Django",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "cwd": "${workspaceFolder}/autoreduce_qp",
+            "cwd": "${workspaceFolder}",
             "args": [
                 "-v",
                 "${file}"
@@ -140,7 +101,6 @@
                 "--cov-report",
                 "html",
                 "--cov=${workspaceFolder}/queue_processors",
-                "-pno:django",
                 "-v",
                 "${file}"
             ],
@@ -149,7 +109,9 @@
                 "group": "autoreduce-native",
             },
             "env": {
-                "RUNNING_VIA_PYTEST": "true"
+                "DISPLAY": ":1",
+                "RUNNING_VIA_PYTEST": "true",
+                "SELENIUM_REMOTE": "1"
             }
         },
         {
