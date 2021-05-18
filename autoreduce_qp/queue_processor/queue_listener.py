@@ -10,7 +10,6 @@ This module deals with the updating of the database backend.
 It consumes messages from the queues and then updates the reduction run
 status in the database.
 """
-import os
 import logging
 import time
 import traceback

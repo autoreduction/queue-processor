@@ -17,7 +17,7 @@ from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from django.test import TransactionTestCase
 
-from autoreduce_qp.queue_processor.queue_listener import main
+from autoreduce_qp.queue_processor.queue_listener import setup_connection
 from autoreduce_qp.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.scripts.manual_operations import manual_remove as remove
@@ -54,7 +54,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         """ Start all external services """
         # Get all clients
         try:
-            self.queue_client, self.listener = main()
+            self.queue_client, self.listener = setup_connection()
         except ConnectionException as err:
             raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
                                "ActiveMQ is running and started by `python setup.py start`") from err
