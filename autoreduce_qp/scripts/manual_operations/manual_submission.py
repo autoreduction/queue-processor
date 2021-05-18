@@ -21,7 +21,7 @@ from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.clients.tools.isisicat_prefix_mapping import get_icat_instrument_prefix
 from autoreduce_utils.message.message import Message
 
-from scripts.manual_operations.util import get_run_range
+from autoreduce_qp.scripts.manual_operations.util import get_run_range
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):
@@ -47,9 +47,8 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
     print("Submitted run: \r\n" + message.serialize(indent=1))
 
 
-def get_location_and_rb_from_database(database_client, instrument, run_number):
+def get_location_and_rb_from_database(instrument, run_number):
     """
-    TODO: remove database_client parameter
     Retrieves a run's data-file location and rb_number from the auto-reduction database
     :param database_client: Client to access auto-reduction database
     :param instrument: (str) the name of the instrument associated with the run
@@ -127,7 +126,7 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
     return datafile[0].location, datafile[0].dataset.investigation.name
 
 
-def get_location_and_rb(database_client, icat_client, instrument, run_number, file_ext):
+def get_location_and_rb(icat_client, instrument, run_number, file_ext):
     """
     Retrieves a run's data-file location and rb_number from the auto-reduction database,
     or ICAT (if it is not in the database)
@@ -145,7 +144,7 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
         print(f"Cannot cast run_number as an integer. Run number given: '{run_number}'. Exiting...")
         sys.exit(1)
 
-    result = get_location_and_rb_from_database(database_client, instrument, run_number)
+    result = get_location_and_rb_from_database(instrument, run_number)
     if result:
         return result
     print(f"Cannot find datafile for run_number {run_number} in Auto-reduction database. " f"Will try ICAT...")
@@ -211,15 +210,13 @@ def main(instrument, first_run, last_run=None):
 
     instrument = instrument.upper()
     icat_client = login_icat()
-    database_client = login_database()
-    if not icat_client and not database_client:
-        raise RuntimeError("Unable to proceed. Unable to connect to ICAT or Database. "
-                           "At least one connection is required to perform manual submission.")
+    if not icat_client:
+        raise RuntimeError("Unable to proceed. Unable to connect to ICAT.")
 
     activemq_client = login_queue()
 
     for run in run_numbers:
-        location, rb_num = get_location_and_rb(database_client, icat_client, instrument, run, "nxs")
+        location, rb_num = get_location_and_rb(icat_client, instrument, run, "nxs")
         if location and rb_num is not None:
             submit_run(activemq_client, rb_num, instrument, location, run)
         else:
