@@ -2,6 +2,9 @@ from autoreduce_utils.message.message import Message
 
 
 def add_data_and_message():
+    """
+    Makes and returns some test data and message
+    """
     data = {
         'data': '\\\\isis\\inst$\\data.nxs',
         'facility': 'ISIS',
