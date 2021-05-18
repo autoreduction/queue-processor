@@ -13,7 +13,6 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import logging
-from contextlib import contextmanager
 from typing import Optional
 from autoreduce_db.reduction_viewer.models import Status
 from django.db import transaction
@@ -22,7 +21,7 @@ from django.utils import timezone
 from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation
 from autoreduce_utils.message.message import Message
 
-import model.database.records as db_records
+from autoreduce_qp.model.database import records
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from autoreduce_qp.queue_processor.variable_utils import VariableUtils
@@ -96,12 +95,12 @@ class HandleMessage:
         script_text = script.text()
 
         # Make the new reduction run with the information collected so far
-        reduction_run = db_records.create_reduction_run_record(experiment=experiment,
-                                                               instrument=instrument,
-                                                               message=message,
-                                                               run_version=message.run_version,
-                                                               script_text=script_text,
-                                                               status=Status.get_queued())
+        reduction_run = records.create_reduction_run_record(experiment=experiment,
+                                                            instrument=instrument,
+                                                            message=message,
+                                                            run_version=message.run_version,
+                                                            script_text=script_text,
+                                                            status=Status.get_queued())
         reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current
