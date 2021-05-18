@@ -24,7 +24,7 @@ from autoreduce_qp.queue_processor.reduction.service import ReductionDirectory, 
 from autoreduce_qp.queue_processor.settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
 from autoreduce_qp.queue_processor.reduction.tests.module_to_import import TEST_DICTIONARY
 
-REDUCTION_SERVICE_DIR = "queue_processor.reduction.service"
+REDUCTION_SERVICE_DIR = "autoreduce_qp.queue_processor.reduction.service"
 
 
 class TempDirPropertyMock(PropertyMock):

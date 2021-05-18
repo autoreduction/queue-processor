@@ -372,7 +372,7 @@ class TestManualRemove(TestCase):
         self.manual_remove.delete_records()
         mock_record.delete.assert_called_once()
 
-    @patch.multiple("scripts.manual_operations.manual_remove.ManualRemove",
+    @patch.multiple("autoreduce_qp.scripts.manual_operations.manual_remove.ManualRemove",
                     delete_reduction_location=DEFAULT,
                     delete_data_location=DEFAULT,
                     delete_variables=DEFAULT,
