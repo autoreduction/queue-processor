@@ -17,7 +17,7 @@ from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main
 
 
 class TestReductionRunner(unittest.TestCase):
-    DIR = "queue_processor.reduction"
+    DIR = "autoreduce_qp.queue_processor.reduction"
 
     def setUp(self):
         """Setup values for Post-Process Admin"""

@@ -156,8 +156,8 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         result = sdp._clean_data(local_cycle_data)
         self.assertEqual(len(local_cycle_data) - 1, len(result))
 
-    @patch('scripts.scheduler_ingest.SchedulerDataProcessor._clean_data')
-    @patch('scripts.scheduler_ingest.SchedulerDataProcessor._sort_by_date')
+    @patch("autoreduce_qp.scripts.scheduler_ingest.SchedulerDataProcessor._clean_data")
+    @patch("autoreduce_qp.scripts.scheduler_ingest.SchedulerDataProcessor._sort_by_date")
     def test_pre_process_with_valid_data(self, mocked_sort_by_date, mocked_clean_data):
         """
         Test: _pre_process calls both _clean_data and _sort_by_date twice (once for each
@@ -182,7 +182,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
             self.assertIsInstance(cycle, Cycle)
             self.assertEqual(0, len(cycle.maintenance_days))
 
-    @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
+    @patch("autoreduce_qp.scripts.scheduler_ingest.SchedulerDataProcessor._md_warning")
     def test_process_with_maintenance_before_cycles(self, mocked_md_warning):
         """
         Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
@@ -193,12 +193,12 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
         (_, kwargs) = mocked_md_warning.call_args
         self.assertEqual(kwargs["md_data"], self.test_maintenance_dict["before_cycles"])
-        self.assertIsNone(kwargs['cycle_before'])
+        self.assertIsNone(kwargs["cycle_before"])
         self.assertEqual(kwargs["cycle_after"], self.create_cycle_from_dict(self.test_cycle_data[0]))
 
         self.check_process_output(cycles, len(self.test_cycle_data))
 
-    @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
+    @patch("autoreduce_qp.scripts.scheduler_ingest.SchedulerDataProcessor._md_warning")
     def test_process_with_maintenance_after_cycles(self, mocked_md_warning):
         """
         Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
@@ -214,7 +214,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
         self.check_process_output(cycles, len(self.test_cycle_data))
 
-    @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
+    @patch("autoreduce_qp.scripts.scheduler_ingest.SchedulerDataProcessor._md_warning")
     def test_process_with_maintenance_between_cycles(self, mocked_md_warning):
         """
         Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
@@ -233,12 +233,12 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
         self.check_process_output(cycles, len(self.test_cycle_data))
 
-    @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
+    @patch("autoreduce_qp.scripts.scheduler_ingest.SchedulerDataProcessor._md_warning")
     def test_process_with_maintenance_within_cycles(self, mocked_md_warning):
         """
         Test: _process adds the current maintenance day to the appropriate cycle
         When: _process encounters a maintenance day which starts and ends within
-        the given cycle's start and end dates
+        the given cycle"s start and end dates
         """
         sdp = SchedulerDataProcessor()
         cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["within_first_cycle"]])

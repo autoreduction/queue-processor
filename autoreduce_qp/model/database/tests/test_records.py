@@ -11,7 +11,7 @@ Unit tests for the record helper module
 
 import socket
 from unittest import TestCase, mock
-import model.database.records as records
+import autoreduce_qp.model.database.records as records
 
 
 class TestDatabaseRecords(TestCase):
