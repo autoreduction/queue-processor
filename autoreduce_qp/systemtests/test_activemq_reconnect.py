@@ -183,8 +183,6 @@ class TestActiveMQReconnect(TransactionTestCase):
         self._stop_activemq()
         self._start_activemq()
 
-        time.sleep(30)
-
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
         self.data_ready_message.data = file_location
 
