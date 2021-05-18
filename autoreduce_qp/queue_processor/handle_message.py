@@ -14,11 +14,10 @@ update relevant DB fields or logging out the status.
 """
 import logging
 from typing import Optional
-from autoreduce_db.reduction_viewer.models import Status
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation
+from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation, Status
 from autoreduce_utils.message.message import Message
 
 from autoreduce_qp.model.database import records
@@ -86,8 +85,9 @@ class HandleMessage:
         instrument = db_access.get_instrument(str(message.instrument))
         return self.do_create_reduction_record(message, experiment, instrument)
 
+    @staticmethod
     @transaction.atomic
-    def do_create_reduction_record(self, message: Message, experiment, instrument):
+    def do_create_reduction_record(message: Message, experiment, instrument):
         """
         Creates the reduction record
         """
