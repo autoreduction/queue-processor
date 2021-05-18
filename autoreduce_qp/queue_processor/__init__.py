@@ -10,7 +10,7 @@
 import logging.config
 import os
 import django
-from django.conf import settings
+from django.conf import settings as dj_settings
 from autoreduce_qp.autoreduce_django.settings import DATABASES, INSTALLED_APPS
 
 from .settings import LOG_LEVEL, AUTOREDUCE_HOME_ROOT
@@ -126,6 +126,6 @@ LOGGING = {
 
 logging.config.dictConfig(LOGGING)
 
-if not settings.configured:
-    settings.configure(DATABASES=DATABASES, INSTALLED_APPS=INSTALLED_APPS)
+if not dj_settings.configured:
+    dj_settings.configure(DATABASES=DATABASES, INSTALLED_APPS=INSTALLED_APPS)
     django.setup()
