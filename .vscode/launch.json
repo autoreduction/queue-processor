@@ -93,6 +93,73 @@
             "justMyCode": false
         },
         {
+            "name": "Pytest unit tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--ignore=autoreduce_qp/systemtests",
+                "-v",
+                "autoreduce_qp"
+            ],
+            "django": true,
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+            },
+            "env": {
+                "DISPLAY": ":1",
+                "RUNNING_VIA_PYTEST": "true",
+                "SELENIUM_REMOTE": "1"
+            },
+            "justMyCode": false
+        },
+        {
+            "name": "Pytest system tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-v",
+                "autoreduce_qp/systemtests"
+            ],
+            "django": true,
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+            },
+            "env": {
+                "DISPLAY": ":1",
+                "RUNNING_VIA_PYTEST": "true",
+                "SELENIUM_REMOTE": "1"
+            },
+            "justMyCode": false
+        },
+        {
+            "name": "Pytest all",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-v",
+                "autoreduce_qp"
+            ],
+            "django": true,
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+            },
+            "env": {
+                "DISPLAY": ":1",
+                "RUNNING_VIA_PYTEST": "true",
+                "SELENIUM_REMOTE": "1"
+            },
+            "justMyCode": false
+        },
+        {
             "name": "Pytest - coverage",
             "type": "python",
             "request": "launch",
