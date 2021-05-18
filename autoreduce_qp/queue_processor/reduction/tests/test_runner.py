@@ -11,28 +11,16 @@ import unittest
 import tempfile
 from unittest.mock import patch, call, Mock
 
-from autoreduce_utils.message.message import Message
 from autoreduce_qp.queue_processor.reduction.exceptions import ReductionScriptError
 from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main
+from autoreduce_qp.queue_processor.reduction.tests.common import add_data_and_message
 
 
 class TestReductionRunner(unittest.TestCase):
     DIR = "autoreduce_qp.queue_processor.reduction"
 
-    def setUp(self):
-        """Setup values for Post-Process Admin"""
-        self.data = {
-            'data': '\\\\isis\\inst$\\data.nxs',
-            'facility': 'ISIS',
-            'instrument': 'GEM',
-            'rb_number': '1234',
-            'run_number': '4321',
-            'reduction_script': 'print(\'hello\')',  # not actually used for the reduction
-            'reduction_arguments': 'None'
-        }
-
-        self.message = Message()
-        self.message.populate(self.data)
+    def setUp(self) -> None:
+        self.data, self.message = add_data_and_message()
 
     def test_init(self):
         """

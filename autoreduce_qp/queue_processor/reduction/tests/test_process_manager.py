@@ -9,24 +9,13 @@ import unittest
 from subprocess import CalledProcessError
 
 from unittest.mock import Mock, patch
-from autoreduce_utils.message.message import Message
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
+from autoreduce_qp.queue_processor.reduction.tests.common import add_data_and_message
 
 
 class TestReductionProcessManager(unittest.TestCase):
     def setUp(self) -> None:
-        self.data = {
-            'data': '\\\\isis\\inst$\\data.nxs',
-            'facility': 'ISIS',
-            'instrument': 'GEM',
-            'rb_number': '1234',
-            'run_number': '4321',
-            'reduction_script': 'print(\'hello\')',  # not actually used for the reduction
-            'reduction_arguments': 'None'
-        }
-
-        self.message = Message()
-        self.message.populate(self.data)
+        self.data, self.message = add_data_and_message()
 
     def test_init(self):
         "Test that the constructor is doing what's expected"
