@@ -121,12 +121,8 @@ def main():
     Main method.
     :return: (Listener) returns a handle to a connected Active MQ listener
     """
-    return setup_connection()
-
-
-if __name__ == '__main__':
     try:
-        main()
+        setup_connection()
     except ConnectionException as exp:
         logging.getLogger("queue_listener").error("Exception occurred while connecting: %s %s\n\n%s",
                                                   type(exp).__name__, exp, traceback.format_exc())
@@ -140,3 +136,7 @@ if __name__ == '__main__':
     # just connect to activemq then exit completely
     while True:
         time.sleep(0.5)
+
+
+if __name__ == '__main__':
+    main()
