@@ -242,7 +242,7 @@
             }
         },
         {
-            "label": "(don't use) Run ActiveMQ Docker",
+            "label": "Start ActiveMQ Docker daemon",
             "type": "shell",
             "command": "docker run --name activemq -p 61613:61613 -p 8161:8161 -it rmohr/activemq",
             "problemMatcher": [],
@@ -279,7 +279,7 @@
             ]
         },
         {
-            "label": "Run Selenium Docker",
+            "label": "Run Selenium Docker daemon",
             "type": "shell",
             "command": "docker run --rm -it --network=host -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-beta-3-prerelease-20210422",
             "problemMatcher": []
