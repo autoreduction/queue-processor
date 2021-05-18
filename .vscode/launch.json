@@ -127,7 +127,8 @@
                 "DISPLAY": ":1",
                 "RUNNING_VIA_PYTEST": "true",
                 "SELENIUM_REMOTE": "1"
-            }
+            },
+            "justMyCode": false
         },
         {
             "name": "Pytest - coverage",

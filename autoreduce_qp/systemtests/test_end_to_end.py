@@ -10,9 +10,7 @@ Tests that data can traverse through the autoreduction system successfully
 """
 import os
 import shutil
-import subprocess
 import time
-from functools import partial
 from pathlib import Path
 from typing import Union
 
@@ -20,7 +18,6 @@ from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from django.test import TransactionTestCase
 from parameterized.parameterized import parameterized
-from stomp.connect import ConnectFailedException
 
 from queue_processor.queue_listener import main
 from queue_processor.settings import MANTID_PATH, PROJECT_ROOT
@@ -159,49 +156,10 @@ class TestEndToEnd(TransactionTestCase):
             if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
                 break
 
-        # Get Result from database
-        def retry(action, times=5):
-            attempt = 0
-            result = None
-            while attempt != times:
-                attempt += 1
-                result = action()
-                if len(result) != 0:
-                    return result
-                elif attempt == times:
-                    pass
-                time.sleep(5)
-                    
-        results = retry(self._find_run_in_database, 5)
+        results = self._find_run_in_database()
 
         assert results
         return results
-
-    @staticmethod
-    def _start_activemq():
-        subprocess.Popen(
-            ["docker", "run", "--name", "activemq", "-p", "61613:61613", "-p", "8161:8161", "-d",
-             "rmohr/activemq"]).wait(timeout=60)
-
-    @staticmethod
-    def _stop_activemq():
-        subprocess.Popen(["docker", "kill", "activemq"]).wait(timeout=60)
-
-    def test_reconnect_on_activemq_failure(self):
-        """
-        Test: Listener is still listening
-        When: ActiveMQ has started after stopping
-        """
-        self._stop_activemq()
-        self._start_activemq()
-
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
-        self.data_ready_message.data = file_location
-
-        self.send_and_wait_for_result(self.data_ready_message)
-
-        assert results is not None
-        assert len(results) == 1
 
     @parameterized.expand([
         [222, 222],
