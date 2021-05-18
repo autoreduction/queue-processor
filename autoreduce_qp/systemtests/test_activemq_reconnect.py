@@ -24,7 +24,15 @@ from systemtests.utils.data_archive import DataArchive
 from scripts.manual_operations import manual_remove as remove
 from model.database import access as db
 
+from autoreduce_utils.clients import queue_client
+from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory
+SETTINGS_FACTORY = ClientSettingsFactory()
 
+queue_client.ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
+                                                         username="admin",
+                                                         password="admin",
+                                                         host="127.0.0.1",
+                                                         port="62000")
 REDUCE_SCRIPT = \
     'def main(input_file, output_dir):\n' \
     '\tprint("WISH system test")\n' \
@@ -55,6 +63,7 @@ class TestActiveMQReconnect(TransactionTestCase):
 
     def setUp(self):
         """ Start all external services """
+        self._start_activemq()
         # Get all clients
         try:
             self.queue_client, self.listener = main()
@@ -159,14 +168,13 @@ class TestActiveMQReconnect(TransactionTestCase):
 
     @staticmethod
     def _start_activemq():
-        subprocess.Popen([
-            "docker", "run", "--rm", "--name", "activemq", "-p", "61613:61613", "-p", "8161:8161", "-d",
-            "rmohr/activemq"
-        ]).wait(timeout=60)
+        subprocess.Popen(
+            ["docker", "run", "--rm", "--name", "activemq_systemtest", "-p", "62000:61613", "-d",
+             "rmohr/activemq"]).wait(timeout=60)
 
     @staticmethod
     def _stop_activemq():
-        subprocess.Popen(["docker", "kill", "activemq"]).wait(timeout=60)
+        subprocess.Popen(["docker", "kill", "activemq_systemtest"]).wait(timeout=60)
 
     def test_reconnect_on_activemq_failure(self):
         """
