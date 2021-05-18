@@ -6,9 +6,10 @@
 # ############################################################################### #
 # pylint: skip-file
 import os
+from pathlib import Path
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-
+AUTOREDUCE_HOME_ROOT = str(Path("~/.autoreduce").expanduser())
 FACILITY = 'ISIS'
 
 MYSQL = {'HOST': 'localhost:3306', 'USER': 'test-user', 'PASSWD': 'pass', 'DB': 'autoreduction'}

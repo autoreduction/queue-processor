@@ -10,7 +10,7 @@
 import logging.config
 import os
 
-from .settings import LOG_LEVEL, PROJECT_ROOT
+from .settings import LOG_LEVEL, AUTOREDUCE_HOME_ROOT
 
 LOGGING = {
     'version': 1,
@@ -28,7 +28,7 @@ LOGGING = {
         'root_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'root.log'),
+            'filename': os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'root.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -36,7 +36,7 @@ LOGGING = {
         'queue_processor_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'queue_processor.log'),
+            'filename': os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'queue_processor.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -44,7 +44,7 @@ LOGGING = {
         'autoreduction_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'autoreduction_processor.log'),
+            'filename': os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'autoreduction_processor.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -52,7 +52,7 @@ LOGGING = {
         'handle_queue_message_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'handle_queue_message.log'),
+            'filename': os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'handle_queue_message.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -60,7 +60,7 @@ LOGGING = {
         'webapp_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'webapp.log'),
+            'filename': os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'webapp.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
