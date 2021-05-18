@@ -53,7 +53,6 @@ __version__ = "5.1.0"
 
 class TestEndToEnd(TransactionTestCase):
     """ Class to test pipelines in autoreduction"""
-    DIR = "queue_processor.reduction"
     fixtures = ["status_fixture"]
 
     def setUp(self):

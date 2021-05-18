@@ -58,7 +58,6 @@ __version__ = "5.1.0"
 
 class TestActiveMQReconnect(TransactionTestCase):
     """Tests that the Queue Listener reconnects after ActiveMQ goes down"""
-    DIR = "queue_processor.reduction"
     fixtures = ["status_fixture"]
 
     def setUp(self):
