@@ -12,6 +12,8 @@ import os
 
 from .settings import LOG_LEVEL, AUTOREDUCE_HOME_ROOT
 
+os.makedirs(os.path.join(AUTOREDUCE_HOME_ROOT, "logs"), exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
