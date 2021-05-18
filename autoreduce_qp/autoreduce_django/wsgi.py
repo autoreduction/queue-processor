@@ -1,5 +1,5 @@
 """
-WSGI config for autoreduce_qp project.
+WSGI config for autoreduce_django project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'autoreduce_qp.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'autoreduce_django.settings')
 
 application = get_wsgi_application()

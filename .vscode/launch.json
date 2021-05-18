@@ -114,6 +114,7 @@
             "type": "python",
             "request": "launch",
             "module": "pytest",
+            "cwd": "${workspaceFolder}/autoreduce_qp",
             "args": [
                 "-v",
                 "${file}"

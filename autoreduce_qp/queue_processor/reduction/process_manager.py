@@ -38,7 +38,7 @@ class ReductionProcessManager:
                 # copy and update the subprocess environment to inherit the parent one,
                 # and append the PYTHONPATH of the queue_processor module
                 environment = os.environ.copy()
-                environment["PYTHONPATH"] = RUNNER_PATH.split("queue_processor")[0]
+                environment["PYTHONPATH"] = RUNNER_PATH.split("autoreduce_qp")[0]
                 # run process until finished and check the exit code for success
                 subprocess.run(args, check=True, env=environment)
                 # the subprocess will write out the result message in the tempfile, read it back
