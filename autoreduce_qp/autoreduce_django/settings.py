@@ -29,7 +29,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
-    'autoreduce_django',
+    'autoreduce_qp.autoreduce_django',
     'autoreduce_db.reduction_viewer',
     'autoreduce_db.instrument',
 ]
