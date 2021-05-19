@@ -19,21 +19,23 @@ from autoreduce_qp.systemtests.base_systemtest import BaseAutoreduceSystemTest, 
 
 class TestActiveMQReconnect(BaseAutoreduceSystemTest):
     """Tests that the Queue Listener reconnects after ActiveMQ goes down"""
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """ Start all external services """
         settings_factory = ClientSettingsFactory()
+        cls.original_activemq_settings = queue_client.ACTIVEMQ_SETTINGS
 
         queue_client.ACTIVEMQ_SETTINGS = settings_factory.create('queue',
                                                                  username="admin",
                                                                  password="admin",
                                                                  host="127.0.0.1",
                                                                  port="62000")
-        self._start_activemq()
-        super().setUp()
+        cls._start_activemq()
 
-    def tearDown(self):
-        super().tearDown()
-        self._stop_activemq()
+    @classmethod
+    def tearDownClass(cls):
+        cls._stop_activemq()
+        queue_client.ACTIVEMQ_SETTINGS = cls.original_activemq_settings
 
     @staticmethod
     def _start_activemq():
