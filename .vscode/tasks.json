@@ -278,11 +278,5 @@
                 "Export UID:GID to $USERID"
             ]
         },
-        {
-            "label": "Run Selenium Docker daemon",
-            "type": "shell",
-            "command": "docker run --rm -it --network=host -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-beta-3-prerelease-20210422",
-            "problemMatcher": []
-        }
     ]
 }

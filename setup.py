@@ -12,13 +12,14 @@ setup_requires = [
     'stomp.py==6.1.0'
 ]
 
-setup(
-    name='autoreduce_qp',
-    version='21.1',
-    description='ISIS Autoreduction queue processor',
-    author='ISIS Autoreduction Team',
-    url='https://github.com/ISISScientificComputing/autoreduce/',
-    install_requires=setup_requires,
-    packages=find_packages(),
-    entry_points={"console_scripts": ["autoreduce-qp-start = autoreduce_qp.queue_processor.queue_listener:main"]},
-)
+setup(name='autoreduce_qp',
+      version='21.1',
+      description='ISIS Autoreduction queue processor',
+      author='ISIS Autoreduction Team',
+      url='https://github.com/ISISScientificComputing/autoreduce/',
+      install_requires=setup_requires,
+      packages=find_packages(),
+      entry_points={"console_scripts": ["autoreduce-qp-start = autoreduce_qp.queue_processor.queue_listener:main"]},
+      classifiers=[
+          "Programming Language :: Python :: 3 :: Only",
+      ])
