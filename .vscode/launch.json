@@ -159,22 +159,6 @@
             }
         },
         {
-            "name": "Web app",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/WebApp/autoreduce_webapp/",
-            "program": "${workspaceFolder}/WebApp/autoreduce_webapp/manage.py",
-            "args": [
-                "runserver"
-            ],
-            "django": true,
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-native",
-                "order": 99
-            },
-        },
-        {
             "name": "Queue Listener",
             "type": "python",
             "request": "launch",

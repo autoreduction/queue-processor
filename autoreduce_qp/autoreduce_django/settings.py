@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 from pathlib import Path
 
-from autoreduce_db.autoreduce_db.settings import DATABASES as autoreduce_db_settings
+from autoreduce_db.autoreduce_django.settings import DATABASES as autoreduce_db_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
