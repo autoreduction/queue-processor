@@ -11,6 +11,12 @@
 		},
 		{
 			"path": "../autoreduce-frontend"
+		},
+		{
+			"path": "../autoreduce_db"
+		},
+		{
+			"path": "../autoreduce_utils"
 		}
 	],
 	"settings": {

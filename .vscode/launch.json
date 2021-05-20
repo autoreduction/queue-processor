@@ -27,29 +27,6 @@
             "postDebugTask": "Kill queue-processor-debugpy"
         },
         {
-            "name": "Webapp Docker Attach",
-            "type": "python",
-            "request": "attach",
-            "connect": {
-                "host": "127.0.0.1",
-                "port": 5679
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/autoreduce"
-                }
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-docker",
-                "order": 1
-            },
-            "preLaunchTask": "(don't use) Run Docker Web App",
-            "postDebugTask": "Kill webapp-debugpy",
-            "django": true
-        },
-        {
             "name": "pytest Docker Attach",
             "type": "python",
             "request": "attach",
