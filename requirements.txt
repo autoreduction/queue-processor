@@ -11,4 +11,5 @@ pytest-django==4.2.0
 pytest-xdist==2.2.1
 selenium==3.141.0
 vulture==2.3
-yapf==0.31.0
+yapf==0.31.0  # Keep this version up to date with .pre-commit-config.yaml
+pre-commit==2.12.1

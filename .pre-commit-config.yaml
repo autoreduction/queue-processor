@@ -1,0 +1,6 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-yapf
+    rev: v0.31.0  # Keep this version up to date with requirements.txt
+    hooks:
+      - id: yapf
+        args: ['--in-place', '--parallel', '--recursive']
