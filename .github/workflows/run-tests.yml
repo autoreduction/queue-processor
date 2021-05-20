@@ -27,13 +27,14 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          PYTHONPATH=. pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
-          --cov=scripts --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
-          --cov-report=xml
+          pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml autoreduce_qp
+
+      - name: Print docker containers
+        run: docker ps
 
       - name: Run system tests
         run: |
-          PYTHONPATH=. pytest -pno:django systemtests --cov-append
+          pytest autoreduce_qp/systemtests --cov-append
 
       - uses: codecov/codecov-action@v1
         with:
@@ -42,58 +43,6 @@ jobs:
           flags: backend
           fail_ci_if_error: true
           verbose: true
-
-  selenium:
-    name: Selenium
-    runs-on: ubuntu-18.04
-    strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - uses: ./.github/actions/build-autoreduction
-
-      - name: Set up chromedriver
-        run: |
-          wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          export PATH=$PATH:./chromedriver_linux64/
-
-      - name: Install chrome
-        run: sudo apt-get install -y google-chrome-stable
-
-      - name: Run tests
-        run: |
-          PYTHONPATH=. pytest WebApp/autoreduce_webapp/selenium_tests --cov-report=xml --cov=WebApp/autoreduce_webapp
-
-      - uses: codecov/codecov-action@v1
-        with:
-          files: ./coverage.xml
-          name: codecov-umbrella
-          flags: webapp
-          fail_ci_if_error: true
-          verbose: true
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: screenshots_and_reports
-          path: |
-            WebApp/autoreduce_webapp/selenium_tests/screenshots
-            WebApp/autoreduce_webapp/selenium_tests/a11y_reports
 
 
   dependency-check:
@@ -144,18 +93,11 @@ jobs:
 
       - name: Pylint tests
         run: |
-          pylint build
-          pylint model
-          pylint monitors
-          pylint queue_processors
-          pylint scripts
-          pylint systemtests
-          pylint plotting
-          pylint --disable=django-not-configured,import-error,no-name-in-module --load-plugins pylint_django WebApp
+          PYTHONPATH=autoreduce_qp pylint --load-plugins=pylint_django autoreduce_qp
 
       - name: YAPF
         run: python -m yapf --parallel --diff --recursive .
 
       - name: Vulture
-        run: vulture --min-confidence 100 build model monitors scripts queue_processors systemtests plotting
+        run: vulture --min-confidence 90 autoreduce_qp
 

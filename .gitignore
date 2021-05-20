@@ -26,7 +26,7 @@ venv36/
 venv37/
 
 # Ignore pip install installation
-AutoReduction.egg-info/
+autoreduce_qp.egg-info/
 
 # This is generated from a template so should be ignored to force regeneration
 apache_django_wsgi.conf
@@ -43,21 +43,6 @@ vault.yml
 
 .DS_Store
 
-# Ignore downloaded graphs
-!Webapp/autoreduce_webapp/static/graphs
-!Webapp/autoreduce_webapp/static/graphs/.keep
-
-# Ignore collected staticfiles
-WebApp/autoreduce_webapp/staticfiles
-
-# Ignore The screenshot folder in Selenium tests
-WebApp/autoreduce_webapp/selenium_tests/screenshots
-!WebApp/autoreduce_webapp/selenium_tests/screenshots/.keep
-
-# Ignore The a11y folder in Selenium tests
-WebApp/autoreduce_webapp/selenium_tests/a11y_reports
-!WebApp/autoreduce_webapp/selenium_tests/a11y_reports/.keep
-
 # Ignore developer specific .vscode/settings.json
 .vscode/settings.json
 
@@ -69,5 +54,6 @@ reduced-data/
 data-archive/
 test-archive/
 
-autoreduce.code-workspace
-
+# pip build files
+build/
+dist/
