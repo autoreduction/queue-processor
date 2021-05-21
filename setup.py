@@ -13,7 +13,7 @@ setup(name='autoreduce_qp',
       author='ISIS Autoreduction Team',
       url='https://github.com/ISISScientificComputing/autoreduce/',
       install_requires=[
-          'autoreduce_db==0.1.3', 'autoreduce_utils==0.1.3', 'Django==3.2.2', 'fire==0.4.0', 'plotly==4.14.3',
+          'autoreduce_db==0.1.4', 'autoreduce_utils==0.1.3', 'Django==3.2.2', 'fire==0.4.0', 'plotly==4.14.3',
           'stomp.py==6.1.0'
       ],
       packages=find_packages(),
