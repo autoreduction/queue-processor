@@ -1,0 +1,22 @@
+Bootstrap: docker-daemon
+From: autoreduction/qp:latest
+Includecmd: no
+
+%environment
+    # Specifies Mantid-specific environment.
+    # /opt/Mantid/scripts/ExternalInterfaces - is for MSlice
+    export PYTHONPATH=/opt/Mantid/scripts/:/opt/Mantid/scripts/Diffraction/:/opt/Mantid/scripts/Engineering/:/opt/Mantid/bin:/opt/Mantid/lib:/opt/Mantid/plugins:/opt/Mantid/scripts/SANS/:/opt/Mantid/scripts/Inelastic/:/opt/Mantid/scripts/ExternalInterfaces
+    # Specifies a custom location for the user properties
+    export MANTIDPROPERTIES=/shared-config/Mantid.user.properties
+
+# %test
+# TODO fix this - it doesn't execute properly right now
+#     # Verify that h5py is from conda-forge and not any other channel. If h5py
+#     # gets updated from pip it can break due to linking with the older library in conda
+#     if [ `conda list h5py | awk '{print $4}' | tail -n1` != "conda-forge" ]; then
+#         exit 1
+#     fi
+
+# This is used by "sinularity instance start"
+%startscript
+    python3 /autoreduce/autoreduce_qp/queue_processor/queue_listener.py
