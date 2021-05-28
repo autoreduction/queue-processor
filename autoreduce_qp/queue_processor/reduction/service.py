@@ -17,8 +17,6 @@ from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import chardet
-
 from .exceptions import DatafileError, ReductionScriptError
 from .timeout import TimeOut
 from .utilities import channels_redirected
@@ -167,14 +165,10 @@ class ReductionScript:
         """Returns the text of the script file. Does not load it as a module"""
         # Read raw bytes and determine encoding
         try:
-            with io.open(self.script_path, 'rb') as file_raw:
-                encoding = chardet.detect(file_raw.read(32))["encoding"]
+            with io.open(self.script_path, 'r') as open_file:
+                return open_file.read()
         except IOError:
             return ""
-
-        # Read the file in decoded; io is used for the encoding kwarg
-        with io.open(self.script_path, 'r', encoding=encoding) as file_decoded:
-            return file_decoded.read()
 
     def replace_variables(self, reduction_arguments):
         """
