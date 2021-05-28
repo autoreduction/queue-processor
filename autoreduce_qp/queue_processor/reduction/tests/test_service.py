@@ -305,6 +305,10 @@ class TestReductionService(unittest.TestCase):
         with self._test_module(test_string) as red_script:
             assert red_script.text() == test_string
 
+        test_special_chars = 'print("✈", "’")'
+        with self._test_module(test_special_chars) as red_script:
+            assert red_script.text() == test_special_chars
+
     def test_reduction_script_replace_variables_before_load(self):
         """
         Test that replace variables raises if called before the module is loaded
