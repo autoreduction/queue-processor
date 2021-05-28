@@ -1,0 +1,22 @@
+---
+
+- name: Ensures ~/previous_logs dir exists
+  file:
+    path: /home/{{ autoreduction_user }}/previous_logs/
+    state: directory
+    owner: "{{ autoreduction_user }}"
+    group: "{{ autoreduction_user }}"
+
+- name: Clear previous Singularity instance logs
+  command: mv --backup=numbered /home/{{ autoreduction_user }}/.singularity/instances/logs /home/{{ autoreduction_user }}/previous_logs
+  ignore_errors: yes
+
+- name: Set run_command depending on deployment stage
+  include_vars: "{{ deployment_stage }}.yml"
+
+- name: Start the Singularity instance
+  become: yes
+  become_user: "{{ autoreduction_user }}"
+  command: "{{ run_command }}"
+  args:
+    chdir: /home/{{ autoreduction_user }}/

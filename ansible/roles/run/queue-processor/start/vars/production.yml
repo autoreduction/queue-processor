@@ -1,0 +1,9 @@
+run_command: >
+  singularity instance start
+  --env AUTOREDUCTION_PRODUCTION=true
+  --bind ./autoreduce:/autoreduce/
+  --bind /instrument:/instrument
+  --bind /isis:/isis
+  --bind /isis:/archive
+  --bind /shared-config:/shared-config
+  qp_mantid_python36.sif qp
