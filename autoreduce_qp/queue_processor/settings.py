@@ -6,16 +6,15 @@
 # ############################################################################### #
 # pylint: skip-file
 import os
-from pathlib import Path
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-AUTOREDUCE_HOME_ROOT = str(Path("~/.autoreduce").expanduser())
+AUTOREDUCE_HOME_ROOT = os.path.expanduser("~/.autoreduce")
+PROJECT_ROOT = os.path.join(AUTOREDUCE_HOME_ROOT, "dev")
 FACILITY = 'ISIS'
 
 MYSQL = {'HOST': 'localhost:3306', 'USER': 'test-user', 'PASSWD': 'pass', 'DB': 'autoreduction'}
 
 # Logging
-LOG_FILE = os.path.join(PROJECT_ROOT, 'logs', 'queue_processor.log')
+LOG_FILE = os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'queue_processor.log')
 DEBUG = False
 
 if DEBUG:

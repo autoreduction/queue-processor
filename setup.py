@@ -8,7 +8,7 @@ for more details
 from setuptools import setup, find_packages
 
 setup(name="autoreduce_qp",
-      version="21.1.3",
+      version="22.0.0.dev",
       description="ISIS Autoreduction queue processor",
       author="ISIS Autoreduction Team",
       url="https://github.com/ISISScientificComputing/autoreduce/",
