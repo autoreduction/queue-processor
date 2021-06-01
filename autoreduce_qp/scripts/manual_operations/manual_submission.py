@@ -8,7 +8,13 @@
 A module for creating and submitting manual submissions to autoreduction
 """
 from __future__ import print_function
+import django
+from django.conf import settings
+from autoreduce_qp.autoreduce_django.settings import DATABASES, INSTALLED_APPS
 
+if not settings.configured:
+    settings.configure(DATABASES=DATABASES, INSTALLED_APPS=INSTALLED_APPS)
+    django.setup()
 import sys
 
 import fire
@@ -209,4 +215,5 @@ def main(instrument, first_run, last_run=None):
 
 
 if __name__ == "__main__":
+
     fire.Fire(main)  # pragma: no cover
