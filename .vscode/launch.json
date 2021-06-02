@@ -20,11 +20,11 @@
             ],
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-docker",
+                "group": "autoreduce-qp-docker",
                 "order": 1
             },
-            "preLaunchTask": "(don't use) Run Docker Queue Processor",
-            "postDebugTask": "Kill queue-processor-debugpy"
+            "preLaunchTask": "(don't use directly) Exec queue listener",
+            "postDebugTask": "Kill queue-processor-debugpy",
         },
         {
             "name": "pytest Docker Attach",
@@ -32,7 +32,7 @@
             "request": "attach",
             "connect": {
                 "host": "127.0.0.1",
-                "port": 5681
+                "port": 5680
             },
             "pathMappings": [
                 {
@@ -42,10 +42,10 @@
             ],
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-docker",
+                "group": "autoreduce-qp-docker",
                 "order": 1
             },
-            "preLaunchTask": "(don't use) Run Docker pytest django",
+            "preLaunchTask": "(don't use directly) Exec pytest django",
         },
         {
             "name": "Pytest",

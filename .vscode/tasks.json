@@ -4,42 +4,15 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build database",
-            "type": "shell",
-            "command": "${config:python.pythonPath}",
-            "args": [
-                "setup.py",
-                "database"
-            ],
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            }
-        },
-        {
-            "label": "Install fixtures",
-            "type": "shell",
-            "command": "${config:python.pythonPath}",
-            "args": [
-                "setup.py",
-                "fixtures"
-            ],
-            "problemMatcher": []
-        },
-        {
             "label": "Export UID:GID to $USERID",
             "type": "shell",
             "command": "echo 'export USERID=$(id -u):$(id -g)' > ~/.userid.sh",
+            "isBackground": true,
             "problemMatcher": [],
             "detail": "Exports the current user's user and group IDs so that the output files are owned by the correct user",
             "presentation": {
-                "echo": true,
-                "reveal": "always",
+                "echo": false,
+                "reveal": "never",
                 "focus": false,
                 "panel": "shared",
                 "showReuseMessage": false,
@@ -47,82 +20,11 @@
             }
         },
         {
-            "label": "(don't use) Run Docker Queue Processor",
-            "detail": "Used by the debugging configuration. Don't manually use",
+            "label": "(don't use directly) Exec queue listener",
+            "detail": "Used by the debugging configuration. Don't manually use or the terminal will remain hanging until you manually attach to the --listen port",
             "type": "shell",
-            "command": "docker",
             "isBackground": true,
-            "args": [
-                "run",
-                "--rm",
-                "--network=host",
-                "-v",
-                "${workspaceFolder}:/autoreduce",
-                "-v",
-                "~/.autoreduce:/root/.autoreduce",
-                "-v",
-                "${workspaceFolder}/data-archive:/isis",
-                "-v",
-                "${workspaceFolder}/data-archive:/archive",
-                "-v",
-                "${workspaceFolder}/reduced-data:/instrument",
-                "--name",
-                "queue-processor-debugpy",
-                "-it",
-                "autoreduction/qp",
-                "python3",
-                "-m",
-                "debugpy",
-                "--listen",
-                "5678",
-                "--wait-for-client",
-                "/autoreduce/queue_processors/queue_processor/queue_listener.py"
-            ],
-            "problemMatcher": [],
-        },
-        {
-            "label": "Kill queue-processor-debugpy",
-            "detail": "Used by the debugging configuration. Don't manually use",
-            "type": "shell",
-            "command": "docker kill queue-processor-debugpy",
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            }
-        },
-        {
-            "label": "(don't use) Run Docker pytest",
-            "detail": "Used by the debugging configuration. Don't manually use",
-            "type": "shell",
-            "command": "docker",
-            "isBackground": true,
-            "args": [
-                "run",
-                "--rm",
-                "--network=host",
-                "-v",
-                "${workspaceFolder}:/autoreduce",
-                "--name",
-                "webapp-debugpy-pytest",
-                "-it",
-                "autoreduction/devtest",
-                "python3",
-                "-m",
-                "debugpy",
-                "--listen",
-                "5680",
-                "--wait-for-client",
-                "-m",
-                "pytest",
-                "-pno:django",
-                "-v",
-                "/autoreduce/${relativeFileDirname}/${fileBasename}"
-            ],
+            "command": "docker exec -it autoreduce-debugpy python3 -m debugpy --listen 5678 --wait-for-client /autoreduce/autoreduce_qp/queue_processor/queue_listener.py",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -134,36 +36,12 @@
             "problemMatcher": []
         },
         {
-            "label": "(don't use) Run Docker pytest django",
+            "label": "(don't use directly) Exec pytest django",
             "detail": "Used by the debugging configuration. Don't manually use",
-            "type": "shell",
-            "command": "docker",
             "isBackground": true,
-            "args": [
-                "run",
-                "--rm",
-                "--network=host",
-                "-v",
-                "${workspaceFolder}:/autoreduce",
-                "--name",
-                "devtest",
-                "-e",
-                "DISPLAY=:1",
-                "-e",
-                "SELENIUM_REMOTE=1",
-                "-it",
-                "autoreduction/devtest",
-                "python3",
-                "-m",
-                "debugpy",
-                "--listen",
-                "5681",
-                "--wait-for-client",
-                "-m",
-                "pytest",
-                "-v",
-                "/autoreduce/${relativeFileDirname}/${fileBasename}"
-            ],
+            "type": "shell",
+            "command": "docker exec -it autoreduce-debugpy python3 -m debugpy --listen 5680 --wait-for-client -m pytest -v /autoreduce/${relativeFileDirname}/${fileBasename}",
+            "group": "test",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -173,34 +51,6 @@
                 "clear": false
             },
             "problemMatcher": []
-        },
-        {
-            "label": "Kill webapp-debugpy",
-            "type": "shell",
-            "command": "docker kill webapp-debugpy",
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            }
-        },
-        {
-            "label": "Kill devtest",
-            "type": "shell",
-            "command": "docker kill devtest",
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "silent",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            }
         },
         {
             "label": "Start ActiveMQ Docker daemon",
@@ -215,29 +65,6 @@
                 "showReuseMessage": true,
                 "clear": false
             }
-        },
-        {
-            "label": "Migrate database (with PR fixtures)",
-            "type": "shell",
-            "command": "source ~/.userid.sh && docker run --rm -v ${workspaceFolder}:/autoreduce -v ~/.autoreduce:/tmp/.autoreduce -e AUTOREDUCTION_CREDENTIALS=/tmp/.autoreduce/credentials.ini --user $USERID -it autoreduction/qp bash -c 'python3 /autoreduce/WebApp/autoreduce_webapp/manage.py migrate && python3 /autoreduce/WebApp/autoreduce_webapp/manage.py loaddata super_user_fixture status_fixture pr_test'",
-            "problemMatcher": [],
-            "dependsOn": [
-                "Export UID:GID to $USERID"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "Migrate database (clean)",
-            "type": "shell",
-            "command": "source ~/.userid.sh && docker run --rm -v ${workspaceFolder}:/autoreduce -v ~/.autoreduce:/tmp/.autoreduce -e AUTOREDUCTION_CREDENTIALS=/tmp/.autoreduce/credentials.ini --user $USERID -it autoreduction/webapp python3 /autoreduce/WebApp/autoreduce_webapp/manage.py migrate",
-            "isBackground": true,
-            "problemMatcher": [],
-            "dependsOn": [
-                "Export UID:GID to $USERID"
-            ]
         },
     ]
 }
