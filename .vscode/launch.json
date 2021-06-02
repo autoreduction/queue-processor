@@ -27,27 +27,6 @@
             "postDebugTask": "Kill queue-processor-debugpy",
         },
         {
-            "name": "pytest Docker Attach",
-            "type": "python",
-            "request": "attach",
-            "connect": {
-                "host": "127.0.0.1",
-                "port": 5680
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/autoreduce"
-                }
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-qp-docker",
-                "order": 1
-            },
-            "preLaunchTask": "(don't use directly) Exec pytest django",
-        },
-        {
             "name": "Pytest",
             "type": "python",
             "request": "launch",
