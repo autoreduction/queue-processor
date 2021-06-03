@@ -15,12 +15,12 @@ from pathlib import Path
 
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
+from autoreduce_scripts.manual_operations.manual_remove import remove
 from django.test import TransactionTestCase
 
 from autoreduce_qp.queue_processor.queue_listener import setup_connection
 from autoreduce_qp.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
-from autoreduce_qp.scripts.manual_operations import manual_remove as remove
 from autoreduce_qp.model.database import access as db
 
 REDUCE_SCRIPT = \
@@ -106,7 +106,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         if not isinstance(run_number, list):
             run_number = [run_number]
         for run in run_number:
-            remove.remove(instrument, run, delete_all_versions=True)
+            remove(instrument, run, delete_all_versions=True)
 
     @staticmethod
     def _delete_reduction_directory():
