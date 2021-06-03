@@ -23,14 +23,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - uses: ./.github/actions/build-autoreduction
+      - uses: ISISScientificComputing/autoreduce-actions/build@master
+        with:
+          package_name: autoreduce_qp
 
       - name: Run unit tests
         run: >-
           pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml autoreduce_qp
-
-      - name: Print docker containers
-        run: docker ps
 
       - name: Run system tests
         run: |
@@ -89,15 +88,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - uses: ./.github/actions/build-autoreduction
+      - uses: ISISScientificComputing/autoreduce-actions/build@master
+        with:
+          package_name: autoreduce_qp
 
-      - name: Pylint tests
-        run: |
-          PYTHONPATH=autoreduce_qp pylint --load-plugins=pylint_django autoreduce_qp
-
-      - name: YAPF
-        run: python -m yapf --parallel --diff --recursive .
-
-      - name: Vulture
-        run: vulture --min-confidence 90 autoreduce_qp
+      - uses: ISISScientificComputing/autoreduce-actions/code_inspection@master
+        with:
+          package_name: autoreduce_qp
 
