@@ -1,0 +1,16 @@
+{
+    "debugpy": {
+        "prefix": "debugpy",
+        "body": [
+            "import debugpy",
+            "print('Waiting for client')",
+            "debugpy.listen(5678)",
+            "debugpy.wait_for_client()",
+            "debugpy.breakpoint()",
+        ]
+    },
+    "pylint-disable": {
+        "prefix": "pylint",
+        "body": "# pylint:disable="
+    }
+}
