@@ -171,6 +171,20 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.finished is not None
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
 
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
+    def test_do_reduction_success_special_characters_in_script(self, rpm):
+        "Tests do_reduction success path"
+        rpm.return_value.run = self.do_post_started_assertions
+        test_special_chars_script = 'print("✈", "’")'
+        self.reduction_run.script = test_special_chars_script
+
+        self.handler.do_reduction(self.reduction_run, self.msg)
+        assert self.reduction_run.status == Status.get_completed()
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.reduction_location.first().file_path == "/path/1"
+        assert self.reduction_run.script == test_special_chars_script
+
     def do_post_started_assertions(self, expected_info_calls=1):
         "Helper to capture common assertions between tests"
         assert self.reduction_run.status == Status.get_processing()

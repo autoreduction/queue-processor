@@ -268,6 +268,7 @@ class TestReductionService(unittest.TestCase):
         red_script.script_path = Path(os.path.join(os.path.dirname(__file__), "module_to_import.py"))
         module = red_script.load()
 
+        assert red_script.exists()
         assert getattr(module, "TEST_DICTIONARY") == TEST_DICTIONARY
         assert red_script.module is not None
 
@@ -304,6 +305,10 @@ class TestReductionService(unittest.TestCase):
         test_string = 'print(123)'
         with self._test_module(test_string) as red_script:
             assert red_script.text() == test_string
+
+        test_special_chars = 'print("✈", "’")'
+        with self._test_module(test_special_chars) as red_script:
+            assert red_script.text() == test_special_chars
 
     def test_reduction_script_replace_variables_before_load(self):
         """
