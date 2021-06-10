@@ -22,7 +22,7 @@ from .timeout import TimeOut
 from .utilities import channels_redirected
 from ..settings import SCRIPTS_DIRECTORY, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 
-logger = logging.getLogger("reduction_service")
+logger = logging.getLogger(__package__)
 
 
 class ReductionDirectory:

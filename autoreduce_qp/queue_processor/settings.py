@@ -11,17 +11,6 @@ AUTOREDUCE_HOME_ROOT = os.path.expanduser("~/.autoreduce")
 PROJECT_ROOT = os.path.join(AUTOREDUCE_HOME_ROOT, "dev")
 FACILITY = 'ISIS'
 
-MYSQL = {'HOST': 'localhost:3306', 'USER': 'test-user', 'PASSWD': 'pass', 'DB': 'autoreduction'}
-
-# Logging
-LOG_FILE = os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'queue_processor.log')
-DEBUG = False
-
-if DEBUG:
-    LOG_LEVEL = 'DEBUG'
-else:
-    LOG_LEVEL = 'INFO'
-
 # The reduction outputs are saved there. If you want to avoid writing to the real CEPH then
 # change this to a local directory - the reductions should process fine regardless.
 # %(instrument, experiment_number, run_number)

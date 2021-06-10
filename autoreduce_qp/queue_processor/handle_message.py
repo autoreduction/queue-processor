@@ -36,7 +36,7 @@ class HandleMessage:
     def __init__(self):
         self.instrument_variable = InstrumentVariablesUtils()
 
-        self._logger = logging.getLogger("handle_queue_message")
+        self._logger = logging.getLogger(__package__)
 
     def data_ready(self, message: Message):
         """
