@@ -13,6 +13,7 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import logging
+import os
 from typing import Optional
 from django.db import transaction
 from django.utils import timezone
@@ -36,7 +37,7 @@ class HandleMessage:
     def __init__(self):
         self.instrument_variable = InstrumentVariablesUtils()
 
-        self._logger = logging.getLogger("handle_queue_message")
+        self._logger = logging.getLogger(os.path.basename(__file__))
 
     def data_ready(self, message: Message):
         """

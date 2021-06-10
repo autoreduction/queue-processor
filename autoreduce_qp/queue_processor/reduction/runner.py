@@ -9,6 +9,7 @@
 
 import io
 import logging
+import os
 import sys
 import traceback
 
@@ -19,7 +20,7 @@ from autoreduce_qp.queue_processor.reduction.service import (Datafile, Reduction
                                                              TemporaryReductionDirectory, reduce)
 from autoreduce_qp.queue_processor.settings import MANTID_PATH, TEMP_ROOT_DIRECTORY
 
-logger = logging.getLogger("reduction_runner")
+logger = logging.getLogger(os.path.basename(__file__))
 
 
 class ReductionRunner:
