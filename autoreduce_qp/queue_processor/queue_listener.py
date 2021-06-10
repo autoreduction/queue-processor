@@ -11,7 +11,6 @@ It consumes messages from the queues and then updates the reduction run
 status in the database.
 """
 import logging
-import os
 import time
 import traceback
 from contextlib import contextmanager
@@ -32,7 +31,7 @@ class QueueListener(ConnectionListener):
         self.client: QueueClient = client
         self.message_handler = HandleMessage()
 
-        self.logger = logging.getLogger(os.path.basename(__file__))
+        self.logger = logging.getLogger(__package__)
 
         # Keeps track of whether there is currently a message being processed.
         # Just a raw bool is OK because the subscription is configured to
@@ -125,8 +124,8 @@ def main():
     try:
         setup_connection()
     except ConnectionException as exp:
-        logging.getLogger(os.path.basename(__file__)).error("Exception occurred while connecting: %s %s\n\n%s",
-                                                            type(exp).__name__, exp, traceback.format_exc())
+        logging.getLogger(__package__).error("Exception occurred while connecting: %s %s\n\n%s",
+                                             type(exp).__name__, exp, traceback.format_exc())
         raise
 
     # print a success message to the terminal in case it's not being run through the daemon
