@@ -43,7 +43,7 @@ class TestActiveMQReconnect(BaseAutoreduceSystemTest):
                        shell=True,
                        timeout=30,
                        check=True)
-        subprocess.run("bash -c 'until nc -w 1 127.0.0.1 62000; do sleep 1; done'", shell=True, timeout=30, check=True)
+        time.sleep(30)
 
     @staticmethod
     def _stop_activemq():
