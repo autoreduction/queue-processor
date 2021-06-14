@@ -42,8 +42,8 @@ class TestActiveMQReconnect(BaseAutoreduceSystemTest):
         subprocess.Popen(
             ["docker", "run", "--rm", "--name", "activemq_systemtest", "-p", "62000:61613", "-d",
              "rmohr/activemq"]).wait(timeout=30)
-        subprocess.Popen(["bash", "-c", "until", "nc", "-w", "1", "127.0.0.1", "3000;", "do", "sleep", "1;",
-                          "done"]).wait(timeout=30)
+        subprocess.Popen(["bash", "-c", '"until nc -w 1 127.0.0.1 62000; do sleep 1; done"'],
+                         shell=True).wait(timeout=30)
 
     @staticmethod
     def _stop_activemq():
