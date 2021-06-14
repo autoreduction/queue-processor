@@ -17,10 +17,11 @@ from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from .exceptions import DatafileError, ReductionScriptError
-from .timeout import TimeOut
-from .utilities import channels_redirected
-from ..settings import SCRIPTS_DIRECTORY, CEPH_DIRECTORY, SCRIPT_TIMEOUT
+from autoreduce_utils.settings import SCRIPTS_DIRECTORY, CEPH_DIRECTORY, SCRIPT_TIMEOUT
+
+from autoreduce_qp.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
+from autoreduce_qp.queue_processor.reduction.timeout import TimeOut
+from autoreduce_qp.queue_processor.reduction.utilities import channels_redirected
 
 logger = logging.getLogger(__package__)
 
