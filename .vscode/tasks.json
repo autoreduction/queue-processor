@@ -53,9 +53,9 @@
             "problemMatcher": []
         },
         {
-            "label": "Start ActiveMQ Docker daemon",
+            "label": "Run ActiveMQ Docker daemon",
             "type": "shell",
-            "command": "docker run --rm --name activemq -p 61613:61613 -p 8161:8161 -it rmohr/activemq",
+            "command": "docker run --rm --name activemq -p 61613:61613 -p 8161:8161 -d rmohr/activemq",
             "problemMatcher": [],
             "presentation": {
                 "echo": true,
