@@ -39,15 +39,15 @@ class TestActiveMQReconnect(BaseAutoreduceSystemTest):
 
     @staticmethod
     def _start_activemq():
-        subprocess.Popen(
-            ["docker", "run", "--rm", "--name", "activemq_systemtest", "-p", "62000:61613", "-d",
-             "rmohr/activemq"]).wait(timeout=30)
-
-        time.sleep(30)
+        subprocess.run("docker run --rm --name activemq_systemtest -p 62000:61613 -d rmohr/activemq",
+                       shell=True,
+                       timeout=30,
+                       check=True)
+        subprocess.run("bash -c 'until nc -w 1 127.0.0.1 62000; do sleep 1; done'", shell=True, timeout=30, check=True)
 
     @staticmethod
     def _stop_activemq():
-        subprocess.Popen(["docker", "kill", "activemq_systemtest"]).wait(timeout=60)
+        subprocess.run("docker kill activemq_systemtest", shell=True, timeout=30, check=True)
 
     def test_reconnect_on_activemq_failure(self):
         """
