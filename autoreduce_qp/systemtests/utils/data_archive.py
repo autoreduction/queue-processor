@@ -61,7 +61,7 @@ class DataArchive:
         :return: (str) The string path of the datafile created.
         """
         location = Path(CYCLE_DIRECTORY % (instrument, f"{year}_{cycle_num}"))
-        location.mkdir(parents=True)
+        location.mkdir(parents=True, exist_ok=True)
         datafile = Path(location, datafile_name)
         datafile.touch()
         return str(datafile)
