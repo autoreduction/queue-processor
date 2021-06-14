@@ -8,7 +8,8 @@ from pathlib import Path
 from shutil import rmtree
 from unittest import TestCase
 
-from autoreduce_qp.queue_processor.settings import CYCLE_DIRECTORY, ARCHIVE_ROOT, PROJECT_ROOT
+from autoreduce_utils.runtime_settings import CYCLE_DIRECTORY, ARCHIVE_ROOT, PROJECT_DEV_ROOT
+
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 
 
@@ -17,9 +18,9 @@ class TestDataArchive(TestCase):
         if Path(ARCHIVE_ROOT).exists():
             rmtree(ARCHIVE_ROOT)
         self.data_archive = DataArchive(["test"], 19, 20)
-        self.expected_cycle_path = Path(PROJECT_ROOT, "data-archive", "NDXtest", "Instrument", "data")
+        self.expected_cycle_path = Path(PROJECT_DEV_ROOT, "data-archive", "NDXtest", "Instrument", "data")
         self.expected_script_path = Path(
-            Path(PROJECT_ROOT, "data-archive", "NDXtest", "user", "scripts", "autoreduction"))
+            Path(PROJECT_DEV_ROOT, "data-archive", "NDXtest", "user", "scripts", "autoreduction"))
 
     def tearDown(self) -> None:
         if Path(ARCHIVE_ROOT).exists():

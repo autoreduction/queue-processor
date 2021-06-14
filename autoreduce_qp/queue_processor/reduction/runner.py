@@ -13,11 +13,11 @@ import sys
 import traceback
 
 from autoreduce_utils.message.message import Message
+from autoreduce_utils.runtime_settings import MANTID_PATH, TEMP_ROOT_DIRECTORY
 from autoreduce_qp.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
 from autoreduce_qp.queue_processor.reduction.utilities import windows_to_linux_path
 from autoreduce_qp.queue_processor.reduction.service import (Datafile, ReductionDirectory, ReductionScript,
                                                              TemporaryReductionDirectory, reduce)
-from autoreduce_qp.queue_processor.settings import MANTID_PATH, TEMP_ROOT_DIRECTORY
 
 logger = logging.getLogger(__package__)
 

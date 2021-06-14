@@ -13,14 +13,9 @@ import os
 import sys
 import django
 from django.conf import settings as dj_settings
+from autoreduce_utils.runtime_settings import LOG_FILE, LOG_LEVEL
+
 from autoreduce_qp.autoreduce_django.settings import DATABASES, INSTALLED_APPS
-
-from .settings import AUTOREDUCE_HOME_ROOT
-
-os.makedirs(os.path.join(AUTOREDUCE_HOME_ROOT, "logs"), exist_ok=True)
-
-LOG_LEVEL = os.environ.get("LOGLEVEL", "INFO").upper()
-LOG_FILE = os.path.join(AUTOREDUCE_HOME_ROOT, 'logs', 'autoreduce.log')
 
 rotating_file_handler = logging.handlers.RotatingFileHandler(filename=LOG_FILE, maxBytes=209715200, backupCount=5)
 stream_handler = logging.StreamHandler(sys.stdout)

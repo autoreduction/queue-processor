@@ -15,11 +15,11 @@ from pathlib import Path
 
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
+from autoreduce_utils.runtime_settings import MANTID_PATH, PROJECT_DEV_ROOT
 from autoreduce_scripts.manual_operations.manual_remove import remove
 from django.test import TransactionTestCase
 
 from autoreduce_qp.queue_processor.queue_listener import setup_connection
-from autoreduce_qp.queue_processor.settings import MANTID_PATH, PROJECT_ROOT
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.model.database import access as db
 
@@ -111,7 +111,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
     @staticmethod
     def _delete_reduction_directory():
         """ Delete the temporary reduction directory"""
-        path = Path(os.path.join(PROJECT_ROOT, 'reduced-data'))
+        path = Path(os.path.join(PROJECT_DEV_ROOT, 'reduced-data'))
         if path.exists():
             shutil.rmtree(path.absolute())
 
