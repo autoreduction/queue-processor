@@ -17,7 +17,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import Mock, PropertyMock
 
 from unittest.mock import patch, MagicMock, call
-from autoreduce_utils.runtime_settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
+from autoreduce_utils.settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
 
 from autoreduce_qp.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
 from autoreduce_qp.queue_processor.reduction.service import ReductionDirectory, \

@@ -7,7 +7,7 @@
 """ Class used for handling script timeouts"""
 import signal
 
-from autoreduce_utils.runtime_settings import SCRIPT_TIMEOUT
+from autoreduce_utils.settings import SCRIPT_TIMEOUT
 
 
 class TimeOut:

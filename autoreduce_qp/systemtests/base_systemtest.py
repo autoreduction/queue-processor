@@ -15,7 +15,7 @@ from pathlib import Path
 
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
-from autoreduce_utils.runtime_settings import MANTID_PATH, PROJECT_DEV_ROOT
+from autoreduce_utils.settings import MANTID_PATH, PROJECT_DEV_ROOT
 from autoreduce_scripts.manual_operations.manual_remove import remove
 from django.test import TransactionTestCase
 
