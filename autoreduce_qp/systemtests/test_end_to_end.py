@@ -8,15 +8,12 @@
 Linux only!
 Tests that data can traverse through the autoreduction system successfully
 """
-import os
 from typing import Union
 
 from parameterized.parameterized import parameterized
 
 from autoreduce_qp.systemtests.base_systemtest import (BaseAutoreduceSystemTest, REDUCE_SCRIPT,
                                                        SYNTAX_ERROR_REDUCE_SCRIPT, VARS_SCRIPT)
-
-ACTIVEMQ_EXECUTABLE = os.path.join('/opt/autoreduce_deps/activemq', 'apache-activemq-5.15.9', 'bin', 'activemq')
 
 
 class TestEndToEnd(BaseAutoreduceSystemTest):

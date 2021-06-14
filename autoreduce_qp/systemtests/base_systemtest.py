@@ -13,10 +13,10 @@ import shutil
 import time
 from pathlib import Path
 
+from autoreduce_db.reduction_viewer.models import ReductionRun
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import MANTID_PATH, PROJECT_DEV_ROOT
-from autoreduce_scripts.manual_operations.manual_remove import remove
 from django.test import TransactionTestCase
 
 from autoreduce_qp.queue_processor.queue_listener import setup_connection
@@ -105,8 +105,8 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         """
         if not isinstance(run_number, list):
             run_number = [run_number]
-        for run in run_number:
-            remove(instrument, run, delete_all_versions=True)
+
+        ReductionRun.objects.filter(instrument=instrument, run_number__in=run_number).delete()
 
     @staticmethod
     def _delete_reduction_directory():
