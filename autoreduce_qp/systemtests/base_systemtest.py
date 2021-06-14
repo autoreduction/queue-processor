@@ -106,7 +106,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         if not isinstance(run_number, list):
             run_number = [run_number]
 
-        ReductionRun.objects.filter(instrument=instrument, run_number__in=run_number).delete()
+        ReductionRun.objects.filter(instrument__name=instrument, run_number__in=run_number).delete()
 
     @staticmethod
     def _delete_reduction_directory():
