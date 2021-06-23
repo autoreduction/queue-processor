@@ -4,55 +4,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Export UID:GID to $USERID",
-            "type": "shell",
-            "command": "echo 'export USERID=$(id -u):$(id -g)' > ~/.userid.sh",
-            "isBackground": true,
-            "problemMatcher": [],
-            "detail": "Exports the current user's user and group IDs so that the output files are owned by the correct user",
-            "presentation": {
-                "echo": false,
-                "reveal": "never",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": false,
-                "clear": false
-            }
-        },
-        {
-            "label": "(don't use directly) Exec queue listener",
-            "detail": "Used by the debugging configuration. Don't manually use or the terminal will remain hanging until you manually attach to the --listen port",
-            "type": "shell",
-            "isBackground": true,
-            "command": "docker exec -it autoreduce-debugpy python3 -m debugpy --listen 5678 --wait-for-client /autoreduce/autoreduce_qp/queue_processor/queue_listener.py",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "(don't use directly) Exec pytest django",
-            "detail": "Used by the debugging configuration. Don't manually use",
-            "isBackground": true,
-            "type": "shell",
-            "command": "docker exec -it autoreduce-debugpy python3 -m debugpy --listen 5680 --wait-for-client -m pytest -v /autoreduce/${relativeFileDirname}/${fileBasename}",
-            "group": "test",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "Run ActiveMQ Docker daemon",
             "type": "shell",
             "command": "docker run --rm --name activemq -p 61613:61613 -p 8161:8161 -d rmohr/activemq",

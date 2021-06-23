@@ -5,28 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Queue Processor Docker Attach",
-            "type": "python",
-            "request": "attach",
-            "connect": {
-                "host": "127.0.0.1",
-                "port": 5678
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/autoreduce"
-                }
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-qp-docker",
-                "order": 1
-            },
-            "preLaunchTask": "(don't use directly) Exec queue listener",
-            "postDebugTask": "Kill queue-processor-debugpy",
-        },
-        {
             "name": "Pytest",
             "type": "python",
             "request": "launch",
@@ -39,7 +17,7 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-native",
+                "group": "autoreduce-test",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -62,7 +40,7 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-native",
+                "group": "autoreduce-test",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -84,7 +62,7 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-native",
+                "group": "autoreduce-test",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -106,7 +84,7 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-native",
+                "group": "autoreduce-test",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -129,7 +107,7 @@
             ],
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-native",
+                "group": "autoreduce-test",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -138,15 +116,15 @@
             }
         },
         {
-            "name": "Queue Listener",
+            "name": "Run Autoreduce queue listener",
             "type": "python",
             "request": "launch",
             "program": "queue_processors/queue_processor/queue_listener.py",
             "console": "integratedTerminal",
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-native",
-                "order": 98
+                "group": "autoreduce-run",
+                "order": 1
             }
         },
         {
