@@ -116,7 +116,7 @@
             }
         },
         {
-            "name": "Run Autoreduce queue listener",
+            "name": "Run queue listener",
             "type": "python",
             "request": "launch",
             "program": "queue_processors/queue_processor/queue_listener.py",
