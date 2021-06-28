@@ -5,28 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Pytest",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "cwd": "${workspaceFolder}",
-            "args": [
-                "-v",
-                "${file}"
-            ],
-            "django": true,
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-test",
-            },
-            "env": {
-                "DISPLAY": ":1",
-                "RUNNING_VIA_PYTEST": "true",
-                "SELENIUM_REMOTE": "1"
-            },
-            "justMyCode": false
-        },
-        {
             "name": "Pytest unit tests",
             "type": "python",
             "request": "launch",
@@ -40,7 +18,7 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-test",
+                "group": "autoreduce-test-qp",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -62,7 +40,8 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-test",
+                "group": "autoreduce-test-qp",
+                "order": 4
             },
             "env": {
                 "DISPLAY": ":1",
@@ -84,7 +63,7 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce-test",
+                "group": "autoreduce-test-qp",
             },
             "env": {
                 "DISPLAY": ":1",
@@ -94,32 +73,10 @@
             "justMyCode": false
         },
         {
-            "name": "Pytest - coverage",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "--cov-report",
-                "html",
-                "--cov=${workspaceFolder}/queue_processors",
-                "-v",
-                "${file}"
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-test",
-            },
-            "env": {
-                "DISPLAY": ":1",
-                "RUNNING_VIA_PYTEST": "true",
-                "SELENIUM_REMOTE": "1"
-            }
-        },
-        {
             "name": "Run queue listener",
             "type": "python",
             "request": "launch",
-            "program": "queue_processors/queue_processor/queue_listener.py",
+            "program": "${workspaceFolder}/autoreduce_qp/queue_processor/queue_listener.py",
             "console": "integratedTerminal",
             "presentation": {
                 "hidden": false,
