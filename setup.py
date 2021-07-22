@@ -8,12 +8,12 @@ for more details
 from setuptools import setup, find_packages
 
 setup(name="autoreduce_qp",
-      version="22.0.0.dev2",
+      version="22.0.0.dev3",
       description="ISIS Autoreduction queue processor",
       author="ISIS Autoreduction Team",
       url="https://github.com/ISISScientificComputing/autoreduce/",
       install_requires=[
-          "autoreduce_utils==22.0.0.dev3", "autoreduce_db==22.0.0.dev4", "Django==3.2.4", "fire==0.4.0",
+          "autoreduce_utils==22.0.0.dev3", "autoreduce_db==22.0.0.dev5", "Django==3.2.4", "fire==0.4.0",
           "plotly==4.14.3", "stomp.py==6.1.0"
       ],
       packages=find_packages(),
