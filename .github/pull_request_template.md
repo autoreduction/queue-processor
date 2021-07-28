@@ -1,7 +1,7 @@
 ### Summary of work
 <!---The changes you have made--->
 
-<!--- If having added new querying check that you did it the best way possible: https://gist.github.com/rg3915/91766c2de54233541f6743edba44732c --->
+<!--- If having added new database query through Django ORM, check that you did it the best way possible: https://gist.github.com/rg3915/91766c2de54233541f6743edba44732c --->
 
 ### How to test your work
 <!---This can be a link to the---> 
