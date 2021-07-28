@@ -52,7 +52,7 @@ class TestQueueListener(TestCase):
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueClient)
         self.mocked_handler = mock.MagicMock(spec=HandleMessage)
-        self.headers = self._get_header()
+        self.frame = self._get_frame()
 
         with patch("autoreduce_qp.queue_processor.queue_listener"
                    ".HandleMessage", return_value=self.mocked_handler), \
@@ -61,35 +61,41 @@ class TestQueueListener(TestCase):
             self.mocked_logger = patched_logger.return_value
 
     @staticmethod
-    def _get_header():
-        return {
+    def _get_frame():
+        class StompFrameMock():
+            def __init__(self, headers, body):
+                self.headers = headers
+                self.body = body
+
+        headers = {
             "destination": "/queue/DataReady",
             "priority": mock.NonCallableMock(),
             "message-id": str(uuid.uuid4()),
             "subscription": str(uuid.uuid4())
         }
+        return StompFrameMock(headers=headers, body={"run_number": 1234567})
 
     def test_on_message_message_unknown_field(self):
         """
         Test receiving a message with an unknown field
         """
-        self.listener.on_message(self.headers, {"apples": 1234567})
+        self.frame.body["apples"] = 1234567
+        self.listener.on_message(self.frame)
         self.mocked_logger.error.assert_called_once()
 
     def test_on_message_unknown_topic(self):
         """Test receiving a message on an unknown topic"""
-        headers = deepcopy(self.headers)
-        headers["destination"] = "unknown"
-        self.listener.on_message(headers, {"run_number": 1234567})
+        self.frame.headers["destination"] = "unknown"
+        self.listener.on_message(self.frame)
         self.mocked_logger.error.assert_called_once()
 
     def test_on_message_sends_acknowledgement(self):
         """Test that acknowledgement is sent when the message is received and parsed successfully"""
-        message = {"run_number": 1234567}
-        self.listener.on_message(self.headers, message)
+        self.listener.on_message(self.frame)
         self.assertFalse(self.listener.is_processing_message())
         self.mocked_logger.info.assert_called_once()
-        self.mocked_client.ack.assert_called_once_with(self.headers["message-id"], self.headers["subscription"])
+        self.mocked_client.ack.assert_called_once_with(self.frame.headers["message-id"],
+                                                       self.frame.headers["subscription"])
         self.mocked_handler.data_ready.assert_called_once()
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
@@ -99,7 +105,7 @@ class TestQueueListener(TestCase):
             raise Exception(msg)
 
         self.mocked_handler.data_ready.side_effect = raise_expected_exception
-        self.listener.on_message(self.headers, {"run_number": 1234567})
+        self.listener.on_message(self.frame)
         self.mocked_logger.error.assert_called_once()
 
     def test_on_disconnected(self):
