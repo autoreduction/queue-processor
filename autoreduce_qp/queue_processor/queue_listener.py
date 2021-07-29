@@ -69,17 +69,17 @@ class QueueListener(ConnectionListener):
             time.sleep(30)
             self.on_disconnected()
 
-    def on_message(self, headers, body):
+    def on_message(self, frame):
         """ This method is where consumed messages are dealt with. It will
         consume a message. """
         with self.mark_processing():
-            destination = headers["destination"]
-            priority = headers["priority"]
+            destination = frame.headers["destination"]
+            priority = frame.headers["priority"]
             self.logger.info("Destination: %s Priority: %s", destination, priority)
             # Load the JSON message and header into dictionaries
             try:
                 message = Message()
-                message.populate(body)
+                message.populate(frame.body)
             except ValueError:
                 self.logger.error("Could not decode message from %s\n\n%s", destination, traceback.format_exc())
                 return
@@ -87,7 +87,7 @@ class QueueListener(ConnectionListener):
             # the connection is configured with client-individual, meaning that each client
             # has to submit an acknowledgement for receiving the message
             # (otherwise I think that it is not removed from the queue but I am not sure about that)
-            self.client.ack(headers["message-id"], headers["subscription"])
+            self.client.ack(frame.headers["message-id"], frame.headers["subscription"])
             try:
                 if destination == '/queue/DataReady':
                     self.message_handler.data_ready(message)
