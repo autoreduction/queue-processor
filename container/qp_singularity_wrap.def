@@ -19,4 +19,4 @@ Includecmd: no
 
 # This is used by "sinularity instance start"
 %startscript
-    python3 /autoreduce/autoreduce_qp/queue_processor/queue_listener.py
+    autoreduce-qp-start
