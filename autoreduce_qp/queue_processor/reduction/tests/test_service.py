@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, PropertyMock
+from parameterized import parameterized
 
 from unittest.mock import patch, MagicMock, call
 from autoreduce_utils.settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
@@ -35,8 +36,6 @@ class TempDirPropertyMock(PropertyMock):
 
 
 # pylint:disable=protected-access
-
-
 class TestReductionService(unittest.TestCase):
     """
     Test cases for classes and functions of reduction_service
@@ -72,14 +71,13 @@ class TestReductionService(unittest.TestCase):
             red_script.load()
             yield red_script
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._build_path")
-    def test_reduction_directory_init_(self, mock_build):
+    def test_reduction_directory_init_(self):
         """
         Test: correct fields setup
         When: Object is created
         """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
-        expected_path = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number))
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, 0)
+        expected_path = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number)) / "run-version-0"
         expected_log_path = expected_path / "reduction_log"
         expected_mantid_log = expected_log_path / f"RB_{self.rb_number}_" \
                                                   f"Run_{self.run_number}_Mantid.log"
@@ -89,16 +87,24 @@ class TestReductionService(unittest.TestCase):
         self.assertEqual(expected_log_path, reduction_dir.log_path)
         self.assertEqual(expected_mantid_log, reduction_dir.mantid_log)
         self.assertEqual(expected_script_log, reduction_dir.script_log)
-        mock_build.assert_called_once()
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.Path")
-    @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._build_path")
-    def test_reduction_directory_create(self, _, __):
+    @parameterized.expand([[1], [2], [20]])
+    def test_reduction_directory_version_applied(self, run_number: int):
+        """
+        Test: correct fields setup
+        When: Object is created
+        """
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, run_number)
+        expected_path = Path(CEPH_DIRECTORY %
+                             (self.instrument, self.rb_number, self.run_number)) / f"run-version-{run_number}"
+        self.assertEqual(expected_path, reduction_dir.path)
+
+    def test_reduction_directory_create(self):
         """
         Test: Directory is created
         When: create is called
         """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, 0)
         with TemporaryDirectory() as directory:
             reduction_dir.path = Path(directory) / "head"
             reduction_dir.log_path = reduction_dir.path / "reduction_log"
@@ -109,70 +115,6 @@ class TestReductionService(unittest.TestCase):
             self.assertTrue(reduction_dir.log_path.exists())
             self.assertTrue(reduction_dir.mantid_log.exists())
             self.assertTrue(reduction_dir.script_log.exists())
-
-    @patch(f"{REDUCTION_SERVICE_DIR}.CEPH_DIRECTORY",
-           new_callable=PropertyMock(return_value="/instrument/%s/RBNumber/RB%s/autoreduced/%s"))
-    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _):
-        """
-        Tests: Run number is removed from path
-        When: _build_path is called for flat output instrument
-        """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, flat_output=True)
-        expected = Path(f"/instrument/{self.instrument}/RBNumber/RB{self.rb_number}/autoreduced")
-        self.assertEqual(expected, reduction_dir.path)
-
-    @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._append_run_version")
-    def test_reduction_directory_build_path_non_flat_builds_path(self, mock_append):
-        """
-        Tests: _append_run_version is called
-        When: _build_path is called for non flat output instrument
-        """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
-        mock_append.assert_called_once()
-        expected = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number))
-        self.assertEqual(expected, reduction_dir.path)
-
-    def test_reduction_directory_append_run_version_overwrite_true(self):
-        """
-        Tests: run-version-0 is appended
-        When: overwrite is True
-        """
-        reduction_dir = ReductionDirectory(self.instrument,
-                                           self.rb_number,
-                                           self.run_number,
-                                           overwrite=True,
-                                           flat_output=True)
-        with TemporaryDirectory() as directory:
-            reduction_dir.path = Path(directory)
-            reduction_dir._append_run_version()
-            (Path(directory) / "run-version-1").mkdir()
-            expected_path = Path(directory) / "run-version-0"
-            self.assertEqual(expected_path, reduction_dir.path)
-
-    def test_reduction_directory_append_run_version_existing_version(self):
-        """
-        Tests: Correct run-version appened
-        When: a run-version already exists
-        """
-        with TemporaryDirectory() as directory:
-            reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
-            reduction_dir.path = Path(directory)
-            (reduction_dir.path / "run-version-0").mkdir()
-            reduction_dir._append_run_version()
-            expected_path = Path(directory) / "run-version-1"
-            self.assertEqual(expected_path, reduction_dir.path)
-
-    def test_reduction_directory_append_run_version_no_existing_version(self):
-        """
-        Tests: run-version-0 is appended
-        When: No versions currently exist
-        """
-        with TemporaryDirectory() as directory:
-            reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
-            reduction_dir.path = Path(directory)
-            reduction_dir._append_run_version()
-            expected_path = Path(directory) / "run-version-0"
-            self.assertEqual(expected_path, reduction_dir.path)
 
     # TempReductionDirectory Tests
     def test_temp_reduction_directory_init(self):

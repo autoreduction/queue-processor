@@ -31,11 +31,9 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
-    def __init__(self, instrument, rb_number, run_number, overwrite=False, flat_output=False):
-        self.overwrite = overwrite
+    def __init__(self, instrument, rb_number, run_number, run_version, flat_output=False):
         self._is_flat_directory = flat_output
-        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number))
-        self._build_path()
+        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number)) / f"run-version-{run_version}"
         self.log_path = self.path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
         self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Script.out"
@@ -49,22 +47,6 @@ class ReductionDirectory:
         self.log_path.mkdir(exist_ok=True)
         self.script_log.touch(exist_ok=True)
         self.mantid_log.touch(exist_ok=True)
-
-    def _build_path(self):
-        if self._is_flat_directory:
-            self.path = self.path.parent
-        else:
-            self._append_run_version()
-
-    def _append_run_version(self):
-        if self.overwrite:
-            self.path = self.path / "run-version-0"
-        else:
-            versions = [int(str(i).split("-")[-1]) for i in self.path.glob("run-version-[0-9]*") if i.is_dir()]
-            try:
-                self.path = self.path / f"run-version-{max(versions) + 1}"
-            except ValueError:
-                self.path = self.path / "run-version-0"
 
 
 class TemporaryReductionDirectory:
