@@ -136,11 +136,6 @@ def main():
     Additionally, the resulting Message is written to a temporary file which the
     parent process reads back to mark the result of the reduction run in the DB.
     """
-    import debugpy
-    print('Waiting for client')
-    debugpy.listen(5678)
-    debugpy.wait_for_client()
-    debugpy.breakpoint()
     data, temp_output_file = sys.argv[1], sys.argv[2]
     try:
         message = Message()
