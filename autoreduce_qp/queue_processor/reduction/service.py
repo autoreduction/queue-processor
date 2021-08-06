@@ -184,8 +184,7 @@ class ReductionScript:
         if not self.module:
             raise RuntimeError("The script has not been loaded yet")
 
-        if not hasattr(self.module, "web_var"):
-            self.module.web_var = types.ModuleType("reduce_vars")
+        self.module.web_var = types.ModuleType("reduce_vars")
         merge_dicts("standard_vars")
         merge_dicts("advanced_vars")
 

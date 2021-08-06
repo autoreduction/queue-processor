@@ -274,6 +274,36 @@ class TestReductionService(unittest.TestCase):
         assert red_script.module.web_var.advanced_vars["adv_arg1"] == "advancedvalue"
         assert red_script.module.web_var.advanced_vars["adv_arg2"] == ""
 
+    def test_reduction_script_replace_variables_when_web_var_not_dict(self):
+        """
+        Test that replace variables properly replaces the web_var dictionary in the module
+        when the web_var attribute is NOT a dictionary
+        """
+        test_string = 'web_var=123\nprint(123)'
+        with self._test_module(test_string) as red_script:
+            red_script.replace_variables(self.reduction_arguments)
+            assert red_script.text() == test_string
+
+        assert red_script.module.web_var.standard_vars["arg1"] == "somevalue"
+        assert red_script.module.web_var.standard_vars["arg2"] == 123
+        assert red_script.module.web_var.advanced_vars["adv_arg1"] == "advancedvalue"
+        assert red_script.module.web_var.advanced_vars["adv_arg2"] == ""
+
+    def test_reduction_script_replace_variables_when_web_var_is_dict(self):
+        """
+        Test that replace variables properly replaces the web_var dictionary in the module
+        when the web_var attribute is a dictionary that's been pre-made by the user
+        """
+        test_string = 'web_var={}\nprint(123)'
+        with self._test_module(test_string) as red_script:
+            red_script.replace_variables(self.reduction_arguments)
+            assert red_script.text() == test_string
+
+        assert red_script.module.web_var.standard_vars["arg1"] == "somevalue"
+        assert red_script.module.web_var.standard_vars["arg2"] == 123
+        assert red_script.module.web_var.advanced_vars["adv_arg1"] == "advancedvalue"
+        assert red_script.module.web_var.advanced_vars["adv_arg2"] == ""
+
     @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
     def test_reduce(self, _):
         """
