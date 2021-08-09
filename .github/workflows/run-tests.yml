@@ -47,7 +47,6 @@ jobs:
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-18.04
-    container: centos/python-36-centos7
     strategy:
       fail-fast: false
 
@@ -64,7 +63,7 @@ jobs:
       - name: Pip install
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          [ -f "requirements.txt" ] && pip install -r requirements.txt || echo "No requirements.txt found"
           pip install -e .
 
   Inspection:
