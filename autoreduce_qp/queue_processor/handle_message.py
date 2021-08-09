@@ -17,7 +17,7 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation, Status
+from autoreduce_db.reduction_viewer.models import ReductionLocation, Status
 from autoreduce_utils.message.message import Message
 
 from autoreduce_qp.model.database import records
