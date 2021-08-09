@@ -14,7 +14,7 @@ setup(
     author="ISIS Autoreduction Team",
     url="https://github.com/ISISScientificComputing/autoreduce/",
     install_requires=[
-        "autoreduce_db==22.0.0.dev6", "Django==3.2.4", "fire==0.4.0", "plotly==5.1.0", "kaleido==0.2.1",
+        "autoreduce_db==22.0.0.dev7", "Django==3.2.4", "fire==0.4.0", "plotly==5.1.0", "kaleido==0.2.1",
         "stomp.py==7.0.0"
     ],
     packages=find_packages(),
