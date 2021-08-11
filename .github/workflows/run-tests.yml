@@ -47,6 +47,7 @@ jobs:
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-18.04
+    container: centos/python-36-centos7
     strategy:
       fail-fast: false
 
@@ -69,7 +70,6 @@ jobs:
   Inspection:
     name: Code Inspection
     runs-on: ubuntu-18.04
-    container: centos/python-36-centos7
     strategy:
       fail-fast: false
 
