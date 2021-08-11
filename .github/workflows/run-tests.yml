@@ -64,7 +64,7 @@ jobs:
       - name: Pip install
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          [ -f "requirements.txt" ] && pip install -r requirements.txt || echo "No requirements.txt found"
           pip install -e .
 
   Inspection:
