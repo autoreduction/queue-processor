@@ -298,7 +298,7 @@ class TestHandleMessage(TestCase):
             assert instrument == self.instrument
             assert instrument.name == self.msg.instrument
             assert reduction_run.script == "print(123)"
-            assert reduction_run.data_location == message.data
+            assert reduction_run.data_location.first().file_path == message.data
             assert reduction_run.status == Status.get_queued()
 
         for obj in db_objects_to_delete:

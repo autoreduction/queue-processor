@@ -17,7 +17,7 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import ReductionLocation, Status
+from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation, Status
 from autoreduce_utils.message.message import Message
 
 from autoreduce_qp.model.database import records
@@ -101,8 +101,13 @@ class HandleMessage:
                                                             run_version=message.run_version,
                                                             script_text=script_text,
                                                             status=Status.get_queued())
-        reduction_run.data_location = message.data
         reduction_run.save()
+
+        # Create a new data location entry which has a foreign key linking it to the current
+        # reduction run. The file path itself will point to a datafile
+        # (e.g. "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs")
+        data_location = DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
+        data_location.save()
 
         return reduction_run, message, instrument
 
