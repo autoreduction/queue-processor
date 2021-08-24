@@ -22,8 +22,7 @@ def create_reduction_run_record(experiment, instrument, message, run_version, sc
     """
 
     time_now = timezone.now()
-    reduction_run = ReductionRun(run_number=message.run_number,
-                                 run_version=run_version,
+    reduction_run = ReductionRun(run_version=run_version,
                                  run_description=message.description,
                                  hidden_in_failviewer=0,
                                  admin_log='',

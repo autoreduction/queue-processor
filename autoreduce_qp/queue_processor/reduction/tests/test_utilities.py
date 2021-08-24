@@ -21,7 +21,7 @@ class TestReductionRunnerHelpers(unittest.TestCase):
         Test: Windows to linux path is correctly modified to linux format
         When: Called with a windows formatted path.
         """
-        windows_path = "\\\\isis\\inst$\\some\\more\\path.nxs"
+        windows_path = ["\\\\isis\\inst$\\some\\more\\path.nxs"]
         actual = windows_to_linux_path(windows_path, '')
         self.assertEqual(actual, '/isis/some/more/path.nxs')
 
@@ -30,7 +30,7 @@ class TestReductionRunnerHelpers(unittest.TestCase):
         Test: Linux path is correctly constructed from concatenating temp path and windows path
         When: Called with windows path and temporary path
         """
-        windows_path = "\\\\autoreduce\\data\\some\\more\\path.nxs"
+        windows_path = ["\\\\autoreduce\\data\\some\\more\\path.nxs"]
         actual = windows_to_linux_path(windows_path, '/temp')
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 

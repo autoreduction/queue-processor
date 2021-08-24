@@ -13,12 +13,11 @@ For example, this may include shuffling the message to another queue, update
 relevant DB fields or logging out the status.
 """
 import logging
-from typing import Optional
-
+from typing import List, Optional, Union
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation, Status
+from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation, RunNumber, Status
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
@@ -26,6 +25,29 @@ from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVa
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript
 from autoreduce_qp.queue_processor.variable_utils import VariableUtils
+
+
+def _make_run_numbers(reduction_run, message_run_number: Union[int, List[int]]):
+    """
+    Creates the related RunNumber objects
+    """
+    if isinstance(message_run_number, int):
+        RunNumber.objects.create(reduction_run=reduction_run, run_number=message_run_number)
+    else:
+        RunNumber.objects.bulk_create(
+            [RunNumber(reduction_run=reduction_run, run_number=run_number) for run_number in message_run_number])
+
+
+def _make_data_locations(reduction_run, message_data_loc: Union[int, List[int]]):
+    """
+    Create a new data location entry which has a foreign key linking it to the current
+    reduction run. The file path itself will point to a datafile
+    (e.g. "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs")
+    """
+    if isinstance(message_data_loc, str):
+        DataLocation.objects.create(file_path=message_data_loc, reduction_run=reduction_run)
+    else:
+        DataLocation.objects.bulk_create([DataLocation(file_path=message_data_loc, reduction_run=reduction_run)])
 
 
 class HandleMessage:
@@ -84,7 +106,7 @@ class HandleMessage:
         """
         rb_number = self.normalise_rb_number(message.rb_number)
         experiment = db_access.get_experiment(rb_number)
-        run_version = db_access.find_highest_run_version(experiment, run_number=str(message.run_number))
+        run_version = db_access.find_highest_run_version(experiment, run_number=message.run_number)
         message.run_version = run_version
         instrument = db_access.get_instrument(str(message.instrument))
         return self.do_create_reduction_record(message, experiment, instrument)
@@ -103,14 +125,11 @@ class HandleMessage:
                                                             run_version=message.run_version,
                                                             script_text=script_text,
                                                             status=Status.get_queued())
+        reduction_run.batch_run = isinstance(message.run_number, list)
         reduction_run.save()
 
-        # Create a new data location entry which has a foreign key linking it to
-        # the current reduction run. The file path itself will point to a
-        # datafile e.g.
-        # "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs"
-        data_location = DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
-        data_location.save()
+        _make_run_numbers(reduction_run, message.run_number)
+        _make_data_locations(reduction_run, message.data)
 
         return reduction_run, message, instrument
 

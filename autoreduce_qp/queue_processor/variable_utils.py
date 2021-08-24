@@ -20,7 +20,7 @@ class VariableUtils:
     @staticmethod
     def save_run_variables(variables, reduction_run):
         """ Save reduction run variables in the database. """
-        logging.info('Saving run variables for %s', str(reduction_run.run_number))
+        logging.info('Saving run variables for %s', str(reduction_run.run_numbers.all()))
         run_variables = []
         for variable in variables:
             run_var = RunVariable(variable=variable, reduction_run=reduction_run)

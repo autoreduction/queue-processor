@@ -18,7 +18,7 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.core.exceptions import ObjectDoesNotExist
 
-from autoreduce_db.instrument.models import InstrumentVariable
+from autoreduce_db.instrument.models import InstrumentVariable, ReductionRun
 
 from autoreduce_qp.queue_processor.variable_utils import VariableUtils
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript
@@ -63,11 +63,23 @@ class InstrumentVariablesUtils:
         instrument_name = reduction_run.instrument.name
 
         experiment_reference = reduction_run.experiment.reference_number
-        run_number = reduction_run.run_number
         instrument_id = reduction_run.instrument.id
-        possible_variables = InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
-                                                               | Q(start_run__lte=run_number),
-                                                               instrument_id=instrument_id)
+        if not reduction_run.batch_run:
+            run_number = reduction_run.run_number
+            possible_variables = InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
+                                                                   | Q(start_run__lte=run_number),
+                                                                   instrument_id=instrument_id)
+        else:
+            related_runs = ReductionRun.objects.filter(
+                instrument_id=instrument_id,
+                batch_run=True,
+                run_numbers__run_number__in=[run_number.run_number
+                                             for run_number in reduction_run.run_numbers.all()]).distinct()
+            # possible_variables = related_runs.last().run_variables.select_related("variable").all()
+            possible_variables = InstrumentVariable.objects.filter(
+                pk__in=[v.pk for v in related_runs.last().run_variables.all()])
+
+            run_number = None
 
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
         reduce_vars_module = reduce_vars.load()
@@ -166,16 +178,21 @@ class InstrumentVariablesUtils:
                     'instrument_id': instrument_id
                 }
                 variable = possible_variables.create(**var_kwargs)
-                # if the variable was just created then set it to track the script
-                # and that it starts on the current run
-                # if it was found already existing just leave it as it is
+                # There's 3 types of variables:
+                # 1. Variables that are for an experiment_reference
+                # 2. Variables that are for a run_number
+                # 3. Variables that are for a batch run, that do not have a run_number.
+                # These have both experiment_reference and run_number set to None.
                 if experiment_reference:
                     variable.experiment_reference = experiment_reference
-                else:
+                elif run_number:
                     variable.start_run = run_number
                     variable.tracks_script = not from_webapp
                 variable.save()
             else:
+                # if the variable was just created then set it to track the script
+                # and that it starts on the current run
+                # if it was found already existing just leave it as it is
                 InstrumentVariablesUtils.update_if_necessary(variable, experiment_reference, run_number, value,
                                                              new_type, script_help_text, from_webapp)
             variables.append(variable)

@@ -33,7 +33,7 @@ class ReductionRunner:
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument')
             self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
-            self.run_number = str(int(self.validate_input('run_number')))
+            self.run_number = self.validate_input('run_number')
             self.run_version = str(self.validate_input('run_version'))
             self.reduction_arguments = self.validate_input('reduction_arguments')
         except ValueError:
@@ -66,7 +66,10 @@ class ReductionRunner:
 
         # Attempt to read the datafile
         try:
-            datafile = Datafile(self.data_file)
+            if isinstance(self.data_file, str):
+                datafiles = [Datafile(self.data_file)]
+            elif isinstance(self.data_file, list):
+                datafiles = [Datafile(df) for df in self.data_file]
         except DatafileError as err:
             logger.error("Problem reading datafile: %s", traceback.format_exc())
             self.message.message = "Error encountered when trying to access the datafile %s" % self.data_file
@@ -97,7 +100,7 @@ class ReductionRunner:
 
         reduction_log_stream = io.StringIO()
         try:
-            reduce(reduction_dir, temp_dir, datafile, reduction_script, self.reduction_arguments, reduction_log_stream)
+            reduce(reduction_dir, temp_dir, datafiles, reduction_script, self.reduction_arguments, reduction_log_stream)
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
         except ReductionScriptError as err:
