@@ -80,7 +80,7 @@ class TestHandleMessage(TestCase):
             self.mocked_logger = patched_logger.return_value
 
         self.experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
-        self.instrument, _ = Instrument.objects.get_or_create(name=self.instrument_name)
+        self.instrument, _ = Instrument.objects.get_or_create(name=self.instrument_name, is_active=True)
         status = Status.get_queued()
         fake_script_text = "scripttext"
         self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
@@ -254,8 +254,7 @@ class TestHandleMessage(TestCase):
         """
         Test that a run where all is OK is reduced
         """
-        self.instrument.is_active = False
-        rpm.return_value.run = partial(self.do_post_started_assertions, 2)
+        rpm.return_value.run = partial(self.do_post_started_assertions)
 
         self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
 
@@ -358,7 +357,7 @@ class TestHandleMessage(TestCase):
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
         "Test data_ready success path sends the message onwards for reduction"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1
@@ -371,7 +370,7 @@ class TestHandleMessage(TestCase):
     def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
         "Test data_ready error path sends the message onwards to be marked as errored"
         self.msg.message = "I am error"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1
@@ -396,6 +395,14 @@ class TestHandleMessage(TestCase):
         with DefaultDataArchive(self.instrument_name):
             reduction_run, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == self.msg.rb_number
+
+    def test_find_reason_to_skip_run_instrument_inactive(self):
+        """
+        Test find_reason_to_skip_run returns an error string when is_active is
+        False.
+        """
+        self.instrument.is_active = False
+        assert "is inactive" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
 
 if __name__ == '__main__':
