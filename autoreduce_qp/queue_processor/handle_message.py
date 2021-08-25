@@ -30,7 +30,7 @@ from autoreduce_qp.queue_processor.variable_utils import VariableUtils
 
 class HandleMessage:
     """
-    Handles messages from the queue client and forwards through various stages
+    Handle messages from the queue client and forward through the various stages
     depending on the message contents.
     """
     def __init__(self):
@@ -39,10 +39,10 @@ class HandleMessage:
 
     def data_ready(self, message: Message):
         """
-        Called when destination queue was data_ready. Updates the reduction run
-        in the database.
+        Update the reduction run in the database. This is called when
+        destination queue was data_ready.
 
-        NO processing occurs when:
+        No processing occurs when:
         • rb number isn't a 7 digit integer.
         • instrument is paused.
         • there is no reduce.py.
@@ -132,8 +132,9 @@ class HandleMessage:
 
     def send_message_onwards(self, reduction_run, message: Message, instrument):
         """
-        Sends the message onwards, either for processing, if validation is OK
-        and instrument isn't paused or skips it if either of those is true.
+        Send the message onwards, either for processing, if validation is OK
+        and instrument isn't paused, otherwiese skips if either of those is
+        true.
         """
         # Activate instrument if script was found
         skip_reason = self.find_reason_to_skip_run(reduction_run, message, instrument)
@@ -149,7 +150,7 @@ class HandleMessage:
     @staticmethod
     def find_reason_to_skip_run(reduction_run, message: Message, instrument) -> Optional[str]:
         """
-        Determines whether the processing should be skippped. The run will be
+        Determine whether the processing should be skippped. The run will be
         skipped if the message validation fails or if the instrument is paused.
         """
         if reduction_run.script == "":
@@ -168,8 +169,8 @@ class HandleMessage:
 
     def do_reduction(self, reduction_run, message: Message):
         """
-        Handovers to the ReductionProcessManager to actually run the reduction
-        process. Handles the outcome from the run.
+        Handover to the ReductionProcessManager to actually run the reduction
+        process and handle the outcome from the run.
         """
         reduction_process_manager = ReductionProcessManager(message)
         self.reduction_started(reduction_run, message)
@@ -181,8 +182,8 @@ class HandleMessage:
 
     def activate_db_inst(self, instrument):
         """
-        Gets the DB instrument record from the database, if one is not found it
-        instead creates and saves the record to the DB, then returns it.
+        Get the DB instrument record from the database, if one is not found,
+        create and save the record to the DB, then return it.
         """
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
@@ -194,7 +195,7 @@ class HandleMessage:
 
     def reduction_started(self, reduction_run, message: Message):
         """
-        Called when the run is ready to start. Updates the run as started /
+        Called when the run is ready to start. Update the run as started /
         processing in the database.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
@@ -205,8 +206,8 @@ class HandleMessage:
     @transaction.atomic
     def reduction_complete(self, reduction_run, message: Message):
         """
-        Called when the run has completed. Updates the run as complete in the
-        database.
+        Update the run as complete in the database. This is called when the run
+        has completed.
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
         self._common_reduction_run_update(reduction_run, Status.get_completed(), message)
@@ -220,8 +221,8 @@ class HandleMessage:
 
     def reduction_skipped(self, reduction_run, message: Message):
         """
-        Called when there was a reason to skip the run. Updates the run to
-        Skipped status in database. Will NOT attempt re-run.
+        Update the run status to 'Skipped' in the database. This is called when
+        there was a reason to skip the run. Will NOT attempt re-run.
         """
         if message.message is not None:
             self._logger.info("Run %s has been skipped - %s", message.run_number, message.message)
@@ -233,8 +234,8 @@ class HandleMessage:
 
     def reduction_error(self, reduction_run, message: Message):
         """
-        Called when the run encountered an error. Updates the run as complete in
-        the database.
+        Update the run as complete in the database. This is called when the run
+        encounters an error.
         """
         if message.message:
             self._logger.info("Run %s has encountered an error - %s", message.run_number, message.message)
@@ -255,8 +256,8 @@ class HandleMessage:
     @staticmethod
     def get_script_arguments(run_variables):
         """
-        Converts the RunVariables that have been created into Python kwargs
-        which can be passed as the script parameters at runtime.
+        Convert the RunVariables that have been created into kwargs which can be
+        passed as the script parameters at runtime.
         """
         standard_vars, advanced_vars = {}, {}
         for run_variable in run_variables:
@@ -274,8 +275,8 @@ class HandleMessage:
     @staticmethod
     def normalise_rb_number(rb_number) -> int:
         """
-        Enfornce the RB number to always be an int. If an invalid integer value
-        is passed it returns 0 instead.
+        Enforce the RB number to always be an int. If an invalid integer value
+        is passed, return 0.
         """
         try:
             return int(rb_number)
