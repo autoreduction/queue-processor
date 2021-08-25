@@ -160,7 +160,8 @@ class HandleMessage:
         except RuntimeError as validation_err:
             return f"Validation error from handler: {validation_err}"
 
-        # if
+        if not instrument.is_active:
+            return f"Run {message.run_number} has been skipped because the instrument {instrument.name} is inactive"
 
         if instrument.is_paused:
             return f"Run {message.run_number} has been skipped because the instrument {instrument.name} is paused"
