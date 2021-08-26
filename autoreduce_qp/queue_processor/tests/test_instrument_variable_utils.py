@@ -43,6 +43,7 @@ class FakeMessage:
         self.started_by = 0
         self.run_number = run_number if run_number else 1234567
         self.description = "This is a fake message"
+        self.data = ["test_data"]
 
 
 class FakeModule:
