@@ -191,7 +191,7 @@ class TestReductionRunner(unittest.TestCase):
 
         reduce.assert_called_once()
         _get_mantid_version.assert_called_once()
-        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is None
         assert runner.message.software == "5.1.0"
         assert "Error encountered when running the reduction script" in runner.message.message
@@ -211,7 +211,7 @@ class TestReductionRunner(unittest.TestCase):
 
         reduce.assert_called_once()
         _get_mantid_version.assert_called_once()
-        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is None
         assert runner.message.software == "5.1.0"
         assert "REDUCTION Error:" in runner.message.message
@@ -230,7 +230,7 @@ class TestReductionRunner(unittest.TestCase):
 
         reduce.assert_called_once()
         _get_mantid_version.assert_called_once()
-        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is not None
         assert runner.message.reduction_log is not None
         assert runner.message.message is None
@@ -262,5 +262,5 @@ class TestReductionRunner(unittest.TestCase):
 
         reduce.assert_called_once()
         _get_mantid_version.assert_called_once()
-        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.flat_output is True
