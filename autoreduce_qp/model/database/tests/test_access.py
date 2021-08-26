@@ -111,13 +111,10 @@ class TestAccess(TestCase):
         fake_script_text = "scripttext"
         reduction_run_v0 = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text,
                                                        status)
-        reduction_run_v0.save()
         reduction_run_v1 = create_reduction_run_record(experiment, instrument, FakeMessage(), 1, fake_script_text,
                                                        status)
-        reduction_run_v1.save()
         reduction_run_v2 = create_reduction_run_record(experiment, instrument, FakeMessage(), 2, fake_script_text,
                                                        status)
-        reduction_run_v2.save()
 
         assert access.find_highest_run_version(experiment, 1234567) == 3
 

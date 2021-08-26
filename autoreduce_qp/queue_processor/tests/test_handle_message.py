@@ -49,6 +49,7 @@ class FakeMessage:
     run_number = 1234567
     message = "I am a message"
     description = "This is a fake description"
+    data = "/some/location"
 
 
 class TestHandleMessage(TestCase):
