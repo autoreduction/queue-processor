@@ -10,29 +10,27 @@ import io
 import unittest
 from pathlib import Path
 
+from parameterized import parameterized
 from unittest.mock import patch
 
 from autoreduce_qp.queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
 
 
 class TestReductionRunnerHelpers(unittest.TestCase):
-    def test_windows_to_linux_data_path(self):
+    @parameterized.expand([
+        ["\\\\isis\\inst$\\some\\more\\path.nxs", '/isis/some/more/path.nxs', ''],
+        ["\\\\autoreduce\\data\\some\\more\\path.nxs", '/autoreduce/data/some/more/path.nxs', '/autoreduce'],
+        [["\\\\autoreduce\\data\\path1.nxs", "\\\\autoreduce\\data\\path2.nxs"],
+         ['/autoreduce/data/path1.nxs', '/autoreduce/data/path2.nxs'], '/autoreduce'],
+    ])
+    def test_windows_to_linux_data_path(self, input_path: str, expected_path: str, path_prefix: str):
         """
         Test: Windows to linux path is correctly modified to linux format
         When: Called with a windows formatted path.
         """
-        windows_path = ["\\\\isis\\inst$\\some\\more\\path.nxs"]
-        actual = windows_to_linux_path(windows_path, '')
-        self.assertEqual(actual, '/isis/some/more/path.nxs')
 
-    def test_windows_to_linux_autoreduce_path(self):
-        """
-        Test: Linux path is correctly constructed from concatenating temp path and windows path
-        When: Called with windows path and temporary path
-        """
-        windows_path = ["\\\\autoreduce\\data\\some\\more\\path.nxs"]
-        actual = windows_to_linux_path(windows_path, '/temp')
-        self.assertEqual(actual, '/temp/data/some/more/path.nxs')
+        actual = windows_to_linux_path(input_path, path_prefix)
+        self.assertEqual(actual, expected_path)
 
     @patch('os.path.isfile')
     def test_channels_redirect(self, mock_is_file):
