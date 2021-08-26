@@ -87,19 +87,6 @@ def get_software(name, version):
     return Software.objects.get_or_create(name=name, version=version)[0]
 
 
-def get_reduction_run(instrument, run_number):
-    """
-    Returns a QuerySet of all ReductionRun versions that have the given instrument/run_number
-    :param instrument: (str) The name of the instrument to search for
-    :param run_number: (str/int) The run number to search for
-    :return: (QuerySet[ReductionRun,]) ReductionRun records that match the criteria
-
-    Note: The query set could contain multiple records or None
-    """
-    instrument_record = get_instrument(instrument)
-    return ReductionRun.objects.filter(instrument=instrument_record.id, run_number=run_number)
-
-
 def find_highest_run_version(experiment, run_number: Union[int, List[int]]) -> int:
     """
     Search for the highest run version in the database

@@ -99,33 +99,6 @@ class TestAccess(TestCase):
         self.assertEqual('4.0', actual.version)
         actual.delete()
 
-    # pylint:disable=no-self-use
-    def test_get_reduction_run_valid(self):
-        """
-        Test: A ReductionRun record is returned
-        When: get_reduction_run is called with values that match a database record
-        """
-        experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
-        instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
-        status = access.get_status("q")
-        fake_script_text = "scripttext"
-        reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
-        reduction_run.save()
-
-        assert access.get_reduction_run('ARMI', 1234567).first() == reduction_run
-
-        reduction_run.delete()
-        experiment.delete()
-        instrument.delete()
-
-    def test_get_reduction_run_invalid(self):
-        """
-        Test: None is returned
-        When: get_reduction_run is called values not in the database
-        """
-        actual = access.get_reduction_run('GEM', 0)
-        self.assertIsNone(actual.first())
-
     def test_find_highest_run_version(self):
         """
         Test: The expected highest version number is returned
