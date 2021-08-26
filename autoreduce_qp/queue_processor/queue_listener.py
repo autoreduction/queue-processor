@@ -10,7 +10,6 @@ This module deals with the updating of the database backend.
 It consumes messages from the queues and then updates the reduction run
 status in the database.
 """
-import json
 import logging
 import time
 import traceback
@@ -81,8 +80,6 @@ class QueueListener(ConnectionListener):
             try:
                 message = Message()
                 message.populate(frame.body)
-                # if not isinstance(message.run_number, int):
-                #     message.run_number = json.loads(message.run_number)
             except ValueError:
                 self.logger.error("Could not decode message from %s\n\n%s", destination, traceback.format_exc())
                 return
