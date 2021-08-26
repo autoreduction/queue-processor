@@ -198,7 +198,7 @@ class TestReductionService(unittest.TestCase):
         script = ReductionScript(self.instrument)
 
         script.module = Mock()
-        script.run(Datafile("/tmp"), Datafile("/tmp"))
+        script.run([Datafile("/tmp")], Datafile("/tmp"))
 
         script.module.main.assert_called_once()
 
