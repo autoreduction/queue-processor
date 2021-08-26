@@ -196,8 +196,8 @@ class HandleMessage:
 
     def reduction_started(self, reduction_run, message: Message):
         """
-        Called when the run is ready to start. Update the run as started /
-        processing in the database.
+        Update the run as started/processing in the database. This is called
+        when the run is ready to start.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
         reduction_run.status = Status.get_processing()

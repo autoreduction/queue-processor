@@ -104,7 +104,7 @@ class TestHandleMessage(TestCase):
     ])
     def test_reduction_without_message(self, function_to_call, expected_status):
         """
-        Tests a reduction error where the message does not contain an error
+        Test a reduction error where the message does not contain an error
         message.
         """
         getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
@@ -115,7 +115,7 @@ class TestHandleMessage(TestCase):
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
     def test_reduction_started(self):
-        """Tests starting a reduction."""
+        """Test starting a reduction."""
         assert self.reduction_run.started is None
         assert self.reduction_run.finished is None
 
@@ -190,14 +190,14 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is None
         assert self.mocked_logger.info.call_count == expected_info_calls
-        # reset for follow logger calls
+        # Reset for follow logger calls
         self.mocked_logger.info.reset_mock()
         return self.msg
 
-    # a bit of a nasty patch, but everything underneath should be unit tested separately
+    # A bit of a nasty patch, but everything underneath should be unit tested separately
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_fail(self, rpm):
-        "Tests do_reduction failure path."
+        "Test do_reduction failure path."
         self.msg.message = "Something failed"
 
         rpm.return_value.run = self.do_post_started_assertions
@@ -209,9 +209,7 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.message == "Something failed"
 
     def test_activate_db_inst(self):
-        """
-        Tests whether the function enables the instrument
-        """
+        """Test that the function enables the instrument."""
         self.instrument.is_active = False
         self.instrument.save()
 
@@ -229,15 +227,16 @@ class TestHandleMessage(TestCase):
 
     def test_find_reason_to_skip_run_message_validation_fails(self):
         """
-        Test find_reason_to_skip_run correctly captures validation failing on the message
+        Test that find_reason_to_skip_run correctly captures validation failing
+        on the message.
         """
         self.msg.rb_number = 123  # invalid RB number, should be 7 digits
         assert "Validation error" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
     def test_find_reason_to_skip_run_instrument_paused(self):
         """
-        Test find_reason_to_skip_run correctly captures that the instrument is
-        paused.
+        Test that find_reason_to_skip_run correctly captures that the instrument
+        is paused.
         """
         self.instrument.is_paused = True
         assert "is paused" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
@@ -252,7 +251,7 @@ class TestHandleMessage(TestCase):
 
     def test_find_reason_to_skip_run_doesnt_skip_when_all_is_ok(self):
         """
-        Test find_reason_to_skip_run returns None when all the validation
+        Test that find_reason_to_skip_run returns None when all the validation
         passes.
         """
         assert self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument) is None
