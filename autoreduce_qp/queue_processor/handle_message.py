@@ -43,9 +43,9 @@ class HandleMessage:
         destination queue was data_ready.
 
         No processing occurs when:
-        • rb number isn't a 7 digit integer.
-        • instrument is paused.
-        • there is no reduce.py.
+        - rb number isn't a 7 digit integer.
+        - instrument is paused.
+        - there is no reduce.py.
         """
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
 
