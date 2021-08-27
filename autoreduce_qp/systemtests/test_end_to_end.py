@@ -6,7 +6,8 @@
 # ############################################################################### #
 """
 Linux only!
-Tests that data can traverse through the autoreduction system successfully
+
+Test that data can traverse through the autoreduction system successfully.
 """
 from typing import Union
 
@@ -17,16 +18,11 @@ from autoreduce_qp.systemtests.base_systemtest import (BaseAutoreduceSystemTest,
 
 
 class TestEndToEnd(BaseAutoreduceSystemTest):
-    """ Class to test pipelines in autoreduction"""
-    @parameterized.expand([
-        [222, 222],
-        ["INVALID RB NUMBER CALIBRATION RUN PERHAPS",
-         0]  # the expected_rb_number is 0 because the initial RB number is not an int
-    ])
+    """Class to test pipelines in autoreduction."""
+    # The expected_rb_number is 0 because the initial RB number is not an int
+    @parameterized.expand([[222, 222], ["INVALID RB NUMBER CALIBRATION RUN PERHAPS", 0]])
     def test_end_to_end_wish_invalid_rb_number_skipped(self, rb_number: Union[int, str], expected_rb_number: int):
-        """
-        Test that data gets skipped when the RB Number doesn't validate.
-        """
+        """Test that data gets skipped when the RB Number doesn't validate."""
         # Set meta data for test
         self.rb_number = rb_number
         self.data_ready_message.rb_number = self.rb_number
@@ -44,9 +40,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         self.assertEqual('Skipped', results[0].status.value_verbose())
 
     def test_end_to_end_wish_completed(self):
-        """
-        Test that runs gets completed when everything is OK
-        """
+        """Test that runs gets completed when everything is OK."""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
         self.data_ready_message.data = file_location
@@ -62,7 +56,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
     def test_end_to_end_wish_bad_script_syntax_error(self):
         """
-        Test that run gets marked as error when the script has a syntax error
+        Test that run gets marked as error when the script has a syntax error.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=SYNTAX_ERROR_REDUCE_SCRIPT, vars_script='')
@@ -80,9 +74,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         self.assertIn("SyntaxError('EOL while scanning string literal'", results[0].reduction_log)
 
     def test_end_to_end_wish_bad_script_raises_exception(self):
-        """
-        Test that WISH data goes through the system without issue
-        """
+        """Test that WISH data goes through the system without issue."""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script="raise ValueError('hello from the other side')",
                                                     vars_script='')
@@ -100,7 +92,10 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         self.assertIn('hello from the other side', results[0].reduction_log)
 
     def test_end_to_end_wish_vars_script_gets_new_variable(self):
-        """Test running the same run twice, but the second time the reduce_vars has a new variable"""
+        """
+        Test running the same run twice, but the second time the reduce_vars has
+        a new variable.
+        """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
         self.data_ready_message.data = file_location
@@ -123,7 +118,10 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         assert var.value == "value1"
 
     def test_end_to_end_wish_vars_script_loses_variable(self):
-        """Test running the same run twice, but the second time the reduce_vars has one less variable"""
+        """
+        Test running the same run twice, but the second time the reduce_vars has
+        one less variable.
+        """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
         self.data_ready_message.data = file_location
@@ -145,7 +143,10 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         assert run_without_vars.run_variables.count() == 0
 
     def test_end_to_end_vars_script_has_variable_value_changed(self):
-        """Test that reducing the same run after changing the reduce_vars updates the variable's value"""
+        """
+        Test that reducing the same run after changing the reduce_vars updates
+        the variable's value.
+        """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
         self.data_ready_message.data = file_location
@@ -175,7 +176,10 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         assert initial_var == changed_var
 
     def test_end_to_end_wish_vars_script_has_variable_reused_on_new_run_number(self):
-        """Test that the variables are reused on new run numbers, IF their value has not changed"""
+        """
+        Test that the variables are reused on new run numbers, IF their value
+        has not changed.
+        """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
         self.data_ready_message.data = file_location
@@ -196,7 +200,10 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         assert initial_var == new_var
 
     def test_end_to_end_wish_vars_script_has_variable_copied_on_new_run_number_when_value_changed(self):
-        """Test that the variable is copied for a new run WHEN it's value has been changed"""
+        """
+        Test that the variable is copied for a new run WHEN it's value has been
+        changed.
+        """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
@@ -211,12 +218,12 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         assert var.name == "variable1"
         assert var.value == "value1"
 
-        # update the run number in the class because it's used to query for the correct run
+        # Update the run number in the class because it's used to query for the correct run
         self.data_ready_message.run_number = self.run_number = 102
         self.data_archive.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
         result_two = self.send_and_wait_for_result(self.data_ready_message)
 
-        # making the run_number a list so that they can be deleted by the tearDown!
+        # Making the run_number a list so that they can be deleted by the tearDown!
         self.run_number = [101, 102]
 
         assert len(result_two) == 1

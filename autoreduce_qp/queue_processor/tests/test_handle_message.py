@@ -5,10 +5,8 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################
-"""
-Tests message handling for the queue processor
-"""
-
+"""Tests message handling for the queue processor."""
+# pylint:disable=no-member,unsupported-membership-test
 import random
 from functools import partial
 from unittest import main, mock
@@ -46,7 +44,6 @@ variable_help = {
 """
 
 
-# pylint:disable=no-member
 class FakeMessage:
     started_by = 0
     run_number = 1234567
@@ -55,9 +52,7 @@ class FakeMessage:
 
 
 class TestHandleMessage(TestCase):
-    """
-    Directly tests the message handling classes
-    """
+    """Directly test the message handling classes."""
     fixtures = ["status_fixture"]
 
     def setUp(self):
@@ -80,7 +75,7 @@ class TestHandleMessage(TestCase):
             self.mocked_logger = patched_logger.return_value
 
         self.experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
-        self.instrument, _ = Instrument.objects.get_or_create(name=self.instrument_name)
+        self.instrument, _ = Instrument.objects.get_or_create(name=self.instrument_name, is_active=True)
         status = Status.get_queued()
         fake_script_text = "scripttext"
         self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
@@ -92,9 +87,7 @@ class TestHandleMessage(TestCase):
         ["reduction_skipped", 's'],
     ])
     def test_reduction_with_message(self, function_to_call, expected_status):
-        """
-        Tests a reduction error where the message contains an error message
-        """
+        """Test a reduction error where the message contains an error message."""
         self.msg.message = "I am a message"
         getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
@@ -111,7 +104,8 @@ class TestHandleMessage(TestCase):
     ])
     def test_reduction_without_message(self, function_to_call, expected_status):
         """
-        Tests a reduction error where the message does not contain an error message
+        Test a reduction error where the message does not contain an error
+        message.
         """
         getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
@@ -121,7 +115,7 @@ class TestHandleMessage(TestCase):
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
     def test_reduction_started(self):
-        "Tests starting a reduction"
+        """Test starting a reduction."""
         assert self.reduction_run.started is None
         assert self.reduction_run.finished is None
 
@@ -134,7 +128,7 @@ class TestHandleMessage(TestCase):
         self.mocked_logger.info.assert_called_once()
 
     def test_reduction_complete(self):
-        "Tests completing a reduction"
+        """Test completing a reduction."""
         self.msg.reduction_data = None
         assert self.reduction_run.finished is None
         self.handler.reduction_complete(self.reduction_run, self.msg)
@@ -148,8 +142,10 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.reduction_location.count() == 0
 
     def test_reduction_complete_with_reduction_data(self):
-        "Tests completing a reduction that has an output location at reduction_data"
-
+        """
+        Test completing a reduction that has an output location at
+        reduction_data.
+        """
         assert self.reduction_run.finished is None
         self.handler.reduction_complete(self.reduction_run, self.msg)
         self.mocked_logger.info.assert_called_once()
@@ -162,7 +158,7 @@ class TestHandleMessage(TestCase):
 
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_success(self, rpm):
-        "Tests do_reduction success path"
+        """Test the success path of do_reduction."""
         rpm.return_value.run = self.do_post_started_assertions
 
         self.handler.do_reduction(self.reduction_run, self.msg)
@@ -173,7 +169,10 @@ class TestHandleMessage(TestCase):
 
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_success_special_characters_in_script(self, rpm):
-        "Tests do_reduction success path"
+        """
+        Test the success path of do_reduction with special characters in the
+        script.
+        """
         rpm.return_value.run = self.do_post_started_assertions
         test_special_chars_script = 'print("✈", "’")'
         self.reduction_run.script = test_special_chars_script
@@ -186,19 +185,19 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.script == test_special_chars_script
 
     def do_post_started_assertions(self, expected_info_calls=1):
-        "Helper to capture common assertions between tests"
+        "Helper method to capture common assertions between tests."
         assert self.reduction_run.status == Status.get_processing()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is None
         assert self.mocked_logger.info.call_count == expected_info_calls
-        # reset for follow logger calls
+        # Reset for follow logger calls
         self.mocked_logger.info.reset_mock()
         return self.msg
 
-    # a bit of a nasty patch, but everything underneath should be unit tested separately
+    # A bit of a nasty patch, but everything underneath should be unit tested separately
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_fail(self, rpm):
-        "Tests do_reduction failure path"
+        "Test do_reduction failure path."
         self.msg.message = "Something failed"
 
         rpm.return_value.run = self.do_post_started_assertions
@@ -210,9 +209,7 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.message == "Something failed"
 
     def test_activate_db_inst(self):
-        """
-        Tests whether the function enables the instrument
-        """
+        """Test that the function enables the instrument."""
         self.instrument.is_active = False
         self.instrument.save()
 
@@ -230,32 +227,39 @@ class TestHandleMessage(TestCase):
 
     def test_find_reason_to_skip_run_message_validation_fails(self):
         """
-        Test find_reason_to_skip_run correctly captures validation failing on the message
+        Test that find_reason_to_skip_run correctly captures validation failing
+        on the message.
         """
         self.msg.rb_number = 123  # invalid RB number, should be 7 digits
         assert "Validation error" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
     def test_find_reason_to_skip_run_instrument_paused(self):
         """
-        Test find_reason_to_skip_run correctly captures that the instrument is paused
+        Test that find_reason_to_skip_run correctly captures that the instrument
+        is paused.
         """
         self.instrument.is_paused = True
-
         assert "is paused" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
+
+    def test_find_reason_to_skip_run_instrument_inactive(self):
+        """
+        Test that find_reason_to_skip_run returns an error string when an
+        instrument's is_active flag is False.
+        """
+        self.instrument.is_active = False
+        assert "is inactive" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
     def test_find_reason_to_skip_run_doesnt_skip_when_all_is_ok(self):
         """
-        Test find_reason_to_skip_run returns None when all the validation passes
+        Test that find_reason_to_skip_run returns None when all the validation
+        passes.
         """
         assert self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument) is None
 
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_send_message_onwards_ok(self, rpm):
-        """
-        Test that a run where all is OK is reduced
-        """
-        self.instrument.is_active = False
-        rpm.return_value.run = partial(self.do_post_started_assertions, 2)
+        """Test that a run where all is OK is reduced."""
+        rpm.return_value.run = partial(self.do_post_started_assertions)
 
         self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
 
@@ -264,9 +268,7 @@ class TestHandleMessage(TestCase):
 
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_send_message_onwards_skip_run(self, rpm):
-        """
-        Test that a run that fails validation is skipped
-        """
+        """Test that a run that fails validation is skipped."""
         self.msg.rb_number = 123
 
         self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
@@ -278,7 +280,7 @@ class TestHandleMessage(TestCase):
 
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):
-        "Test creating multiple version of the same run"
+        """Test creating multiple version of the same run."""
         self.instrument.is_active = False
 
         self.msg.description = "Testing multiple versions"
@@ -305,7 +307,7 @@ class TestHandleMessage(TestCase):
             obj.delete()
 
     def test_create_run_variables_no_variables_creates_nothing(self):
-        "Test running a reduction run with an empty reduce_vars.py"
+        "Test running a reduction run with an empty reduce_vars.py."
         expected_args = {'standard_vars': {}, 'advanced_vars': {}}
 
         self.handler.instrument_variable.create_run_variables = mock.Mock(return_value=[])
@@ -318,7 +320,7 @@ class TestHandleMessage(TestCase):
 
     @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     def test_create_run_variables(self, import_module: Mock):
-        "Test the creation of RunVariables for the ReductionRun"
+        """Test the creation of RunVariables for the ReductionRun."""
         expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
         message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
         assert self.mocked_logger.info.call_count == 2
@@ -326,7 +328,7 @@ class TestHandleMessage(TestCase):
         import_module.assert_called_once()
 
     def test_data_ready_other_exception_raised_ends_processing(self):
-        "Test an exception being raised inside data_ready handler"
+        """Test an exception being raised inside data_ready handler."""
         self.handler.create_run_records = Mock(side_effect=RuntimeError)
         with self.assertRaises(RuntimeError):
             self.handler.data_ready(self.msg)
@@ -334,7 +336,10 @@ class TestHandleMessage(TestCase):
         self.mocked_logger.error.assert_called_once()
 
     def test_data_ready_variable_integrity_error_marks_reduction_error(self):
-        "Test that an integrity error inside data_ready marks the reduction as errored"
+        """
+        Test that an integrity error inside data_ready marks the reduction as
+        errored.
+        """
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.create_run_variables = Mock(side_effect=IntegrityError)
         with self.assertRaises(IntegrityError):
@@ -357,8 +362,8 @@ class TestHandleMessage(TestCase):
     @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
-        "Test data_ready success path sends the message onwards for reduction"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
+        """Test data_ready success path sends the message onwards for reduction."""
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1
@@ -366,12 +371,15 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == Status.get_completed()
         load.assert_called_once()
 
-    @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
+    @patch("autoreduce_qp.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
-        "Test data_ready error path sends the message onwards to be marked as errored"
+        """
+        Test data_ready error path sends the message onwards to be marked as
+        errored.
+        """
         self.msg.message = "I am error"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1
@@ -381,18 +389,14 @@ class TestHandleMessage(TestCase):
         load.assert_called_once()
 
     def test_create_run_records_invalid_rb_number(self):
-        """
-        Test creating a run record when the rb number is invalid.
-        """
+        """Test creating a run record when the rb number is invalid."""
         with DefaultDataArchive(self.instrument_name):
             self.msg.rb_number = "INVALID RB NUMBER CALIBRATION RUN PERHAPS"
             reduction_run, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == 0
 
     def test_create_run_records_valid_rb_number(self):
-        """
-        Test creating a run record when the rb number is invalid.
-        """
+        """Test creating a run record when the rb number is invalid."""
         with DefaultDataArchive(self.instrument_name):
             reduction_run, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == self.msg.rb_number

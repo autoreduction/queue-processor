@@ -2,3 +2,4 @@ ignore:
   - "*/virtualenv/*"
   - "*/test/*"
   - "*/tests/*"
+  - "*/systemtests/*"

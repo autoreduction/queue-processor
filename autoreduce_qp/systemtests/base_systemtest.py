@@ -8,12 +8,13 @@
 Linux only!
 Tests that data can traverse through the autoreduction system successfully
 """
+# pylint:disable=no-member
 import os
 import shutil
 import time
 from pathlib import Path
 
-from autoreduce_db.reduction_viewer.models import ReductionRun
+from autoreduce_db.reduction_viewer.models import Instrument, ReductionRun
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import MANTID_PATH, PROJECT_DEV_ROOT
@@ -61,6 +62,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
         self.instrument = 'ARMI'
+        Instrument.objects.get_or_create(name=self.instrument, is_active=True)
         self.rb_number = 1234567
         self.run_number = 101
 
