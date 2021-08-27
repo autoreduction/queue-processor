@@ -10,8 +10,8 @@ Contains various helper methods for managing or creating ORM records
 """
 
 import socket
-from django.utils import timezone
 from typing import List, Union
+from django.utils import timezone
 
 from autoreduce_db.instrument.models import ReductionRun
 from autoreduce_db.reduction_viewer.models import DataLocation, RunNumber

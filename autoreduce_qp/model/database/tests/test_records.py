@@ -10,7 +10,11 @@ Unit tests for the record helper module
 """
 
 import socket
-from unittest import TestCase, mock
+from typing import List, Union
+from unittest import mock
+from django.test import TestCase
+from autoreduce_db.reduction_viewer.models import DataLocation, ReductionRun, RunNumber
+from parameterized import parameterized
 import autoreduce_qp.model.database.records as records
 
 
@@ -18,6 +22,9 @@ class TestDatabaseRecords(TestCase):
     """
     Tests the Record helpers for the ORM layer
     """
+    fixtures = ["status_fixture", "run_with_multiple_variables"]
+
+    # pylint:disable=invalid-name
     @mock.patch("autoreduce_qp.model.database.records.timezone")
     @mock.patch.multiple("autoreduce_qp.model.database.records",
                          ReductionRun=mock.DEFAULT,
@@ -69,3 +76,29 @@ class TestDatabaseRecords(TestCase):
 
         _make_run_numbers.assert_called_once_with(returned, mock_msg.run_number)
         _make_data_locations.assert_called_once_with(returned, mock_msg.data)
+
+    @parameterized.expand([["/test/data/loc"], [["/test/data/loc/", "/test/data/loc2"]]])
+    def test_make_data_locations(self, data_locs: Union[str, List[str]]):
+        """Test that make_data_locations supports both a string and a list,
+        and creates the database objects correctly."""
+        assert DataLocation.objects.count() == 0
+        reduction_run = ReductionRun.objects.first()
+        records._make_data_locations(reduction_run, data_locs)
+
+        if isinstance(data_locs, str):
+            assert DataLocation.objects.count() == 1
+        else:
+            assert DataLocation.objects.count() == len(data_locs)
+
+    @parameterized.expand([[123456], [[123456, 1234567]]])
+    def test_make_run_numbers(self, run_numbers: Union[int, List[int]]):
+        """Test that make_run_numbers supports both a string and a list,
+        and creates the database objects correctly."""
+        assert RunNumber.objects.count() == 0
+        reduction_run = ReductionRun.objects.first()
+        records._make_run_numbers(reduction_run, run_numbers)
+
+        if isinstance(run_numbers, str):
+            assert RunNumber.objects.count() == 1
+        else:
+            assert RunNumber.objects.count() == len(run_numbers)
