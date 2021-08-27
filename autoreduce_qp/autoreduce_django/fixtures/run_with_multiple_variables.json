@@ -19,14 +19,6 @@
         }
     },
     {
-        "model": "reduction_viewer.runnumber",
-        "pk": 1,
-        "fields": {
-            "run_number": 123456,
-            "reduction_run_id": 1
-        }
-    },
-    {
         "pk": 1,
         "model": "reduction_viewer.software",
         "fields": {

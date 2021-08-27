@@ -85,7 +85,7 @@ class TestDatabaseRecords(TestCase):
         reduction_run = ReductionRun.objects.first()
         records._make_data_locations(reduction_run, data_locs)
 
-        if isinstance(data_locs, str):
+        if not isinstance(data_locs, list):
             assert DataLocation.objects.count() == 1
         else:
             assert DataLocation.objects.count() == len(data_locs)
@@ -98,7 +98,7 @@ class TestDatabaseRecords(TestCase):
         reduction_run = ReductionRun.objects.first()
         records._make_run_numbers(reduction_run, run_numbers)
 
-        if isinstance(run_numbers, str):
+        if not isinstance(run_numbers, list):
             assert RunNumber.objects.count() == 1
         else:
             assert RunNumber.objects.count() == len(run_numbers)
