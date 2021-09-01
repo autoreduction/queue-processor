@@ -75,7 +75,6 @@ class InstrumentVariablesUtils:
                 batch_run=True,
                 run_numbers__run_number__in=[run_number.run_number
                                              for run_number in reduction_run.run_numbers.all()]).distinct()
-            # possible_variables = related_runs.last().run_variables.select_related("variable").all()
             possible_variables = InstrumentVariable.objects.filter(
                 pk__in=[v.pk for v in related_runs.last().run_variables.all()])
 
@@ -181,12 +180,15 @@ class InstrumentVariablesUtils:
                 # There's 3 types of variables:
                 # 1. Variables that are for an experiment_reference
                 # 2. Variables that are for a run_number
-                # 3. Variables that are for a batch run, that do not have a run_number.
-                # These have both experiment_reference and run_number set to None.
+                # 3. Variables that are for a batch run, that do not have a run_number or an experiment_reference.
+                #    - These have both experiment_reference and run_number set to None.
                 if experiment_reference:
                     variable.experiment_reference = experiment_reference
                 elif run_number:
                     variable.start_run = run_number
+                    variable.tracks_script = not from_webapp
+                else:
+                    # This makes batch variables also track changes in reduce_vars
                     variable.tracks_script = not from_webapp
                 variable.save()
             else:
