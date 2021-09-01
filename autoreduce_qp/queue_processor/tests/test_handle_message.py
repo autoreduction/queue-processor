@@ -9,6 +9,7 @@
 # pylint:disable=no-member,unsupported-membership-test
 import random
 from functools import partial
+from typing import List, Union
 from unittest import main, mock
 from unittest.mock import Mock, patch
 
@@ -46,7 +47,7 @@ variable_help = {
 
 class FakeMessage:
     started_by = 0
-    run_number = 1234567
+    run_number:Union[int,List[int]] = 1234567
     message = "I am a message"
     description = "This is a fake description"
     data = "/some/location"

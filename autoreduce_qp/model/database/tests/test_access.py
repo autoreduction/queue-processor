@@ -99,7 +99,7 @@ class TestAccess(TestCase):
         self.assertEqual('4.0', actual.version)
         actual.delete()
 
-    def test_find_highest_run_version(self):
+    def test_find_highest_run_version_single_run_number(self):
         """
         Test: The expected highest version number is returned
         When: Calling find_highest_run_version
@@ -109,20 +109,29 @@ class TestAccess(TestCase):
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
         status = access.get_status("q")
         fake_script_text = "scripttext"
-        reduction_run_v0 = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text,
-                                                       status)
-        reduction_run_v1 = create_reduction_run_record(experiment, instrument, FakeMessage(), 1, fake_script_text,
-                                                       status)
-        reduction_run_v2 = create_reduction_run_record(experiment, instrument, FakeMessage(), 2, fake_script_text,
-                                                       status)
+
+        for i in range(3):
+            create_reduction_run_record(experiment, instrument, FakeMessage(), i, fake_script_text, status)
 
         assert access.find_highest_run_version(experiment, 1234567) == 3
 
-        reduction_run_v0.delete()
-        reduction_run_v1.delete()
-        reduction_run_v2.delete()
-        experiment.delete()
-        instrument.delete()
+    def test_find_highest_run_version_batch_run_number(self):
+        """
+        Test: The expected highest version number is returned
+        When: Calling find_highest_run_version
+        """
+
+        experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
+        instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        msg = FakeMessage()
+        msg.run_number = [1234567, 1234568, 1234569]
+        status = access.get_status("q")
+        fake_script_text = "scripttext"
+
+        for i in range(3):
+            create_reduction_run_record(experiment, instrument, msg, i, fake_script_text, status)
+
+        assert access.find_highest_run_version(experiment, [1234567, 1234568, 1234569]) == 3
 
     # pylint:disable=no-self-use
     def test_save_record(self):

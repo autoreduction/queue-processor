@@ -10,6 +10,7 @@ import sys
 import unittest
 import tempfile
 from unittest.mock import patch, call, Mock
+from parameterized import parameterized
 
 from autoreduce_qp.queue_processor.reduction.exceptions import ReductionScriptError
 from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main
@@ -216,14 +217,18 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.software == "5.1.0"
         assert "REDUCTION Error:" in runner.message.message
 
+    @parameterized.expand([["str"], ["list"]])
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
-    def test_reduce_ok(self, reduce: Mock, _get_mantid_version: Mock):
+    def test_reduce_ok(self, datafile_type: str, reduce: Mock, _get_mantid_version: Mock):
         """
         Test: An OK reduction
         """
         with tempfile.NamedTemporaryFile() as tmpfile:
-            self.message.data = tmpfile.name
+            if datafile_type == "str":
+                self.message.data = tmpfile.name
+            else:
+                self.message.data = [tmpfile.name, tmpfile.name]
 
             runner = ReductionRunner(self.message)
             runner.reduce()
