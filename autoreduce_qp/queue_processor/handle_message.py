@@ -164,7 +164,12 @@ class HandleMessage:
         Handover to the ReductionProcessManager to actually run the reduction
         process and handle the outcome from the run.
         """
-        reduction_process_manager = ReductionProcessManager(message)
+        if reduction_run.batch_run:
+            run_name = f"batch-{reduction_run.run_numbers.first()}-{reduction_run.run_numbers.last()}"
+        else:
+            run_name = f"{reduction_run.run_number}"
+
+        reduction_process_manager = ReductionProcessManager(message, run_name)
         self.reduction_started(reduction_run, message)
         output_message = reduction_process_manager.run()
         if output_message.message is not None:

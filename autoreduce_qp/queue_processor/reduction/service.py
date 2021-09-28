@@ -32,12 +32,12 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
-    def __init__(self, instrument, rb_number, run_number, run_version, flat_output=False):
+    def __init__(self, instrument, rb_number, run_name, run_version, flat_output=False):
         self._is_flat_directory = flat_output
-        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number)) / f"run-version-{run_version}"
+        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_name)) / f"run-version-{run_version}"
         self.log_path = self.path / "reduction_log"
-        self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
-        self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Script.out"
+        self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_name}_Mantid.log"
+        self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_name}_Script.out"
 
     def create(self):
         """
@@ -54,12 +54,12 @@ class TemporaryReductionDirectory:
     """
     Encapsulates the use of the temporary reduction directory
     """
-    def __init__(self, rb_number, run_number):
+    def __init__(self, rb_number, run_name):
         self._temp_dir = TemporaryDirectory()  # pylint:disable=consider-using-with
         self._path = Path(self._temp_dir.name)
         self.log_path = self._path / "reduction_log"
-        self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
-        self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Script.out"
+        self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_name}_Mantid.log"
+        self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_name}_Script.out"
         self._create()
 
     def _create(self):
