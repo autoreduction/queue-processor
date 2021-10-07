@@ -33,7 +33,7 @@ class ReductionProcessManager:
             python_path = sys.executable
             with tempfile.NamedTemporaryFile("w+") as temp_output_file:
                 args = [python_path, RUNNER_PATH, self.message.serialize(), temp_output_file.name, self.run_name]
-                logging.info("Calling: %s %s %s %s", python_path, RUNNER_PATH,
+                logging.info("Calling: %s %s %s %s %s", python_path, RUNNER_PATH,
                              self.message.serialize(limit_reduction_script=True), temp_output_file.name, self.run_name)
 
                 # copy and update the subprocess environment to inherit the parent one,

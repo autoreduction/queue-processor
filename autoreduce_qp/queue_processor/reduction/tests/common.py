@@ -12,8 +12,9 @@ def add_data_and_message():
         'rb_number': '1234',
         'run_number': '4321',
         'run_version': 1,
-        'reduction_script': 'print(\'hello\')',  # not actually used for the reduction
-        'reduction_arguments': 'None'
+        'reduction_script': 'print("hello")',  # not actually used for the reduction
+        'reduction_arguments': 'None',
+        'description': 'This is a test',
     }
 
     message = Message()
