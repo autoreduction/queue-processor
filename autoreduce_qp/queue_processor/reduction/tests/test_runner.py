@@ -22,13 +22,14 @@ class TestReductionRunner(unittest.TestCase):
 
     def setUp(self) -> None:
         self.data, self.message = add_data_and_message()
+        self.run_name = "Test run name"
 
     def test_init(self):
         """
         Test: init parameters are as expected
         When: called with expected arguments
         """
-        runner = ReductionRunner(self.message)
+        runner = ReductionRunner(self.message, self.run_name)
         self.assertEqual(runner.message, self.message)
         self.assertIsNotNone(runner.admin_log_stream)
         self.assertEqual(runner.data_file, '/isis/data.nxs')
@@ -45,7 +46,7 @@ class TestReductionRunner(unittest.TestCase):
         When: called with a parameter that can't be validated
         """
         with self.assertRaises(ValueError):
-            ReductionRunner(self.message)
+            ReductionRunner(self.message, self.run_name)
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce):
@@ -54,7 +55,7 @@ class TestReductionRunner(unittest.TestCase):
         When: The main method is called
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name]
+            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
             main()
             out_data = json.loads(tmp_file.read())
         mock_reduce.assert_called_once()
@@ -73,7 +74,7 @@ class TestReductionRunner(unittest.TestCase):
         When: The main method is called
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name]
+            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
             self.assertRaises(Exception, main)
         mock_reduce.assert_called_once()
 
@@ -82,7 +83,7 @@ class TestReductionRunner(unittest.TestCase):
         Test: Providing bad data for the `main` function, i.e. not enough arguments
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps({"apples": 13}), tmp_file.name]
+            sys.argv = ['', json.dumps({"apples": 13}), tmp_file.name, self.run_name]
             self.assertRaises(ValueError, main)
 
     @patch(f'{DIR}.runner.logger.info')
@@ -94,14 +95,15 @@ class TestReductionRunner(unittest.TestCase):
         """
         expected_error_msg = 'error-message'
 
-        def raise_value_error(arg1):
+        def raise_value_error(message, run_name):
             """Raise Value Error"""
-            self.assertEqual(arg1, self.message)
+            self.assertEqual(run_name, self.run_name)
+            self.assertEqual(message, self.message)
             raise Exception(expected_error_msg)
 
         mock_runner_init.side_effect = raise_value_error
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name]
+            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
             self.assertRaises(Exception, main)
 
         self.message.message = expected_error_msg
@@ -140,7 +142,7 @@ class TestReductionRunner(unittest.TestCase):
         Test: Bad datafile is provided
         """
         self.message.description = "testdescription"
-        runner = ReductionRunner(self.message)
+        runner = ReductionRunner(self.message, self.run_name)
         runner.reduce()
         mock_logger_info.assert_called_once()
         assert mock_logger_info.call_args[0][1] == "testdescription"
@@ -155,7 +157,7 @@ class TestReductionRunner(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
 
-            runner = ReductionRunner(self.message)
+            runner = ReductionRunner(self.message, self.run_name)
             runner.reduce()
 
         assert runner.message.message == "Error encountered when trying to read the reduction script"
@@ -170,7 +172,7 @@ class TestReductionRunner(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
 
-            runner = ReductionRunner(self.message)
+            runner = ReductionRunner(self.message, self.run_name)
             runner.reduce()
 
         assert runner.message.message == "Error encountered when trying to read the reduction directory"
@@ -187,7 +189,7 @@ class TestReductionRunner(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
 
-            runner = ReductionRunner(self.message)
+            runner = ReductionRunner(self.message, self.run_name)
             runner.reduce()
 
         reduce.assert_called_once()
@@ -207,7 +209,7 @@ class TestReductionRunner(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
 
-            runner = ReductionRunner(self.message)
+            runner = ReductionRunner(self.message, self.run_name)
             runner.reduce()
 
         reduce.assert_called_once()
@@ -230,7 +232,7 @@ class TestReductionRunner(unittest.TestCase):
             else:
                 self.message.data = [tmpfile.name, tmpfile.name]
 
-            runner = ReductionRunner(self.message)
+            runner = ReductionRunner(self.message, self.run_name)
             runner.reduce()
 
         reduce.assert_called_once()
@@ -262,7 +264,7 @@ class TestReductionRunner(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
 
-            runner = ReductionRunner(self.message)
+            runner = ReductionRunner(self.message, self.run_name)
             runner.reduce()
 
         reduce.assert_called_once()
