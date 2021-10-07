@@ -43,9 +43,9 @@ class HandleMessage:
         destination queue was data_ready.
 
         No processing occurs when:
-        - rb number isn't a 7 digit integer.
-        - instrument is paused.
-        - there is no reduce.py.
+        - RB number isn't a 7 digit integer.
+        - Instrument is paused.
+        - There is no reduce.py.
         """
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
 
@@ -107,8 +107,8 @@ class HandleMessage:
 
         # Create a new data location entry which has a foreign key linking it to
         # the current reduction run. The file path itself will point to a
-        # datafile. E.g:
-        # "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs")
+        # datafile e.g.
+        # "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs"
         data_location = DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
         data_location.save()
 
