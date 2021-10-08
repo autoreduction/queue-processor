@@ -14,11 +14,10 @@ relevant DB fields or logging out the status.
 """
 import logging
 from typing import Optional
-
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import DataLocation, ReductionLocation, Status
+from autoreduce_db.reduction_viewer.models import ReductionLocation, Status
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
@@ -84,7 +83,7 @@ class HandleMessage:
         """
         rb_number = self.normalise_rb_number(message.rb_number)
         experiment = db_access.get_experiment(rb_number)
-        run_version = db_access.find_highest_run_version(experiment, run_number=str(message.run_number))
+        run_version = db_access.find_highest_run_version(experiment, run_number=message.run_number)
         message.run_version = run_version
         instrument = db_access.get_instrument(str(message.instrument))
         return self.do_create_reduction_record(message, experiment, instrument)
@@ -103,14 +102,6 @@ class HandleMessage:
                                                             run_version=message.run_version,
                                                             script_text=script_text,
                                                             status=Status.get_queued())
-        reduction_run.save()
-
-        # Create a new data location entry which has a foreign key linking it to
-        # the current reduction run. The file path itself will point to a
-        # datafile e.g.
-        # "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs"
-        data_location = DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
-        data_location.save()
 
         return reduction_run, message, instrument
 
@@ -173,7 +164,12 @@ class HandleMessage:
         Handover to the ReductionProcessManager to actually run the reduction
         process and handle the outcome from the run.
         """
-        reduction_process_manager = ReductionProcessManager(message)
+        if reduction_run.batch_run:
+            run_name = f"batch-{reduction_run.run_numbers.first()}-{reduction_run.run_numbers.last()}"
+        else:
+            run_name = f"{reduction_run.run_number}"
+
+        reduction_process_manager = ReductionProcessManager(message, run_name)
         self.reduction_started(reduction_run, message)
         output_message = reduction_process_manager.run()
         if output_message.message is not None:

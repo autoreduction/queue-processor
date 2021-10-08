@@ -10,6 +10,7 @@ Post-Process Admin Utilities
 
 import sys
 from contextlib import contextmanager
+from typing import List, Union
 
 
 @contextmanager
@@ -61,14 +62,19 @@ def channels_redirected(out_file, error_file, out_stream):
             _redirect_channels(old_stdout, old_stderr)  # restore stderr.
 
 
-def windows_to_linux_path(path, temp_root_directory):
-    """ Convert windows path to linux path.
+def windows_to_linux_path(paths: Union[str, List[str]], temp_root_directory) -> Union[str, List[str]]:
+    """ Convert windows path to linux path -> replace \\ with /
     :param path:
     :param temp_root_directory:
     :return: (str) linux formatted file path
     """
-    # '\\isis\inst$\' maps to '/isis/'
-    path = path.replace('\\\\isis\\inst$\\', '/isis/')
-    path = path.replace('\\\\autoreduce\\data\\', temp_root_directory + '/data/')
-    path = path.replace('\\', '/')
-    return path
+
+    if isinstance(paths, str):
+        return paths.replace('\\\\isis\\inst$\\', '/isis/').replace('\\\\autoreduce\\data\\',
+                                                                    temp_root_directory + '/data/').replace('\\', '/')
+    else:
+        for i, path in enumerate(paths):
+            paths[i] = path.replace('\\\\isis\\inst$\\',
+                                    '/isis/').replace('\\\\autoreduce\\data\\',
+                                                      temp_root_directory + '/data/').replace('\\', '/')
+        return paths

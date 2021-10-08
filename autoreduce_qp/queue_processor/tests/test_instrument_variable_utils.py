@@ -43,6 +43,16 @@ class FakeMessage:
         self.started_by = 0
         self.run_number = run_number if run_number else 1234567
         self.description = "This is a fake message"
+        self.data = ["test_data"]
+
+
+class FakeBatchRunMessage:
+    def __init__(self) -> None:
+        super().__init__()
+        self.started_by = 0
+        self.run_number = [123456, 123567, 123458]
+        self.description = "This is a fake message"
+        self.data = ["test_data"]
 
 
 class FakeModule:
@@ -82,13 +92,14 @@ class TestInstrumentVariableUtils(TestCase):
         self.instrument = Instrument.objects.get_or_create(name="MyInstrument", is_active=1, is_paused=0)[0]
         self.status = Status.objects.get_or_create(value="q")[0]
 
+    @parameterized.expand([[FakeMessage()], [FakeBatchRunMessage()]])
     @patch("autoreduce_qp.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
-    def test_new_reduction_run(self, _):
+    def test_new_reduction_run(self, message, _):
         """
         Tests with a never before seen Reduction Run
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -102,13 +113,14 @@ class TestInstrumentVariableUtils(TestCase):
         self.assertEqual(new_variables[1].variable.name, "advanced_var1")
         self.assertEqual(new_variables[1].variable.value, "advanced_value1")
 
+    @parameterized.expand([[FakeMessage()], [FakeBatchRunMessage()]])
     @patch("autoreduce_qp.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
-    def test_new_reduction_run_with_message_reduction_args(self, _):
+    def test_new_reduction_run_with_message_reduction_args(self, message, _):
         """
         Tests with a never before seen Reduction Run
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -125,14 +137,15 @@ class TestInstrumentVariableUtils(TestCase):
         self.assertEqual(new_variables[1].variable.name, "advanced_var1")
         self.assertEqual(new_variables[1].variable.value, "advanced_value1")
 
+    @parameterized.expand([[FakeMessage()], [FakeBatchRunMessage()]])
     @patch("autoreduce_qp.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
-    def test_two_reduction_runs_only_creates_one_set_of_variables(self, _):
+    def test_two_reduction_runs_only_creates_one_set_of_variables(self, message, _):
         """
         Tests that creating variables for a module that has the same variables will
         re-use the variables once they have been created
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -147,22 +160,22 @@ class TestInstrumentVariableUtils(TestCase):
         self.assertEqual(new_variables[0].variable, new_variables_again[0].variable)
         self.assertEqual(new_variables[1].variable, new_variables_again[1].variable)
 
-    @parameterized.expand([[{
+    @parameterized.expand([[FakeMessage(), {
         'standard_vars': {
             'new_standard_var': 'new_standard_value'
         }
-    }], [{
+    }], [FakeBatchRunMessage(), {
         'advanced_vars': {
             'new_advanced_var': 'new_advanced_value'
         }
     }]])
-    def test_imported_module_variable_dict_changed(self, param_variable_dict):
+    def test_imported_module_variable_dict_changed(self, message, param_variable_dict):
         """
         Test that only the current variables in reduce_vars are created
         When: the reduce_vars module gets changed
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -191,24 +204,29 @@ class TestInstrumentVariableUtils(TestCase):
             assert ops[0](new_variables[0].variable, new_variables_again[0].variable)
             assert ops[1](new_variables[1].variable, new_variables_again[1].variable)
 
-    @parameterized.expand([[{
-        'standard_vars': {
-            "standard_var1": "standard_value1",
-            'new_standard_var': 'new_standard_value'
+    @parameterized.expand([[
+        FakeMessage(), {
+            'standard_vars': {
+                "standard_var1": "standard_value1",
+                'new_standard_var': 'new_standard_value'
+            }
         }
-    }], [{
-        'advanced_vars': {
-            "advanced_var1": "advanced_value1",
-            'new_advanced_var': 'new_advanced_value'
-        }
-    }]])
-    def test_imported_module_one_dict_gets_a_new_variable(self, param_variable_dict):
+    ],
+                           [
+                               FakeBatchRunMessage(), {
+                                   'advanced_vars': {
+                                       "advanced_var1": "advanced_value1",
+                                       'new_advanced_var': 'new_advanced_value'
+                                   }
+                               }
+                           ]])
+    def test_imported_module_one_dict_gets_a_new_variable(self, message, param_variable_dict):
         """
         Test that new variables get created correctly.
         When: the variable module has a new variable added
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -238,25 +256,30 @@ class TestInstrumentVariableUtils(TestCase):
             # check that ONE variable (the new one) is not contained in the first variable creation
             assert len({nva.variable for nva in new_variables_again} - {nv.variable for nv in new_variables}) == 1
 
-    @parameterized.expand([[{
-        'standard_vars': {
-            "standard_var1": "standard_value1",
-            'new_standard_var': 'new_standard_value'
+    @parameterized.expand([[
+        FakeMessage(), {
+            'standard_vars': {
+                "standard_var1": "standard_value1",
+                'new_standard_var': 'new_standard_value'
+            }
         }
-    }], [{
-        'advanced_vars': {
-            "advanced_var1": "advanced_value1",
-            'new_advanced_var': 'new_advanced_value'
-        }
-    }]])
-    def test_imported_module_one_dict_loses_a_new_variable(self, param_variable_dict):
+    ],
+                           [
+                               FakeBatchRunMessage(), {
+                                   'advanced_vars': {
+                                       "advanced_var1": "advanced_value1",
+                                       'new_advanced_var': 'new_advanced_value'
+                                   }
+                               }
+                           ]])
+    def test_imported_module_one_dict_loses_a_new_variable(self, message, param_variable_dict):
         """
         Test: removed variables are not used accidentally
         when the variable module has less variables a variable (e.g. one has been removed)
 
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -287,13 +310,14 @@ class TestInstrumentVariableUtils(TestCase):
             # check that ONE variable (the new one) is not contained in the first variable creation
             assert len({nva.variable for nva in new_variables} - {nv.variable for nv in new_variables_again}) == 1
 
-    def test_imported_module_no_variables(self):
+    @parameterized.expand([[FakeMessage()], [FakeBatchRunMessage()]])
+    def test_imported_module_no_variables(self, message):
         """
         Test: that no variables get created
         When: the imported reduce_vars has no variables in it
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -306,13 +330,14 @@ class TestInstrumentVariableUtils(TestCase):
         after_creating_variables = InstrumentVariable.objects.count()
         assert after_creating_variables == before_creating_variables
 
-    def test_variable_that_exists_and_tracks_script_gets_updated(self):
+    @parameterized.expand([[FakeMessage()], [FakeBatchRunMessage()]])
+    def test_variable_that_exists_and_tracks_script_gets_updated(self, message):
         """
         Test: Existing variable that tracks the script gets its value/type/help updated
         When: The variable was created for a previous reduction run, but the value was changed in reduce_vars
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -340,13 +365,14 @@ class TestInstrumentVariableUtils(TestCase):
         assert var.type == "number"
         assert var.help_text == "CHANGED HELP FOR VARIABLE"
 
-    def test_variable_that_exists_and_does_not_track_script_gets_ignored(self):
+    @parameterized.expand([[FakeMessage()], [FakeBatchRunMessage()]])
+    def test_variable_that_exists_and_does_not_track_script_gets_ignored(self, message):
         """
         Test: Existing variable that tracks the script gets its value/type/help updated
         When: The variable was created for a previous reduction run, but the value was changed in reduce_vars
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         before_creating_variables = InstrumentVariable.objects.count()
@@ -377,14 +403,15 @@ class TestInstrumentVariableUtils(TestCase):
         assert var.type == "text"
         assert var.help_text == "This is help for standard_value1"
 
-    def test_variable_changed_for_new_run_gets_copied(self):
+    @parameterized.expand([[FakeMessage()], [FakeBatchRunMessage()]])
+    def test_variable_changed_for_new_run_gets_copied(self, message):
         """
         Test: Existing variable that tracks the script gets copied when its
               value/type/help is updated and the run_number is different
         When: The variable was created for a previous reduction run, but the value was changed in reduce_vars
         """
-        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                    self.fake_script_text, self.status)
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, message, 0, self.fake_script_text,
+                                                    self.status)
         reduction_run.save()
 
         with patch("autoreduce_qp.queue_processor.reduction.service.ReductionScript.load",

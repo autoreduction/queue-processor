@@ -24,16 +24,17 @@ logger = logging.getLogger(__package__)
 
 class ReductionRunner:
     """ Main class for the ReductionRunner """
-    def __init__(self, message):
+    def __init__(self, message, run_name: str):
         self.read_write_map = {"R": "read", "W": "write"}
         self.message = message
         self.admin_log_stream = io.StringIO()
+        self.run_name = run_name
         try:
             self.data_file = windows_to_linux_path(self.validate_input('data'), TEMP_ROOT_DIRECTORY)
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument')
             self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
-            self.run_number = str(int(self.validate_input('run_number')))
+            self.run_number = self.validate_input('run_number')
             self.run_version = str(self.validate_input('run_version'))
             self.reduction_arguments = self.validate_input('reduction_arguments')
         except ValueError:
@@ -66,7 +67,10 @@ class ReductionRunner:
 
         # Attempt to read the datafile
         try:
-            datafile = Datafile(self.data_file)
+            if isinstance(self.data_file, str):
+                datafiles = [Datafile(self.data_file)]
+            elif isinstance(self.data_file, list):
+                datafiles = [Datafile(df) for df in self.data_file]
         except DatafileError as err:
             logger.error("Problem reading datafile: %s", traceback.format_exc())
             self.message.message = "Error encountered when trying to access the datafile %s" % self.data_file
@@ -86,10 +90,10 @@ class ReductionRunner:
         try:
             reduction_dir = ReductionDirectory(self.instrument,
                                                self.proposal,
-                                               self.run_number,
+                                               self.run_name,
                                                self.run_version,
                                                flat_output=self.message.flat_output)
-            temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
+            temp_dir = TemporaryReductionDirectory(self.proposal, self.run_name)
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction directory"
             self.message.reduction_log = "Exception:\n%s" % (err)
@@ -97,7 +101,7 @@ class ReductionRunner:
 
         reduction_log_stream = io.StringIO()
         try:
-            reduce(reduction_dir, temp_dir, datafile, reduction_script, self.reduction_arguments, reduction_log_stream)
+            reduce(reduction_dir, temp_dir, datafiles, reduction_script, self.reduction_arguments, reduction_log_stream)
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
         except ReductionScriptError as err:
@@ -136,7 +140,7 @@ def main():
     Additionally, the resulting Message is written to a temporary file which the
     parent process reads back to mark the result of the reduction run in the DB.
     """
-    data, temp_output_file = sys.argv[1], sys.argv[2]
+    data, temp_output_file, run_name = sys.argv[1], sys.argv[2], sys.argv[3]
     try:
         message = Message()
         message.populate(data)
@@ -145,7 +149,7 @@ def main():
         raise
 
     try:
-        reduction = ReductionRunner(message)
+        reduction = ReductionRunner(message, run_name)
     except Exception as exp:
         message.message = str(exp)
         logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))

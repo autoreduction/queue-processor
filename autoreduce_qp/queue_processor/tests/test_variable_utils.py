@@ -38,8 +38,7 @@ class TestVariableUtils(TestCase):
                                                  experiment_reference=54321,
                                                  start_run=12345,
                                                  tracks_script=1)
-        self.reduction_run = ReductionRun(run_number=1111,
-                                          run_version=0,
+        self.reduction_run = ReductionRun(run_version=0,
                                           run_description='run name',
                                           hidden_in_failviewer=0,
                                           admin_log='admin log',

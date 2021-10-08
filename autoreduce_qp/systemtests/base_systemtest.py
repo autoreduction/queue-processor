@@ -108,7 +108,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         if not isinstance(run_number, list):
             run_number = [run_number]
 
-        ReductionRun.objects.filter(instrument__name=instrument, run_number__in=run_number).delete()
+        ReductionRun.objects.filter(instrument__name=instrument, run_numbers__run_number__in=run_number).delete()
 
     @staticmethod
     def _delete_reduction_directory():
@@ -138,7 +138,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         :return: The resulting record
         """
         instrument = db.get_instrument(self.instrument)
-        return instrument.reduction_runs.filter(run_number=self.run_number)
+        return instrument.reduction_runs.filter(run_numbers__run_number=self.run_number)
 
     def send_and_wait_for_result(self, message):
         """Sends the message to the queue and waits until the listener has finished processing it"""

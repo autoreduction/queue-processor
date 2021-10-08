@@ -7,7 +7,8 @@
 """
 Common functions for accessing and creating records in the database
 """
-from typing import List
+import json
+from typing import List, Union
 from django.db import transaction
 
 from autoreduce_db.instrument.models import Instrument, ReductionRun
@@ -86,27 +87,19 @@ def get_software(name, version):
     return Software.objects.get_or_create(name=name, version=version)[0]
 
 
-def get_reduction_run(instrument, run_number):
-    """
-    Returns a QuerySet of all ReductionRun versions that have the given instrument/run_number
-    :param instrument: (str) The name of the instrument to search for
-    :param run_number: (str/int) The run number to search for
-    :return: (QuerySet[ReductionRun,]) ReductionRun records that match the criteria
-
-    Note: The query set could contain multiple records or None
-    """
-    instrument_record = get_instrument(instrument)
-    return ReductionRun.objects.filter(instrument=instrument_record.id, run_number=run_number)
-
-
-def find_highest_run_version(experiment, run_number) -> int:
+def find_highest_run_version(experiment, run_number: Union[int, List[int]]) -> int:
     """
     Search for the highest run version in the database
     :param experiment: (str) The experiment number associated
     :param run_number: (int) The run number to search for
     :return: (int) The highest known run version for a given run number
     """
-    last_run = experiment.reduction_runs.filter(run_number=run_number).order_by('-run_version').first()
+    if isinstance(run_number, int):
+        last_run = experiment.reduction_runs.filter(run_numbers__run_number=run_number).order_by('-run_version').first()
+    else:
+        last_run = experiment.reduction_runs.filter(
+            batch_run=True, run_numbers__run_number__in=run_number).order_by('-run_version').first()
+
     if last_run:  # previous run exists - increment version by 1 for this run
         return last_run.run_version + 1
     else:  # previous run doesn't exist - start at 0
