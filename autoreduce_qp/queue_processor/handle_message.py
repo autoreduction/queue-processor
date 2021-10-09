@@ -21,10 +21,10 @@ from autoreduce_db.reduction_viewer.models import ReductionLocation, Status
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
-from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
+# from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
-from autoreduce_qp.queue_processor.reduction.service import ReductionScript
-from autoreduce_qp.queue_processor.variable_utils import VariableUtils
+# from autoreduce_qp.queue_processor.reduction.service import ReductionScript
+# from autoreduce_qp.queue_processor.variable_utils import VariableUtils
 
 
 class HandleMessage:
@@ -33,7 +33,7 @@ class HandleMessage:
     depending on the message contents.
     """
     def __init__(self):
-        self.instrument_variable = InstrumentVariablesUtils()
+        # self.instrument_variable = InstrumentVariablesUtils()
         self._logger = logging.getLogger(__package__)
 
     def data_ready(self, message: Message):
@@ -57,7 +57,7 @@ class HandleMessage:
             raise
 
         try:
-            message = self.create_run_variables(reduction_run, message, instrument)
+            # message = self.create_run_variables(reduction_run, message, instrument)
             self.send_message_onwards(reduction_run, message, instrument)
         except Exception as err:
             self._handle_error(reduction_run, message, err)
@@ -92,34 +92,30 @@ class HandleMessage:
     @transaction.atomic
     def do_create_reduction_record(message: Message, experiment, instrument):
         """Create the reduction record."""
-        script = ReductionScript(instrument.name)
-        script_text = script.text()
-
         # Make the new reduction run with the information collected so far
-        reduction_run = records.create_reduction_run_record(experiment=experiment,
-                                                            instrument=instrument,
-                                                            message=message,
-                                                            run_version=message.run_version,
-                                                            script_text=script_text,
-                                                            status=Status.get_queued())
+        reduction_run, message = records.create_reduction_run_record(experiment=experiment,
+                                                                     instrument=instrument,
+                                                                     message=message,
+                                                                     run_version=message.run_version,
+                                                                     status=Status.get_queued())
 
         return reduction_run, message, instrument
 
-    def create_run_variables(self, reduction_run, message: Message, instrument):
-        """
-        Create the RunVariables that are described in the run's reduce_vars.py.
-        """
-        self._logger.info('Creating variables for run')
+    # def create_run_variables(self, reduction_run, message: Message, instrument):
+    #     """
+    #     Create the RunVariables that are described in the run's reduce_vars.py.
+    #     """
+    #     self._logger.info('Creating variables for run')
 
-        variables = self.instrument_variable.create_run_variables(reduction_run, message.reduction_arguments)
-        if not variables:
-            self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
+    #     variables = self.instrument_variable.create_run_variables(reduction_run, message.reduction_arguments)
+    #     if not variables:
+    #         self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
-        self._logger.info('Getting script and arguments')
-        message.reduction_script = reduction_run.script
-        message.reduction_arguments = self.get_script_arguments(variables)
+    #     self._logger.info('Getting script and arguments')
+    #     message.reduction_script = reduction_run.script
+    #     message.reduction_arguments = self.get_script_arguments(variables)
 
-        return message
+    #     return message
 
     def send_message_onwards(self, reduction_run, message: Message, instrument):
         """
@@ -250,24 +246,24 @@ class HandleMessage:
         reduction_run.reduction_log = message.reduction_log
         reduction_run.admin_log = message.admin_log
 
-    @staticmethod
-    def get_script_arguments(run_variables):
-        """
-        Convert the RunVariables that have been created into kwargs which can be
-        passed as the script parameters at runtime.
-        """
-        standard_vars, advanced_vars = {}, {}
-        for run_variable in run_variables:
-            variable = run_variable.variable
-            value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
-            if variable.is_advanced:
-                advanced_vars[variable.name] = value
-            else:
-                standard_vars[variable.name] = value
+    # @staticmethod
+    # def get_script_arguments(run_variables):
+    #     """
+    #     Convert the RunVariables that have been created into kwargs which can be
+    #     passed as the script parameters at runtime.
+    #     """
+    #     standard_vars, advanced_vars = {}, {}
+    #     for run_variable in run_variables:
+    #         variable = run_variable.variable
+    #         value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
+    #         if variable.is_advanced:
+    #             advanced_vars[variable.name] = value
+    #         else:
+    #             standard_vars[variable.name] = value
 
-        arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
+    #     arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
 
-        return arguments
+    #     return arguments
 
     @staticmethod
     def normalise_rb_number(rb_number) -> int:
