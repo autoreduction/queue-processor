@@ -7,27 +7,14 @@
 """
 Class to deal with reduction run variables
 """
+from copy import deepcopy
 import re
-import logging
-from typing import Dict, List
-
-from autoreduce_db.instrument.models import Variable, RunVariable
+from typing import List
 
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript
 
 
 class VariableUtils:
-    @staticmethod
-    def save_run_variables(variables, reduction_run):
-        """ Save reduction run variables in the database. """
-        logging.info('Saving run variables for %s', str(reduction_run.run_numbers.all()))
-        run_variables = []
-        for variable in variables:
-            run_var = RunVariable(variable=variable, reduction_run=reduction_run)
-            run_var.save()
-            run_variables.append(run_var)
-        return run_variables
-
     @staticmethod
     def get_type_string(value):
         """
@@ -116,35 +103,53 @@ class VariableUtils:
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
         module = reduce_vars.load()
 
-        variable_help = getattr(module, 'variable_help', {})
-
         return {
-            "standard_vars":
-            VariableUtils.make_dict_with_unsaved_variables(
-                getattr(module, 'standard_vars', {}),
-                variable_help["standard_vars"] if "standard_vars" in variable_help else {}),
-            "advanced_vars":
-            VariableUtils.make_dict_with_unsaved_variables(
-                getattr(module, 'advanced_vars', {}),
-                variable_help["advanced_vars"] if "advanced_vars" in variable_help else {}),
-            "variable_help":
-            getattr(module, 'variable_help', {})
+            "standard_vars": getattr(module, 'standard_vars', {}),
+            "advanced_vars": getattr(module, 'advanced_vars', {}),
+            "variable_help": getattr(module, 'variable_help', {})
         }
 
-    @staticmethod
-    def make_dict_with_unsaved_variables(variables: dict, help_dict: dict) -> Dict[str, object]:
-        """
-        Returns a dict with unsaved Variable objects.
 
-        Not ideal but better than returning a dict that needs to be kept up to date with the
-        Variable interface. The right solution would be to remove all of this, and is captured in
-        https://github.com/ISISScientificComputing/autoreduce/issues/1137
-        """
-        result = {}
-        for name, value in variables.items():
-            result[name] = Variable(name=name,
-                                    value=value,
-                                    type=VariableUtils.get_type_string(value),
-                                    help_text=help_dict[name] if name in help_dict else "")
+class DataTooLong(ValueError):
+    """ Error class used for when reduction variables are too long. """
 
-        return result
+
+def merge_arguments(message_reduction_arguments: dict, reduce_vars_module):
+    """
+    Merges the reduction arguments provided from the message and from the reduce_vars module,
+    with the ones from the message taking precedent.
+    """
+    def set_with_correct_type(message_reduction_arguments: dict, reduction_args: dict, dict_name: str):
+        """
+        Set the value of the variable with the correct type.
+
+        It retrieves the type string of the value in reduce_vars.py (the reduction_args param),
+        and converts the value to that type.
+
+        This is done to enforce type consistency between reduce_vars.py and message_reduction_arguments.
+
+        message_reduction_arguments can contain bad types when it gets sent from the web app - some
+        values are incorrectly strings and they create extra duplicates.
+        """
+        if dict_name in message_reduction_arguments and dict_name in reduction_args:
+            for name, value in message_reduction_arguments[dict_name].items():
+                real_type = VariableUtils.get_type_string(reduction_args[dict_name][name])
+                reduction_args[dict_name][name] = VariableUtils.convert_variable_to_type(value, real_type)
+
+    reduction_args = {
+        'standard_vars': deepcopy(getattr(reduce_vars_module, 'standard_vars', {})),
+        'advanced_vars': deepcopy(getattr(reduce_vars_module, 'advanced_vars', {}))
+    }
+    set_with_correct_type(message_reduction_arguments, reduction_args, 'standard_vars')
+    set_with_correct_type(message_reduction_arguments, reduction_args, 'advanced_vars')
+
+    reduction_args["variable_help"] = getattr(reduce_vars_module, 'variable_help', {})
+    return reduction_args
+
+
+def get_current_script_text(instrument_name):
+    """
+    Fetches the reduction script and variables script for
+    the given instrument, and returns each as a string.
+    """
+    return ReductionScript(instrument_name).text()

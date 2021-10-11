@@ -21,10 +21,7 @@ from autoreduce_db.reduction_viewer.models import ReductionLocation, Status
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
-# from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
-# from autoreduce_qp.queue_processor.reduction.service import ReductionScript
-# from autoreduce_qp.queue_processor.variable_utils import VariableUtils
 
 
 class HandleMessage:
@@ -57,7 +54,6 @@ class HandleMessage:
             raise
 
         try:
-            # message = self.create_run_variables(reduction_run, message, instrument)
             self.send_message_onwards(reduction_run, message, instrument)
         except Exception as err:
             self._handle_error(reduction_run, message, err)
@@ -100,22 +96,6 @@ class HandleMessage:
                                                                      status=Status.get_queued())
 
         return reduction_run, message, instrument
-
-    # def create_run_variables(self, reduction_run, message: Message, instrument):
-    #     """
-    #     Create the RunVariables that are described in the run's reduce_vars.py.
-    #     """
-    #     self._logger.info('Creating variables for run')
-
-    #     variables = self.instrument_variable.create_run_variables(reduction_run, message.reduction_arguments)
-    #     if not variables:
-    #         self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
-
-    #     self._logger.info('Getting script and arguments')
-    #     message.reduction_script = reduction_run.script
-    #     message.reduction_arguments = self.get_script_arguments(variables)
-
-    #     return message
 
     def send_message_onwards(self, reduction_run, message: Message, instrument):
         """

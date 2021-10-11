@@ -22,7 +22,6 @@ from parameterized import parameterized
 from autoreduce_qp.model.database.records import create_reduction_run_record
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 from autoreduce_qp.queue_processor.queue_listener import QueueListener
-from autoreduce_qp.queue_processor.tests.test_instrument_variable_utils import FakeModule
 from autoreduce_qp.systemtests.utils.data_archive import DefaultDataArchive
 
 TEST_REDUCE_VARS_CONTENT = """
@@ -51,6 +50,30 @@ class FakeMessage:
     message = "I am a message"
     description = "This is a fake description"
     data = "/some/location"
+
+
+class FakeModule:
+    def __init__(self, standard_vars=None, advanced_vars=None, variable_help=None) -> None:
+        """
+        Allows overwriting the advanced vars
+        """
+        self.standard_vars = {"standard_var1": "standard_value1"}
+        self.advanced_vars = {"advanced_var1": "advanced_value1"}
+
+        self.variable_help = {
+            "standard_vars": {
+                "standard_var1": "This is help for standard_value1"
+            },
+            "advanced_vars": {
+                "advanced_var1": "This is help for advanced_value1"
+            }
+        }
+        if standard_vars is not None:
+            self.standard_vars = standard_vars
+        if advanced_vars is not None:
+            self.advanced_vars = advanced_vars
+        if variable_help is not None:
+            self.variable_help.update(variable_help)
 
 
 class TestHandleMessage(TestCase):
