@@ -15,11 +15,12 @@ import socket
 import logging
 from pathlib import Path
 from importlib.util import spec_from_file_location, module_from_spec
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 from django.utils import timezone
 
 from autoreduce_utils.settings import SCRIPTS_DIRECTORY
-from autoreduce_db.reduction_viewer.models import DataLocation, ReductionArguments, ReductionScript, RunNumber, ReductionRun
+from autoreduce_db.reduction_viewer.models import (DataLocation, ReductionArguments, ReductionScript, RunNumber,
+                                                   ReductionRun)
 
 # pylint:disable=no-member
 
@@ -98,8 +99,8 @@ def get_script_and_arguments(instrument: str, arguments: dict) -> Tuple[str, str
             logger.error("Syntax error in reduction script %s", vars_path)
             raise
 
-        arguments = json.dumps(arguments, separators=(',', ':'))
-    return script, arguments
+    arguments_str = json.dumps(arguments, separators=(',', ':'))
+    return script, arguments_str
 
 
 def create_reduction_run_record(experiment, instrument, message, run_version, status):
@@ -117,14 +118,21 @@ def create_reduction_run_record(experiment, instrument, message, run_version, st
     batch_run = isinstance(message.run_number, list)
 
     if message.reduction_arguments is None and not batch_run:
-        # branch when a new run is submitted - find args from pre-configured new runs
-        arguments = instrument.arguments.filter(start_run__isnull=False, start_run__lte=message.run_number)
+        # branch when a new run is submitted - find args from pre-configured new runs for an experiment
+        # as experiment variables override any other ones
+        arguments = instrument.arguments.filter(experiment_reference__isnull=False,
+                                                experiment_reference__lte=message.rb_number)
         if not arguments:
-            arguments = ReductionArguments.objects.create(raw=arguments_json, instrument=instrument)
+            # no pre-configured new runs for this experiment, so try to find pre-configured ones for this run
+            arguments = instrument.arguments.filter(start_run__isnull=False, start_run__lte=message.run_number)
+        if not arguments:
+            # the arguments don't seem to exist, create a new object with the defaults from reduce_vars
+            # get_or_create is used so that if they match with any previous args they are still re-used
+            arguments, _ = ReductionArguments.objects.get_or_create(raw=arguments_json, instrument=instrument)
     else:
         # branch for reruns and batch runs
         try:
-            arguments = ReductionArguments.objects.get(raw=arguments_json)
+            arguments = ReductionArguments.objects.get(raw=arguments_json, instrument=instrument)
         except ReductionArguments.DoesNotExist:
             arguments = ReductionArguments.objects.create(raw=arguments_json, start_run=None, instrument=instrument)
     message.reduction_arguments = arguments.as_dict()
