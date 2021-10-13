@@ -30,7 +30,6 @@ class HandleMessage:
     depending on the message contents.
     """
     def __init__(self):
-        # self.instrument_variable = InstrumentVariablesUtils()
         self._logger = logging.getLogger(__package__)
 
     def data_ready(self, message: Message):
@@ -120,7 +119,7 @@ class HandleMessage:
         Determine whether the processing should be skippped. The run will be
         skipped if the message validation fails or if the instrument is paused.
         """
-        if reduction_run.script == "":
+        if reduction_run.script.text == "":
             return "Script text for current instrument is empty"
         try:
             message.validate("/queue/DataReady")

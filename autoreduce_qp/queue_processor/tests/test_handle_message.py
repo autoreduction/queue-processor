@@ -50,6 +50,8 @@ class FakeMessage:
     message = "I am a message"
     description = "This is a fake description"
     data = "/some/location"
+    reduction_script = """def main(input_file, output_dir): print(123)"""
+    reduction_arguments = {"standard_vars": {"variable": "value"}}
 
 
 class FakeModule:
@@ -93,7 +95,13 @@ class TestHandleMessage(TestCase):
             "data": "/path",
             "software": "6.0.0",
             "description": "This is a fake description",
-            "instrument": self.instrument_name  # Autoreduction Mock Instrument
+            "instrument": self.instrument_name,  # Autoreduction Mock Instrument
+            "reduction_script": """def main(input_file, output_dir): print(123)""",
+            "reduction_arguments": {
+                "standard_vars": {
+                    "variable": "value"
+                }
+            }
         })
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage()
@@ -102,10 +110,8 @@ class TestHandleMessage(TestCase):
         self.experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         self.instrument, _ = Instrument.objects.get_or_create(name=self.instrument_name, is_active=True)
         status = Status.get_queued()
-        fake_script_text = "scripttext"
-        self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
-                                                         fake_script_text, status)
-        self.reduction_run.save()
+        self.reduction_run, self.message = create_reduction_run_record(self.experiment, self.instrument, self.msg, 0,
+                                                                       status)
 
     @parameterized.expand([
         ["reduction_error", 'e'],
@@ -193,6 +199,20 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
 
     @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
+    def test_do_reduction_success_batch_run(self, rpm: Mock):
+        """Test the success path of do_reduction."""
+        rpm.return_value.run = self.do_post_started_assertions
+        self.reduction_run.batch_run = True
+        self.reduction_run.run_numbers.create(run_number=7654322)
+
+        self.handler.do_reduction(self.reduction_run, self.msg)
+        rpm.assert_called_once_with(self.msg, "batch-7654321-7654322")
+        assert self.reduction_run.status == Status.get_completed()
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.reduction_location.first().file_path == "/path/1"
+
+    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_success_special_characters_in_script(self, rpm):
         """
         Test the success path of do_reduction with special characters in the
@@ -200,14 +220,14 @@ class TestHandleMessage(TestCase):
         """
         rpm.return_value.run = self.do_post_started_assertions
         test_special_chars_script = 'print("✈", "’")'
-        self.reduction_run.script = test_special_chars_script
+        self.reduction_run.script.text = test_special_chars_script
 
         self.handler.do_reduction(self.reduction_run, self.msg)
         assert self.reduction_run.status == Status.get_completed()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
-        assert self.reduction_run.script == test_special_chars_script
+        assert self.reduction_run.script.text == test_special_chars_script
 
     def do_post_started_assertions(self, expected_info_calls=1):
         "Helper method to capture common assertions between tests."
@@ -246,9 +266,11 @@ class TestHandleMessage(TestCase):
         """
         Test find_reason_to_skip_run correctly captures validation failing on the message
         """
-        self.reduction_run.script = ""
-        assert "Script text for current instrument is empty" in self.handler.find_reason_to_skip_run(
-            self.reduction_run, self.msg, self.instrument)
+        self.reduction_run.script.text = ""
+        reason = self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
+
+        assert reason
+        assert "Script text for current instrument is empty" in reason
 
     def test_find_reason_to_skip_run_message_validation_fails(self):
         """
@@ -303,19 +325,15 @@ class TestHandleMessage(TestCase):
         assert "Validation error" in self.reduction_run.message
         assert "Validation error" in self.reduction_run.reduction_log
 
-    @patch("autoreduce_qp.queue_processor.handle_message.ReductionScript")
-    def test_create_run_records_multiple_versions(self, reduction_script: Mock):
+    def test_create_run_records_multiple_versions(self):
         """Test creating multiple version of the same run."""
         self.instrument.is_active = False
 
         self.msg.description = "Testing multiple versions"
 
-        reduction_script.return_value.text.return_value = "print(123)"
         self.msg.run_number = random.randint(1000000, 10000000)
-        db_objects_to_delete = []
         for i in range(5):
             reduction_run, message, instrument = self.handler.create_run_records(self.msg)
-            db_objects_to_delete.append(reduction_run)
 
             assert reduction_run.run_number == self.msg.run_number
             assert reduction_run.experiment.reference_number == self.msg.rb_number
@@ -324,33 +342,9 @@ class TestHandleMessage(TestCase):
             assert message.run_version == i
             assert instrument == self.instrument
             assert instrument.name == self.msg.instrument
-            assert reduction_run.script == "print(123)"
+            assert reduction_run.script.text == FakeMessage().reduction_script
             assert reduction_run.data_location.first().file_path == message.data
             assert reduction_run.status == Status.get_queued()
-
-        for obj in db_objects_to_delete:
-            obj.delete()
-
-    def test_create_run_variables_no_variables_creates_nothing(self):
-        "Test running a reduction run with an empty reduce_vars.py."
-        expected_args = {'standard_vars': {}, 'advanced_vars': {}}
-
-        self.handler.instrument_variable.create_run_variables = mock.Mock(return_value=[])
-
-        message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
-        self.handler.instrument_variable.create_run_variables.assert_called_once_with(self.reduction_run, {})
-        assert self.mocked_logger.info.call_count == 2
-        self.mocked_logger.warning.assert_called_once()
-        assert message.reduction_arguments == expected_args
-
-    @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
-    def test_create_run_variables(self, import_module: Mock):
-        """Test the creation of RunVariables for the ReductionRun."""
-        expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
-        message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
-        assert self.mocked_logger.info.call_count == 2
-        assert message.reduction_arguments == expected_args
-        import_module.assert_called_once()
 
     def test_data_ready_other_exception_raised_ends_processing(self):
         """Test an exception being raised inside data_ready handler."""
@@ -366,52 +360,13 @@ class TestHandleMessage(TestCase):
         errored.
         """
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
-        self.handler.create_run_variables = Mock(side_effect=IntegrityError)
+        self.handler.send_message_onwards = Mock(side_effect=IntegrityError)
         with self.assertRaises(IntegrityError):
             self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 2
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == Status.get_error()
         assert "Encountered error when saving run variables" in self.reduction_run.message
-
-    def test_data_ready_no_reduce_vars(self):
-        "Test data_ready when the reduce_vars script does not exist and throws a FileNotFoundError"
-        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
-        with self.assertRaises(FileNotFoundError):
-            self.handler.data_ready(self.msg)
-        assert self.mocked_logger.info.call_count == 3
-        self.mocked_logger.error.assert_called_once()
-        assert self.reduction_run.status == Status.get_error()
-        assert "Encountered error when saving run variables" in self.reduction_run.message
-
-    @patch('autoreduce_qp.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
-    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
-    def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
-        """Test data_ready success path sends the message onwards for reduction."""
-        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
-        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
-        self.handler.data_ready(self.msg)
-        assert self.mocked_logger.info.call_count == 1
-        assert self.reduction_run.finished is not None
-        assert self.reduction_run.status == Status.get_completed()
-        load.assert_called_once()
-
-    @patch("autoreduce_qp.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
-    @patch("autoreduce_qp.queue_processor.handle_message.ReductionProcessManager")
-    def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
-        """
-        Test data_ready error path sends the message onwards to be marked as
-        errored.
-        """
-        self.msg.message = "I am error"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
-        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
-        self.handler.data_ready(self.msg)
-        assert self.mocked_logger.info.call_count == 1
-        assert self.reduction_run.finished is not None
-        assert self.reduction_run.status == Status.get_error()
-        assert self.reduction_run.message == "I am error"
-        load.assert_called_once()
 
     def test_create_run_records_invalid_rb_number(self):
         """Test creating a run record when the rb number is invalid."""
