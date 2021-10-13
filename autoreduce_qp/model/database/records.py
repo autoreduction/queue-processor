@@ -65,13 +65,9 @@ def get_script_and_arguments(instrument: str, arguments: dict) -> Tuple[str, str
         The reduction script as a string, the reduction arguments as a dictionary,
         and any error messages encountered
     """
-    scripts_dir = Path(SCRIPTS_DIRECTORY % instrument)
-    try:
-        reduce_path = scripts_dir / "reduce.py"
-        with io.open(reduce_path, 'r') as open_file:
-            script = open_file.read()
-    except IOError:
-        script = ""
+    if not script:
+        rscript = ReductionScriptFile(instrument)
+        script = rscript.text()
 
     if not arguments:
         arguments = {
@@ -82,22 +78,10 @@ def get_script_and_arguments(instrument: str, arguments: dict) -> Tuple[str, str
                 "advanced_vars": {}
             }
         }
-        vars_path = scripts_dir / "reduce_vars.py"
-        try:
-            spec = spec_from_file_location("reduce_vars.py", vars_path)
-            if spec is None:
-                raise ImportError(f"Module at {vars_path} does not exist.")
-            module = module_from_spec(spec)
-            spec.loader.exec_module(module)
-            for dict_name in ["standard_vars", "advanced_vars", "variable_help"]:
-                arguments[dict_name] = getattr(module, dict_name, {})
-
-        except ImportError as exc:
-            logger.error("Unable to load reduction script %s due to missing import. (%s)", vars_path, exc)
-            raise
-        except SyntaxError as exc:
-            logger.error("Syntax error in reduction script %s", vars_path)
-            raise
+        rargs = ReductionScriptFile(instrument, "reduce_vars.py")
+        module = rargs.load()
+        for dict_name in ["standard_vars", "advanced_vars", "variable_help"]:
+            arguments[dict_name] = getattr(module, dict_name, {})
 
     arguments_str = json.dumps(arguments, separators=(',', ':'))
     return script, arguments_str
