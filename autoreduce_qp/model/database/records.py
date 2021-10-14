@@ -95,6 +95,8 @@ def _make_script_and_arguments(instrument, message, batch_run):
     if message.reduction_arguments is None and not batch_run:
         # branch when a new run is submitted - find args from pre-configured new runs for an experiment
         # as experiment variables override any other ones
+        # Note: this does NOT and should NOT update the value of experiemnt_reference or start_run arguments
+        # this is done in the autoreduce_frontend configure_new_runs view
         try:
             arguments = instrument.arguments.get(experiment_reference__isnull=False,
                                                  experiment_reference=message.rb_number)
