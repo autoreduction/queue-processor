@@ -21,7 +21,7 @@ from autoreduce_qp.systemtests.base_systemtest import (BaseAutoreduceSystemTest,
 class TestEndToEnd(BaseAutoreduceSystemTest):
     """Class to test pipelines in autoreduction."""
 
-    The expected_rb_number is 0 because the initial RB number is not an int
+    # The expected_rb_number is 0 because the initial RB number is not an int
     @parameterized.expand([[222, 222], ["INVALID RB NUMBER CALIBRATION RUN PERHAPS", 0]])
     def test_end_to_end_wish_invalid_rb_number_skipped(self, rb_number: Union[int, str], expected_rb_number: int):
         """Test that data gets skipped when the RB Number doesn't validate."""
