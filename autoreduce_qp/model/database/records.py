@@ -110,7 +110,7 @@ def _make_script_and_arguments(instrument, message, batch_run):
                                                                   start_run=message.run_number)
     else:
         # branch for reruns and batch runs
-        arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
+        arguments, _ = instrument.arguments.get_or_create(raw=arguments_json, experiment_reference=None, start_run=None)
     return script, arguments
 
 

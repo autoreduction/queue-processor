@@ -188,16 +188,18 @@ class TestDatabaseRecords(TestCase):
         assert rscript == rscript_second_run
         assert rargs == rargs_second_run
 
+    @parameterized.expand([[{"experiment_reference": 7272727}], [{"start_run": 1237474}]])
     @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.load")
-    def test_make_script_and_arguments_args_from_message_will_reuse_any_matching_args(self, load: mock.Mock):
+    def test_make_script_and_arguments_args_from_message_will_not_reuse_matching_exp_or_run_args(
+            self, create_args: dict, load: mock.Mock):
         """
         Test that the script is made, and arguments from the message.reduction_arguments
         are picked over ALL others. This is used for reruns, and in that case a user would
         expect that the arguments they re-ran with, take precedence over any others.
 
-        This test checks the case when the message.reduction_arguments matches some other
-        object in the database, but does not care whether it has a value for
-        start_run or experiment_reference
+        This test checks the case when the message.reduction_arguments
+        matches some other object in the database, it will not reuse
+        them if they have a value for start_run or experiment_reference.
         """
         load.return_value = FakeModule()
         msg = FakeMessage()
@@ -206,8 +208,7 @@ class TestDatabaseRecords(TestCase):
         msg.rb_number = 123456
         instrument = Instrument.objects.first()
 
-        expected_args = instrument.arguments.create(raw='{"standard_vars":{"variable":"value"}}',
-                                                    experiment_reference=msg.rb_number)
+        expected_args = instrument.arguments.create(raw='{"standard_vars":{"variable":"value"}}', **create_args)
         rscript, rargs = records._make_script_and_arguments(instrument, msg, False)
 
         load.assert_not_called()
@@ -215,4 +216,4 @@ class TestDatabaseRecords(TestCase):
         assert rscript.text == "print(123)"
         # args were passed in with the message, but they happen to match previous ones in the DB
         # so the object should be re-used
-        assert rargs == expected_args
+        assert rargs != expected_args
