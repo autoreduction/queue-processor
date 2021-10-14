@@ -13,7 +13,7 @@ import socket
 from typing import List, Union
 from unittest import mock
 from django.test import TestCase
-from autoreduce_db.reduction_viewer.models import DataLocation, Instrument, ReductionRun, RunNumber
+from autoreduce_db.reduction_viewer.models import DataLocation, Experiment, Instrument, ReductionRun, RunNumber
 from parameterized import parameterized
 import autoreduce_qp.model.database.records as records
 from queue_processor.tests.test_handle_message import FakeMessage, FakeModule
@@ -65,7 +65,7 @@ class TestDatabaseRecords(TestCase):
         self.assertEqual(ReductionRun.objects.create.return_value, returned_run)
         self.assertEqual(mock_msg, returned_msg)
 
-        _make_script_and_arguments.assert_called_once_with(mock_inst, mock_msg, False)
+        _make_script_and_arguments.assert_called_once_with(mock_experiment, mock_inst, mock_msg, False)
         ReductionRun.objects.create.assert_called_once_with(
             run_version=mock_run_version,
             batch_run=False,
@@ -120,17 +120,19 @@ class TestDatabaseRecords(TestCase):
         the ones with a set experiment variable, as they are TOP priority over other variables.
         """
 
+        instrument: Instrument = Instrument.objects.first()
+        experiment: Experiment = Experiment.objects.first()
+
         load.return_value = FakeModule()
         msg = FakeMessage()
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = None
-        msg.rb_number = 123456
-        instrument = Instrument.objects.first()
+        msg.rb_number = experiment.reference_number
 
-        expected_args = instrument.arguments.create(raw="{}", experiment_reference=msg.rb_number)
+        expected_args = instrument.arguments.create(raw="{}", experiment_reference=experiment.reference_number)
         # add arguments for a run range, just to make sure they don't get selected over the other ones
         instrument.arguments.create(raw="{}", start_run=msg.run_number)
-        rscript, rargs = records._make_script_and_arguments(instrument, msg, False)
+        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript.text == "print(123)"
         assert rargs == expected_args
@@ -141,18 +143,20 @@ class TestDatabaseRecords(TestCase):
         Test that the script is made, and arguments pre-configured to start from this run are selected.
         Also checks that older configurations are not picked over the latest one.
         """
+        instrument: Instrument = Instrument.objects.first()
+        experiment: Experiment = Experiment.objects.first()
+
         load.return_value = FakeModule()
         msg = FakeMessage()
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = None
-        msg.rb_number = 123456
-        instrument = Instrument.objects.first()
+        msg.rb_number = experiment.reference_number
 
         expected_args = instrument.arguments.create(raw="{}", start_run=msg.run_number)
         # add some more arguments that start earlier, to verify that only the latest one is selected
         instrument.arguments.create(raw="{}", start_run=msg.run_number - 1)
         instrument.arguments.create(raw="{}", start_run=msg.run_number - 2)
-        rscript, rargs = records._make_script_and_arguments(instrument, msg, False)
+        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript.text == "print(123)"
         assert rargs == expected_args
@@ -167,6 +171,9 @@ class TestDatabaseRecords(TestCase):
         This test checks the case when the message.reduction_arguments do not match any
         in the database.
         """
+        instrument: Instrument = Instrument.objects.first()
+        experiment: Experiment = Experiment.objects.first()
+
         load.return_value = FakeModule()
         msg = FakeMessage()
         msg.reduction_script = "print(123)"
@@ -175,7 +182,7 @@ class TestDatabaseRecords(TestCase):
         instrument = Instrument.objects.first()
 
         expected_args = instrument.arguments.create(raw="{}", start_run=msg.run_number)
-        rscript, rargs = records._make_script_and_arguments(instrument, msg, False)
+        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         load.assert_not_called()
 
@@ -183,7 +190,7 @@ class TestDatabaseRecords(TestCase):
         # args were passed in with the message, so they would not equal the ones we have made
         assert rargs != expected_args
         # but running it again should `get` the first object return the same DB record
-        rscript_second_run, rargs_second_run = records._make_script_and_arguments(instrument, msg, False)
+        rscript_second_run, rargs_second_run = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript == rscript_second_run
         assert rargs == rargs_second_run
@@ -201,6 +208,9 @@ class TestDatabaseRecords(TestCase):
         matches some other object in the database, it will not reuse
         them if they have a value for start_run or experiment_reference.
         """
+        instrument: Instrument = Instrument.objects.first()
+        experiment: Experiment = Experiment.objects.first()
+
         load.return_value = FakeModule()
         msg = FakeMessage()
         msg.reduction_script = "print(123)"
@@ -209,7 +219,7 @@ class TestDatabaseRecords(TestCase):
         instrument = Instrument.objects.first()
 
         expected_args = instrument.arguments.create(raw='{"standard_vars":{"variable":"value"}}', **create_args)
-        rscript, rargs = records._make_script_and_arguments(instrument, msg, False)
+        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         load.assert_not_called()
 
