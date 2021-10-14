@@ -17,7 +17,7 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import ReductionLocation, Status
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, ReductionLocation, Status
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
@@ -85,7 +85,7 @@ class HandleMessage:
 
     @staticmethod
     @transaction.atomic
-    def do_create_reduction_record(message: Message, experiment, instrument):
+    def do_create_reduction_record(message: Message, experiment: Experiment, instrument: Instrument):
         """Create the reduction record."""
         # Make the new reduction run with the information collected so far
         reduction_run, message = records.create_reduction_run_record(experiment=experiment,
@@ -224,25 +224,6 @@ class HandleMessage:
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
         reduction_run.admin_log = message.admin_log
-
-    # @staticmethod
-    # def get_script_arguments(run_variables):
-    #     """
-    #     Convert the RunVariables that have been created into kwargs which can be
-    #     passed as the script parameters at runtime.
-    #     """
-    #     standard_vars, advanced_vars = {}, {}
-    #     for run_variable in run_variables:
-    #         variable = run_variable.variable
-    #         value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
-    #         if variable.is_advanced:
-    #             advanced_vars[variable.name] = value
-    #         else:
-    #             standard_vars[variable.name] = value
-
-    #     arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
-
-    #     return arguments
 
     @staticmethod
     def normalise_rb_number(rb_number) -> int:

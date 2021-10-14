@@ -9,19 +9,15 @@
 Contains various helper methods for managing or creating ORM records
 """
 
-import io
 import json
 import socket
 import logging
-from pathlib import Path
-from importlib.util import spec_from_file_location, module_from_spec
 from typing import List, Tuple, Union
 from django.utils import timezone
 
-from autoreduce_utils.settings import SCRIPTS_DIRECTORY
+from autoreduce_db.reduction_viewer.models import (DataLocation, Experiment, Instrument, ReductionArguments,
+                                                   ReductionScript, RunNumber, ReductionRun, Status)
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript as ReductionScriptFile
-from autoreduce_db.reduction_viewer.models import (DataLocation, ReductionArguments, ReductionScript, RunNumber,
-                                                   ReductionRun)
 
 # pylint:disable=no-member
 
@@ -52,7 +48,7 @@ def _make_run_numbers(reduction_run, message_run_number: Union[int, List[int]]):
             [RunNumber(reduction_run=reduction_run, run_number=run_number) for run_number in message_run_number])
 
 
-def get_script_and_arguments(instrument: str, script: str, arguments: dict) -> Tuple[str, str]:
+def get_script_and_arguments(instrument: Instrument, script: str, arguments: dict) -> Tuple[str, str]:
     """
     Loads the reduction script (reduce.py) as a string, and if arguments are not provided it loads
     them from reduce_vars.py as a module, which is then converted to a dictionary.
@@ -88,7 +84,7 @@ def get_script_and_arguments(instrument: str, script: str, arguments: dict) -> T
     return script, arguments_str
 
 
-def _make_script_and_arguments(instrument, message, batch_run):
+def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, message, batch_run: bool):
     script, arguments_json = get_script_and_arguments(instrument, message.reduction_script, message.reduction_arguments)
     script, _ = ReductionScript.objects.get_or_create(text=script)
 
@@ -114,7 +110,8 @@ def _make_script_and_arguments(instrument, message, batch_run):
     return script, arguments
 
 
-def create_reduction_run_record(experiment, instrument, message, run_version, status):
+def create_reduction_run_record(experiment: Experiment, instrument: Instrument, message, run_version: int,
+                                status: Status):
     """
     Creates an ORM record for the given reduction run and returns
     this record without saving it to the DB
@@ -123,7 +120,7 @@ def create_reduction_run_record(experiment, instrument, message, run_version, st
     time_now = timezone.now()
     batch_run = isinstance(message.run_number, list)
 
-    script, arguments = _make_script_and_arguments(instrument, message, batch_run)
+    script, arguments = _make_script_and_arguments(experiment, instrument, message, batch_run)
     message.reduction_script = script.text
     message.reduction_arguments = arguments.as_dict()
 
