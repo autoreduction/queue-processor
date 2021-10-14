@@ -99,7 +99,7 @@ def _make_script_and_arguments(instrument, message, batch_run):
         # this is done in the autoreduce_frontend configure_new_runs view
         try:
             arguments = instrument.arguments.get(experiment_reference__isnull=False,
-                                                 experiment_reference=message.rb_number)
+                                                 experiment_reference=experiment.reference_number)
         except ReductionArguments.DoesNotExist:
             # no pre-configured new runs for this experiment, so try to find pre-configured ones for this run
             arguments = instrument.arguments.filter(start_run__isnull=False,
