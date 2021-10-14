@@ -93,8 +93,11 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
     def test_end_to_end_wish_vars_script_gets_new_variable(self):
         """
-        Test running the same run twice, but the second time the reduce_vars has
-        a new variable.
+        Test: Reducing the same run after changing the reduce_vars to have
+              a new variable
+
+        Expected: A new ReductionArguments is created for the second run, as it
+                  no longer matches the value of the first run.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
@@ -105,22 +108,21 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         run_without_vars = result_one[0]
 
         self.data_archive.add_reduce_vars_script(self.instrument, VARS_SCRIPT)
-        result_two = self.send_and_wait_for_result(self.data_ready_message)
+        result_two_qs = self.send_and_wait_for_result(self.data_ready_message)
 
-        assert len(result_two) == 2
-        assert run_without_vars == result_two[0]  # check that the first run is queried again
+        assert len(result_two_qs) == 2
+        assert run_without_vars == result_two_qs[0]  # check that the first run is queried again
 
-        run_with_vars = result_two[1]
-        assert run_without_vars.run_variables.count() == 0
-        assert run_with_vars.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
-        var = run_with_vars.run_variables.first().variable
-        assert var.name == "variable1"
-        assert var.value == "value1"
+        run_with_vars = result_two_qs[1]
+        assert run_without_vars.arguments != run_with_vars.arguments
 
     def test_end_to_end_wish_vars_script_loses_variable(self):
         """
-        Test running the same run twice, but the second time the reduce_vars has
-        one less variable.
+        Test: Reducing the same run after changing the reduce_vars to have
+              one less variable
+
+        Expected: A new ReductionArguments is created for the second run, as it
+                  no longer matches the value of the first run.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
@@ -129,23 +131,22 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
         assert len(result_one) == 1
         run_with_vars = result_one[0]
-        assert run_with_vars.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
-        var = run_with_vars.run_variables.first().variable
-        assert var.name == "variable1"
-        assert var.value == "value1"
+        assert run_with_vars.arguments.as_dict()["standard_vars"]["variable1"] == "value1"
 
         self.data_archive.add_reduce_vars_script(self.instrument, "")
-        result_two = self.send_and_wait_for_result(self.data_ready_message)
+        result_two_qs = self.send_and_wait_for_result(self.data_ready_message)
 
-        assert len(result_two) == 2
-        assert run_with_vars == result_two[0]
-        run_without_vars = result_two[1]
-        assert run_without_vars.run_variables.count() == 0
+        assert len(result_two_qs) == 2
+        result_two = result_two_qs[1]
+        assert result_two.arguments != run_with_vars.arguments
 
     def test_end_to_end_vars_script_has_variable_value_changed(self):
         """
-        Test that reducing the same run after changing the reduce_vars updates
-        the variable's value.
+        Test: Reducing the same run after changing the reduce_vars to have
+              the same variable but a different value
+
+        Expected: A new ReductionArguments is created for the second run, as it
+                  no longer matches the value of the first run.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
@@ -154,10 +155,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
         assert len(result_one) == 1
         run_with_initial_var = result_one[0]
-        assert run_with_initial_var.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
-        var = run_with_initial_var.run_variables.first().variable
-        assert var.name == "variable1"
-        assert var.value == "value1"
+        assert run_with_initial_var.arguments.as_dict()["standard_vars"]["variable1"] == "value1"
 
         self.data_archive.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
         result_two = self.send_and_wait_for_result(self.data_ready_message)
@@ -167,13 +165,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
         run_with_changed_var = result_two[1]
 
-        assert run_with_initial_var.run_variables.count() == 1
-        assert run_with_changed_var.run_variables.count() == 1
-
-        initial_var = run_with_initial_var.run_variables.first().variable
-        changed_var = run_with_changed_var.run_variables.first().variable
-
-        assert initial_var == changed_var
+        assert run_with_initial_var.arguments != run_with_changed_var.arguments
 
     def test_end_to_end_wish_vars_script_has_variable_reused_on_new_run_number(self):
         """
@@ -191,13 +183,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         result_two = self.send_and_wait_for_result(self.data_ready_message)
         run_with_different_run_number = result_two[0]
 
-        assert run_with_initial_var.run_variables.count() == 1
-        assert run_with_different_run_number.run_variables.count() == 1
-
-        initial_var = run_with_initial_var.run_variables.first().variable
-        new_var = run_with_different_run_number.run_variables.first().variable
-
-        assert initial_var == new_var
+        assert run_with_different_run_number.arguments == run_with_initial_var.arguments
 
     def test_end_to_end_wish_vars_script_has_variable_copied_on_new_run_number_when_value_changed(self):
         """
@@ -213,10 +199,6 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
         assert len(result_one) == 1
         run_with_initial_var = result_one[0]
-        assert run_with_initial_var.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
-        var = run_with_initial_var.run_variables.first().variable
-        assert var.name == "variable1"
-        assert var.value == "value1"
 
         # Update the run number in the class because it's used to query for the correct run
         self.data_ready_message.run_number = self.run_number = 102
@@ -229,15 +211,10 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         assert len(result_two) == 1
 
         run_with_changed_var = result_two[0]
+        assert run_with_changed_var.arguments != run_with_initial_var.arguments
 
-        assert run_with_initial_var.run_variables.count() == 1
-        assert run_with_changed_var.run_variables.count() == 1
+    def test_reduction_run_uses_experiment_arguments(self):
+        self.fail("TODO")
 
-        initial_var = run_with_initial_var.run_variables.first().variable
-        changed_var = run_with_changed_var.run_variables.first().variable
-
-        assert initial_var != changed_var
-        assert initial_var.name == changed_var.name
-        assert initial_var.value != changed_var.value
-        assert initial_var.type != changed_var.type
-        assert initial_var.instrumentvariable.start_run < changed_var.instrumentvariable.start_run
+    def test_reduction_run_uses_start_run_arguments(self):
+        self.fail("TODO")
