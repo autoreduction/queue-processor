@@ -105,13 +105,12 @@ def _make_script_and_arguments(instrument, message, batch_run):
             if not arguments:
                 # the arguments don't seem to exist, create a new object with the defaults from reduce_vars
                 # get_or_create is used so that if they match with any previous args they are still re-used
-                arguments, _ = ReductionArguments.objects.get_or_create(raw=arguments_json, instrument=instrument)
+                arguments, _ = instrument.arguments.get_or_create(raw=arguments_json,
+                                                                  experiment_reference__isnull=True,
+                                                                  start_run=message.run_number)
     else:
         # branch for reruns and batch runs
-        try:
-            arguments = ReductionArguments.objects.get(raw=arguments_json, instrument=instrument)
-        except ReductionArguments.DoesNotExist:
-            arguments = ReductionArguments.objects.create(raw=arguments_json, start_run=None, instrument=instrument)
+        arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
     return script, arguments
 
 

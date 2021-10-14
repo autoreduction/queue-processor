@@ -157,9 +157,62 @@ class TestDatabaseRecords(TestCase):
         assert rscript.text == "print(123)"
         assert rargs == expected_args
 
-        # reduction_arguments is None & not batch run
-        # -> experiment vars - Done
-        # -> start_run vars - Done
-        # reduction_arguments is None & is batch run
-        # reduction_arguments not None & does not exist
-        # reduction_arguments not None & exists
+    @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.load")
+    def test_make_script_and_arguments_args_from_message(self, load: mock.Mock):
+        """
+        Test that the script is made, and arguments from the message.reduction_arguments
+        are picked over ALL others. This is used for reruns, and in that case a user would
+        expect that the arguments they re-ran with, take precedence over any others.
+
+        This test checks the case when the message.reduction_arguments do not match any
+        in the database.
+        """
+        load.return_value = FakeModule()
+        msg = FakeMessage()
+        msg.reduction_script = "print(123)"
+        msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
+        msg.rb_number = 123456
+        instrument = Instrument.objects.first()
+
+        expected_args = instrument.arguments.create(raw="{}", start_run=msg.run_number)
+        rscript, rargs = records._make_script_and_arguments(instrument, msg, False)
+
+        load.assert_not_called()
+
+        assert rscript.text == "print(123)"
+        # args were passed in with the message, so they would not equal the ones we have made
+        assert rargs != expected_args
+        # but running it again should `get` the first object return the same DB record
+        rscript_second_run, rargs_second_run = records._make_script_and_arguments(instrument, msg, False)
+
+        assert rscript == rscript_second_run
+        assert rargs == rargs_second_run
+
+    @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.load")
+    def test_make_script_and_arguments_args_from_message_will_reuse_any_matching_args(self, load: mock.Mock):
+        """
+        Test that the script is made, and arguments from the message.reduction_arguments
+        are picked over ALL others. This is used for reruns, and in that case a user would
+        expect that the arguments they re-ran with, take precedence over any others.
+
+        This test checks the case when the message.reduction_arguments matches some other
+        object in the database, but does not care whether it has a value for
+        start_run or experiment_reference
+        """
+        load.return_value = FakeModule()
+        msg = FakeMessage()
+        msg.reduction_script = "print(123)"
+        msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
+        msg.rb_number = 123456
+        instrument = Instrument.objects.first()
+
+        expected_args = instrument.arguments.create(raw='{"standard_vars":{"variable":"value"}}',
+                                                    experiment_reference=msg.rb_number)
+        rscript, rargs = records._make_script_and_arguments(instrument, msg, False)
+
+        load.assert_not_called()
+
+        assert rscript.text == "print(123)"
+        # args were passed in with the message, but they happen to match previous ones in the DB
+        # so the object should be re-used
+        assert rargs == expected_args
