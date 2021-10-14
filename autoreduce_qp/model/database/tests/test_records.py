@@ -162,6 +162,34 @@ class TestDatabaseRecords(TestCase):
         assert rargs == expected_args
 
     @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.load")
+    def test_make_script_and_arguments_repeat_runs(self, load: mock.Mock):
+        """
+        Test that the script is made, and arguments from the message.reduction_arguments
+        are picked over ALL others. This is used for reruns, and in that case a user would
+        expect that the arguments they re-ran with, take precedence over any others.
+
+        This test checks the case when the message.reduction_arguments do not match any
+        in the database.
+        """
+        instrument: Instrument = Instrument.objects.first()
+        experiment: Experiment = Experiment.objects.first()
+
+        load.return_value = FakeModule()
+        msg = FakeMessage()
+        msg.reduction_script = "print(123)"
+        msg.reduction_arguments = None
+        msg.rb_number = 123456
+
+        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
+
+        assert rscript.text == "print(123)"
+        # running it again should `get` the first object return the same DB record
+        rscript_second_run, rargs_second_run = records._make_script_and_arguments(experiment, instrument, msg, False)
+
+        assert rscript == rscript_second_run
+        assert rargs == rargs_second_run
+
+    @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.load")
     def test_make_script_and_arguments_args_from_message(self, load: mock.Mock):
         """
         Test that the script is made, and arguments from the message.reduction_arguments
