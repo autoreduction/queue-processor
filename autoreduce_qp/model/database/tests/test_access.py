@@ -108,10 +108,9 @@ class TestAccess(TestCase):
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
         status = access.get_status("q")
-        fake_script_text = "scripttext"
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, FakeMessage(), i, fake_script_text, status)
+            create_reduction_run_record(experiment, instrument, FakeMessage(), i, status)
 
         assert access.find_highest_run_version(experiment, 1234567) == 3
 
@@ -126,10 +125,9 @@ class TestAccess(TestCase):
         msg = FakeMessage()
         msg.run_number = [1234567, 1234568, 1234569]
         status = access.get_status("q")
-        fake_script_text = "scripttext"
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, msg, i, fake_script_text, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status)
 
         assert access.find_highest_run_version(experiment, [1234567, 1234568, 1234569]) == 3
 
