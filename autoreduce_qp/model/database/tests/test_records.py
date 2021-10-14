@@ -179,7 +179,6 @@ class TestDatabaseRecords(TestCase):
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
         msg.rb_number = 123456
-        instrument = Instrument.objects.first()
 
         expected_args = instrument.arguments.create(raw="{}", start_run=msg.run_number)
         rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
@@ -216,7 +215,6 @@ class TestDatabaseRecords(TestCase):
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
         msg.rb_number = 123456
-        instrument = Instrument.objects.first()
 
         expected_args = instrument.arguments.create(raw='{"standard_vars":{"variable":"value"}}', **create_args)
         rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
@@ -227,3 +225,26 @@ class TestDatabaseRecords(TestCase):
         # args were passed in with the message, but they happen to match previous ones in the DB
         # so the object should be re-used
         assert rargs != expected_args
+
+    @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.text")
+    def test_make_script_and_arguments_load_script(self, text: mock.Mock):
+        """
+        Test that the script is made, and arguments from the message.reduction_arguments
+        are picked over ALL others. This is used for reruns, and in that case a user would
+        expect that the arguments they re-ran with, take precedence over any others.
+
+        This test checks the case when the message.reduction_arguments do not match any
+        in the database.
+        """
+        instrument: Instrument = Instrument.objects.first()
+        experiment: Experiment = Experiment.objects.first()
+        text.return_value = "test script value"
+
+        msg = FakeMessage()
+        msg.reduction_script = None
+        msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
+        msg.rb_number = 123456
+
+        rscript, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
+
+        assert rscript.text == text.return_value
