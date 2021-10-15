@@ -11,8 +11,7 @@ import json
 from typing import List, Union
 from django.db import transaction
 
-from autoreduce_db.instrument.models import Instrument, ReductionRun
-from autoreduce_db.reduction_viewer.models import Software, Status, Experiment
+from autoreduce_db.reduction_viewer.models import Software, Status, Experiment, Instrument, ReductionRun
 
 # pylint:disable=no-member
 

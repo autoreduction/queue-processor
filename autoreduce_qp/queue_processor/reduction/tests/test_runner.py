@@ -39,15 +39,6 @@ class TestReductionRunner(unittest.TestCase):
         self.assertEqual(runner.run_number, '4321')
         self.assertEqual(runner.reduction_arguments, 'None')
 
-    @patch(f'{DIR}.runner.ReductionRunner.validate_input', side_effect=ValueError)
-    def test_init_validate_throws(self, _: Mock):
-        """
-        Test: Failing to parse a parameter will raise a ValueError
-        When: called with a parameter that can't be validated
-        """
-        with self.assertRaises(ValueError):
-            ReductionRunner(self.message, self.run_name)
-
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce):
         """
@@ -109,31 +100,6 @@ class TestReductionRunner(unittest.TestCase):
         self.message.message = expected_error_msg
         mock_logger_info.assert_has_calls(
             [call('Message data error: %s', self.message.serialize(limit_reduction_script=True))])
-
-    @patch(f'{DIR}.runner.ReductionRunner.__init__', return_value=None)
-    def test_validate_input_success(self, _):
-        """
-        Test: The attribute value is returned
-        When: validate_input is called with an attribute which is not None
-        """
-        mock_self = Mock()
-        mock_self.message = self.message
-
-        actual = ReductionRunner.validate_input(mock_self, 'facility')
-        self.assertEqual(actual, self.message.facility)
-
-    @patch(f'{DIR}.runner.ReductionRunner.__init__', return_value=None)
-    def test_validate_input_failure(self, _):
-        """
-        Test: A ValueError is raised
-        When: validate_input is called with an attribute who's value is None
-        """
-        mock_self = Mock()
-        mock_self.message = self.message
-        mock_self.message.facility = None
-
-        with self.assertRaises(ValueError):
-            ReductionRunner.validate_input(mock_self, 'facility')
 
     @patch(f'{DIR}.runner.logger.info')
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")

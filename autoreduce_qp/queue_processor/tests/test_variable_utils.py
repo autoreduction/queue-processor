@@ -14,9 +14,33 @@ from parameterized import parameterized
 
 from django.test import TestCase
 
-from autoreduce_db.instrument.models import InstrumentVariable, Variable, ReductionRun
+from autoreduce_db.reduction_viewer.models import ReductionArguments, ReductionRun, ReductionScript
 
-from autoreduce_qp.queue_processor.variable_utils import VariableUtils as vu
+from autoreduce_qp.queue_processor.variable_utils import VariableUtils as vu, merge_arguments
+
+
+class FakeModule:
+    def __init__(self, standard_vars=None, advanced_vars=None, variable_help=None) -> None:
+        """
+        Allows overwriting the advanced vars
+        """
+        self.standard_vars = {"standard_var1": "standard_value1"}
+        self.advanced_vars = {"advanced_var1": "advanced_value1"}
+
+        self.variable_help = {
+            "standard_vars": {
+                "standard_var1": "This is help for standard_value1"
+            },
+            "advanced_vars": {
+                "advanced_var1": "This is help for advanced_value1"
+            }
+        }
+        if standard_vars is not None:
+            self.standard_vars = standard_vars
+        if advanced_vars is not None:
+            self.advanced_vars = advanced_vars
+        if variable_help is not None:
+            self.variable_help.update(variable_help)
 
 
 # pylint:disable=no-member
@@ -24,20 +48,8 @@ class TestVariableUtils(TestCase):
     fixtures = ["status_fixture"]
 
     def setUp(self):
-        self.valid_variable = Variable(name='test',
-                                       value='value',
-                                       type='text',
-                                       is_advanced=False,
-                                       help_text='help text')
-        self.valid_inst_var = InstrumentVariable(name='test',
-                                                 value='value',
-                                                 is_advanced=False,
-                                                 type='text',
-                                                 help_text='help test',
-                                                 instrument_id=4,
-                                                 experiment_reference=54321,
-                                                 start_run=12345,
-                                                 tracks_script=1)
+        script = ReductionScript(text="def main(input_file, output_dir): print(123)")
+        arguments = ReductionArguments(raw="{}")
         self.reduction_run = ReductionRun(run_version=0,
                                           run_description='run name',
                                           hidden_in_failviewer=0,
@@ -48,8 +60,9 @@ class TestVariableUtils(TestCase):
                                           experiment_id=222,
                                           instrument_id=3,
                                           status_id=4,
-                                          script='script',
-                                          started_by=1)
+                                          started_by=1,
+                                          script=script,
+                                          arguments=arguments)
 
     def test_get_type_string(self):
         """
@@ -113,27 +126,6 @@ class TestVariableUtils(TestCase):
         self.assertIsNone(vu.convert_variable_to_type('string', 'number'))
 
     @staticmethod
-    def test_make_dict_with_unsaved_variables():
-        """
-        Test: the unsaved variables are correctly made
-        """
-        some_vars = {"var1": 123, "var2": 432, "var3": 666}
-        help_dict = {"var1": "help1", "var2": "help2", "var3": "help3"}
-        result = vu.make_dict_with_unsaved_variables(some_vars, help_dict)
-
-        assert len(result) == 3
-        assert all(isinstance(var, Variable) for var in result.values())
-
-        for name, value in some_vars.items():
-            assert name == result[name].name
-            assert value == result[name].value
-
-        # make sure they're not in the DB
-        assert Variable.objects.filter(name="var1").count() == 0
-        assert Variable.objects.filter(name="var2").count() == 0
-        assert Variable.objects.filter(name="var3").count() == 0
-
-    @staticmethod
     @patch("autoreduce_qp.queue_processor.variable_utils.ReductionScript")
     def test_get_default_variables(reduction_script):
         """
@@ -165,10 +157,6 @@ class TestVariableUtils(TestCase):
         assert "advanced_vars" in result
         assert "variable_help" in result
 
-        # make sure they're not in the DB
-        for name in ["var1", "var2", "var3", "adv_var1", "adv_var2", "adv_var3"]:
-            assert Variable.objects.filter(name=name).count() == 0
-
         for _, variables in result.items():
             for var in variables:
                 assert var.help_text == "test_help"
@@ -198,10 +186,54 @@ class TestVariableUtils(TestCase):
         assert "advanced_vars" in result
         assert "variable_help" in result
 
-        # make sure they're not in the DB
-        for name in ["var1", "var2", "var3", "adv_var1", "adv_var2", "adv_var3"]:
-            assert Variable.objects.filter(name=name).count() == 0
-
         for _, variables in result.items():
             for var in variables:
                 assert var.help_text == ""
+
+
+def test_merge_arguments():
+    """
+    Tests that the arguments are merged correctly when both standard and advanced are being replaced
+    """
+    message_args = {
+        "standard_vars": {
+            "standard_var1": 123,
+            "none_var": None,
+            "int_var": 123,
+            "float_var": 123.0,
+            "bool_var": False,
+            "num_list_var": [1, 2, 3],
+            "str_list_var": ["1", "2", "3"]
+        },
+        "advanced_vars": {
+            "advanced_var1": "321"
+        }
+    }
+    fakemod = FakeModule(
+        standard_vars={
+            "standard_var1": "standard_value1",
+            "none_var": None,
+            "int_var": 123,
+            "float_var": 123.0,
+            "bool_var": False,
+            "num_list_var": [1, 2, 3],
+            "str_list_var": ["1", "2", "3"],
+        })
+
+    expected = {
+        "standard_vars": {
+            "standard_var1": '123',
+            "none_var": "None",
+            "int_var": 123,
+            "float_var": 123.0,
+            "bool_var": False,
+            "num_list_var": [1, 2, 3],
+            "str_list_var": ["1", "2", "3"]
+        },
+        "advanced_vars": {
+            "advanced_var1": "321"
+        },
+        "variable_help": fakemod.variable_help
+    }
+
+    assert merge_arguments(message_args, fakemod) == expected

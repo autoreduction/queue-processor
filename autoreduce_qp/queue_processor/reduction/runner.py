@@ -24,35 +24,17 @@ logger = logging.getLogger(__package__)
 
 class ReductionRunner:
     """ Main class for the ReductionRunner """
-    def __init__(self, message, run_name: str):
-        self.read_write_map = {"R": "read", "W": "write"}
+    def __init__(self, message: Message, run_name: str):
         self.message = message
         self.admin_log_stream = io.StringIO()
         self.run_name = run_name
-        try:
-            self.data_file = windows_to_linux_path(self.validate_input('data'), TEMP_ROOT_DIRECTORY)
-            self.facility = self.validate_input('facility')
-            self.instrument = self.validate_input('instrument')
-            self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
-            self.run_number = self.validate_input('run_number')
-            self.run_version = str(self.validate_input('run_version'))
-            self.reduction_arguments = self.validate_input('reduction_arguments')
-        except ValueError:
-            logger.info('JSON data error', exc_info=True)
-            raise
-
-    def validate_input(self, attribute):
-        """
-        Validates the input message
-        :param attribute: attribute to validate
-        :return: The value of the key or raise an exception if none
-        """
-        attribute_dict = self.message.__dict__
-        if attribute in attribute_dict and attribute_dict[attribute] is not None:
-            value = attribute_dict[attribute]
-            logger.debug("%s: %s", attribute, str(value)[:50])
-            return value
-        raise ValueError('%s is missing' % attribute)
+        self.data_file = windows_to_linux_path(message.data, TEMP_ROOT_DIRECTORY)
+        self.facility = message.facility
+        self.instrument = message.instrument
+        self.proposal = message.rb_number
+        self.run_number = message.run_number
+        self.run_version = message.run_version
+        self.reduction_arguments = message.reduction_arguments
 
     def reduce(self):
         """Start the reduction job."""
@@ -77,7 +59,8 @@ class ReductionRunner:
             self.message.reduction_log = "Exception:\n%s" % (err)
             return  # stops the reduction and allows the parent to read the outcome in the message
 
-        # Attempt to read the reduction script
+        # Attempt to read the reduction script. This does not currently respect
+        # any script passed in the message https://autoreduce.atlassian.net/browse/AR-1056
         try:
             reduction_script = ReductionScript(self.instrument)
             reduction_script_path = reduction_script.script_path

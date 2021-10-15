@@ -17,14 +17,11 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import ReductionLocation, Status
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, ReductionLocation, ReductionRun, Status
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
-from autoreduce_qp.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
-from autoreduce_qp.queue_processor.reduction.service import ReductionScript
-from autoreduce_qp.queue_processor.variable_utils import VariableUtils
 
 
 class HandleMessage:
@@ -33,7 +30,6 @@ class HandleMessage:
     depending on the message contents.
     """
     def __init__(self):
-        self.instrument_variable = InstrumentVariablesUtils()
         self._logger = logging.getLogger(__package__)
 
     def data_ready(self, message: Message):
@@ -57,13 +53,12 @@ class HandleMessage:
             raise
 
         try:
-            message = self.create_run_variables(reduction_run, message, instrument)
             self.send_message_onwards(reduction_run, message, instrument)
         except Exception as err:
             self._handle_error(reduction_run, message, err)
             raise
 
-    def _handle_error(self, reduction_run, message, err):
+    def _handle_error(self, reduction_run: ReductionRun, message: Message, err: Exception):
         """
         Couldn't save the state in the database properly - mark the run as
         errored.
@@ -84,44 +79,23 @@ class HandleMessage:
         rb_number = self.normalise_rb_number(message.rb_number)
         experiment = db_access.get_experiment(rb_number)
         run_version = db_access.find_highest_run_version(experiment, run_number=message.run_number)
-        message.run_version = run_version
         instrument = db_access.get_instrument(str(message.instrument))
-        return self.do_create_reduction_record(message, experiment, instrument)
+        return self.do_create_reduction_record(message, experiment, instrument, run_version)
 
     @staticmethod
     @transaction.atomic
-    def do_create_reduction_record(message: Message, experiment, instrument):
+    def do_create_reduction_record(message: Message, experiment: Experiment, instrument: Instrument, run_version: int):
         """Create the reduction record."""
-        script = ReductionScript(instrument.name)
-        script_text = script.text()
-
         # Make the new reduction run with the information collected so far
-        reduction_run = records.create_reduction_run_record(experiment=experiment,
-                                                            instrument=instrument,
-                                                            message=message,
-                                                            run_version=message.run_version,
-                                                            script_text=script_text,
-                                                            status=Status.get_queued())
+        reduction_run, message = records.create_reduction_run_record(experiment=experiment,
+                                                                     instrument=instrument,
+                                                                     message=message,
+                                                                     run_version=run_version,
+                                                                     status=Status.get_queued())
 
         return reduction_run, message, instrument
 
-    def create_run_variables(self, reduction_run, message: Message, instrument):
-        """
-        Create the RunVariables that are described in the run's reduce_vars.py.
-        """
-        self._logger.info('Creating variables for run')
-
-        variables = self.instrument_variable.create_run_variables(reduction_run, message.reduction_arguments)
-        if not variables:
-            self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
-
-        self._logger.info('Getting script and arguments')
-        message.reduction_script = reduction_run.script
-        message.reduction_arguments = self.get_script_arguments(variables)
-
-        return message
-
-    def send_message_onwards(self, reduction_run, message: Message, instrument):
+    def send_message_onwards(self, reduction_run: ReductionRun, message: Message, instrument: Instrument):
         """
         Send the message onwards, either for processing, if validation is OK
         and instrument isn't paused, otherwiese skips if either of those is
@@ -135,16 +109,15 @@ class HandleMessage:
             self.reduction_skipped(reduction_run, message)
         else:
             self.activate_db_inst(instrument)
-            message.flat_output = instrument.is_flat_output
             self.do_reduction(reduction_run, message)
 
     @staticmethod
-    def find_reason_to_skip_run(reduction_run, message: Message, instrument) -> Optional[str]:
+    def find_reason_to_skip_run(reduction_run: ReductionRun, message: Message, instrument) -> Optional[str]:
         """
         Determine whether the processing should be skippped. The run will be
         skipped if the message validation fails or if the instrument is paused.
         """
-        if reduction_run.script == "":
+        if reduction_run.script.text == "":
             return "Script text for current instrument is empty"
         try:
             message.validate("/queue/DataReady")
@@ -159,7 +132,7 @@ class HandleMessage:
 
         return None
 
-    def do_reduction(self, reduction_run, message: Message):
+    def do_reduction(self, reduction_run: ReductionRun, message: Message):
         """
         Handover to the ReductionProcessManager to actually run the reduction
         process and handle the outcome from the run.
@@ -177,7 +150,7 @@ class HandleMessage:
         else:
             self.reduction_complete(reduction_run, output_message)
 
-    def activate_db_inst(self, instrument):
+    def activate_db_inst(self, instrument: Instrument):
         """
         Get the DB instrument record from the database, if one is not found,
         create and save the record to the DB, then return it.
@@ -190,7 +163,7 @@ class HandleMessage:
 
         return instrument
 
-    def reduction_started(self, reduction_run, message: Message):
+    def reduction_started(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run as started/processing in the database. This is called
         when the run is ready to start.
@@ -201,7 +174,7 @@ class HandleMessage:
         reduction_run.save()
 
     @transaction.atomic
-    def reduction_complete(self, reduction_run, message: Message):
+    def reduction_complete(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run as complete in the database. This is called when the run
         has completed.
@@ -216,7 +189,7 @@ class HandleMessage:
 
         reduction_run.save()
 
-    def reduction_skipped(self, reduction_run, message: Message):
+    def reduction_skipped(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run status to 'Skipped' in the database. This is called when
         there was a reason to skip the run. Will NOT attempt re-run.
@@ -229,7 +202,7 @@ class HandleMessage:
         self._common_reduction_run_update(reduction_run, Status.get_skipped(), message)
         reduction_run.save()
 
-    def reduction_error(self, reduction_run, message: Message):
+    def reduction_error(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run as complete in the database. This is called when the run
         encounters an error.
@@ -243,31 +216,12 @@ class HandleMessage:
         reduction_run.save()
 
     @staticmethod
-    def _common_reduction_run_update(reduction_run, status, message):
+    def _common_reduction_run_update(reduction_run: ReductionRun, status: Status, message: Message):
         reduction_run.status = status
         reduction_run.finished = timezone.now()
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
         reduction_run.admin_log = message.admin_log
-
-    @staticmethod
-    def get_script_arguments(run_variables):
-        """
-        Convert the RunVariables that have been created into kwargs which can be
-        passed as the script parameters at runtime.
-        """
-        standard_vars, advanced_vars = {}, {}
-        for run_variable in run_variables:
-            variable = run_variable.variable
-            value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
-            if variable.is_advanced:
-                advanced_vars[variable.name] = value
-            else:
-                standard_vars[variable.name] = value
-
-        arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
-
-        return arguments
 
     @staticmethod
     def normalise_rb_number(rb_number) -> int:

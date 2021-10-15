@@ -1,5 +1,6 @@
 ignore:
-  - "*/virtualenv/*"
-  - "*/test/*"
-  - "*/tests/*"
-  - "*/systemtests/*"
+  - "**/virtualenv/*"
+  - "**/test/*"
+  - "**/tests/*"
+  - "**/tests/*.py"
+  - "**/systemtests/*"

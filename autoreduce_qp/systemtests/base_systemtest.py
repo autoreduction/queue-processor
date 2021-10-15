@@ -58,11 +58,11 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
             self.queue_client, self.listener = setup_connection()
         except ConnectionException as err:
             raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
-                               "ActiveMQ is running and started by `python setup.py start`") from err
+                               "the ActiveMQ Docker container is running") from err
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
         self.instrument = 'ARMI'
-        Instrument.objects.get_or_create(name=self.instrument, is_active=True)
+        self.instrument_obj, _ = Instrument.objects.get_or_create(name=self.instrument, is_active=True)
         self.rb_number = 1234567
         self.run_number = 101
 
@@ -77,7 +77,9 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
                                           description="This is a system test",
                                           facility="ISIS",
                                           software="6.0.0",
-                                          started_by=0)
+                                          started_by=0,
+                                          reduction_script=None,
+                                          reduction_arguments=None)
 
         expected_mantid_py = f"{MANTID_PATH}/mantid.py"
         if not os.path.exists(expected_mantid_py):
