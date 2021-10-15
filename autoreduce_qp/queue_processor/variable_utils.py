@@ -110,10 +110,6 @@ class VariableUtils:
         }
 
 
-class DataTooLong(ValueError):
-    """ Error class used for when reduction variables are too long. """
-
-
 def merge_arguments(message_reduction_arguments: dict, reduce_vars_module):
     """
     Merges the reduction arguments provided from the message and from the reduce_vars module,
