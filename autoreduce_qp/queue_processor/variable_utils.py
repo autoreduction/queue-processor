@@ -145,11 +145,3 @@ def merge_arguments(message_reduction_arguments: dict, reduce_vars_module):
 
     reduction_args["variable_help"] = getattr(reduce_vars_module, 'variable_help', {})
     return reduction_args
-
-
-def get_current_script_text(instrument_name):
-    """
-    Fetches the reduction script and variables script for
-    the given instrument, and returns each as a string.
-    """
-    return ReductionScript(instrument_name).text()
