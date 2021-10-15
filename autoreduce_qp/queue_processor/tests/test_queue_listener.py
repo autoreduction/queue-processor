@@ -12,7 +12,6 @@ Test cases for the queue processor
 import uuid
 from unittest import TestCase, mock
 from unittest.mock import patch, MagicMock
-from copy import deepcopy
 
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.clients.queue_client import QueueClient
