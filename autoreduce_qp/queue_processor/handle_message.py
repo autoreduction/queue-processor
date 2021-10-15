@@ -219,6 +219,7 @@ class HandleMessage:
     def _common_reduction_run_update(reduction_run: ReductionRun, status: Status, message: Message):
         reduction_run.status = status
         reduction_run.finished = timezone.now()
+        reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
         reduction_run.admin_log = message.admin_log
 

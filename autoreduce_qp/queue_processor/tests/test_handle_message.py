@@ -80,7 +80,7 @@ class TestHandleMessage(TestCase):
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueListener)
         self.instrument_name = "ARMI"
-        self.msg = make_test_message()
+        self.msg = make_test_message(self.instrument_name)
 
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage()

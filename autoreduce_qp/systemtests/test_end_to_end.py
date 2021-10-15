@@ -53,11 +53,6 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
         run = results[0]
 
-        output_message = Message()
-        output_message.populate(output_message.deserialize(run.message))
-        # The input message should equal the one stored in the ReductionRun, to ensure that
-        # the run can be replicated by sending the message to the queue again.
-        self.assertEqual(self.data_ready_message, output_message)
         self.assertEqual(self.instrument, run.instrument.name)
         self.assertEqual(self.rb_number, run.experiment.reference_number)
         self.assertEqual(self.run_number, run.run_number)
