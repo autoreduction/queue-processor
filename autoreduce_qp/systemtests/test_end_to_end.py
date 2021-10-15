@@ -56,6 +56,46 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         self.assertEqual('Completed', results[0].status.value_verbose(),
                          "Reduction log: %s\nAdmin log: %s" % (results[0].reduction_log, results[0].admin_log))
 
+    def test_end_to_end_flat_output_respected(self):
+        """
+        Tests that the is_flat_output instrument setting is respected.
+
+        This test checks with is_flat_output = True.
+
+        This gets enforced by the ReductionDirectory class in the reduction.runner,
+        and then set on the reduction_run object when the reduction is finished.
+        """
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self.data_ready_message.data = file_location
+        self.instrument_obj.is_flat_output = True
+        self.instrument_obj.save()
+        results = self.send_and_wait_for_result(self.data_ready_message)
+        assert len(results) == 1
+
+        reduced_run = results[0]
+
+        assert f"run-version-{reduced_run.run_version}" not in reduced_run.reduction_location.first().file_path
+
+    def test_end_to_end_not_flat_output_respected(self):
+        """
+        Tests that the is_flat_output instrument setting is respected.
+
+        This test checks with is_flat_output = False.
+
+        This gets enforced by the ReductionDirectory class in the reduction.runner,
+        and then set on the reduction_run object when the reduction is finished.
+        """
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self.data_ready_message.data = file_location
+        results = self.send_and_wait_for_result(self.data_ready_message)
+        assert len(results) == 1
+
+        reduced_run = results[0]
+
+        assert f"run-version-{reduced_run.run_version}" in reduced_run.reduction_location.first().file_path
+
     def test_end_to_end_wish_bad_script_syntax_error(self):
         """
         Test that run gets marked as error when the script has a syntax error.
