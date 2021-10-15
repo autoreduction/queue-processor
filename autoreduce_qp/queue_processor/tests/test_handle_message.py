@@ -25,14 +25,28 @@ from autoreduce_qp.queue_processor.queue_listener import QueueListener
 from autoreduce_qp.systemtests.utils.data_archive import DefaultDataArchive
 
 
-class FakeMessage:
-    started_by = 0
-    run_number: Union[int, List[int]] = 1234567
-    message = "I am a message"
-    description = "This is a fake description"
-    data = "/some/location"
-    reduction_script = """def main(input_file, output_dir): print(123)"""
-    reduction_arguments = {"standard_vars": {"variable": "value"}}
+def make_test_message(instrument: str) -> Message:
+    """Makes a Message object with test values"""
+    msg = Message()
+
+    msg.populate({
+        "run_number": 7654321,
+        "rb_number": 1234567,
+        "run_version": 0,
+        "reduction_data": "/path/1",
+        "started_by": -1,
+        "data": "/path",
+        "software": "6.0.0",
+        "description": "This is a fake description",
+        "instrument": instrument,  # Autoreduction Mock Instrument
+        "reduction_script": """def main(input_file, output_dir): print(123)""",
+        "reduction_arguments": {
+            "standard_vars": {
+                "variable": "value"
+            }
+        }
+    })
+    return msg
 
 
 class FakeModule:
@@ -66,24 +80,8 @@ class TestHandleMessage(TestCase):
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueListener)
         self.instrument_name = "ARMI"
-        self.msg = Message()
-        self.msg.populate({
-            "run_number": 7654321,
-            "rb_number": 1234567,
-            "run_version": 0,
-            "reduction_data": "/path/1",
-            "started_by": -1,
-            "data": "/path",
-            "software": "6.0.0",
-            "description": "This is a fake description",
-            "instrument": self.instrument_name,  # Autoreduction Mock Instrument
-            "reduction_script": """def main(input_file, output_dir): print(123)""",
-            "reduction_arguments": {
-                "standard_vars": {
-                    "variable": "value"
-                }
-            }
-        })
+        self.msg = make_test_message()
+
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage()
             self.mocked_logger = patched_logger.return_value
@@ -323,7 +321,8 @@ class TestHandleMessage(TestCase):
             assert message.run_version == i
             assert instrument == self.instrument
             assert instrument.name == self.msg.instrument
-            assert reduction_run.script.text == FakeMessage().reduction_script
+            assert reduction_run.script.text == self.msg.reduction_script
+            assert reduction_run.arguments.as_dict() == self.msg.reduction_arguments
             assert reduction_run.data_location.first().file_path == message.data
             assert reduction_run.status == Status.get_queued()
 

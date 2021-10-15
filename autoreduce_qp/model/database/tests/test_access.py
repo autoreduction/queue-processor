@@ -14,7 +14,7 @@ from autoreduce_db.reduction_viewer.models import Experiment, Instrument
 from autoreduce_qp.model.database import access
 from autoreduce_qp.model.database.access import get_all_instrument_names, is_instrument_flat_output
 from autoreduce_qp.model.database.records import create_reduction_run_record
-from autoreduce_qp.queue_processor.tests.test_handle_message import FakeMessage
+from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
 
 
 # pylint:disable=no-member
@@ -108,11 +108,12 @@ class TestAccess(TestCase):
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
         status = access.get_status("q")
+        msg = make_test_message(instrument.name)
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, FakeMessage(), i, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status)
 
-        assert access.find_highest_run_version(experiment, 1234567) == 3
+        assert access.find_highest_run_version(experiment, msg.run_number) == 3
 
     def test_find_highest_run_version_batch_run_number(self):
         """
@@ -122,7 +123,8 @@ class TestAccess(TestCase):
 
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
-        msg = FakeMessage()
+        msg = make_test_message(instrument.name)
+
         msg.run_number = [1234567, 1234568, 1234569]
         status = access.get_status("q")
 

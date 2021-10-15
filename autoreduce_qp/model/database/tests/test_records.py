@@ -15,8 +15,9 @@ from unittest import mock
 from django.test import TestCase
 from autoreduce_db.reduction_viewer.models import DataLocation, Experiment, Instrument, ReductionRun, RunNumber
 from parameterized import parameterized
-import autoreduce_qp.model.database.records as records
-from queue_processor.tests.test_handle_message import FakeMessage, FakeModule
+
+from autoreduce_qp.model.database import records
+from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message, FakeModule
 
 # pylint:disable=no-member
 
@@ -124,7 +125,7 @@ class TestDatabaseRecords(TestCase):
         experiment: Experiment = Experiment.objects.first()
 
         load.return_value = FakeModule()
-        msg = FakeMessage()
+        msg = make_test_message(instrument.name)
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = None
         msg.rb_number = experiment.reference_number
@@ -147,7 +148,7 @@ class TestDatabaseRecords(TestCase):
         experiment: Experiment = Experiment.objects.first()
 
         load.return_value = FakeModule()
-        msg = FakeMessage()
+        msg = make_test_message(instrument.name)
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = None
         msg.rb_number = experiment.reference_number
@@ -175,7 +176,7 @@ class TestDatabaseRecords(TestCase):
         experiment: Experiment = Experiment.objects.first()
 
         load.return_value = FakeModule()
-        msg = FakeMessage()
+        msg = make_test_message(instrument.name)
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = None
         msg.rb_number = 123456
@@ -203,7 +204,7 @@ class TestDatabaseRecords(TestCase):
         experiment: Experiment = Experiment.objects.first()
 
         load.return_value = FakeModule()
-        msg = FakeMessage()
+        msg = make_test_message(instrument.name)
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
         msg.rb_number = 123456
@@ -239,7 +240,7 @@ class TestDatabaseRecords(TestCase):
         experiment: Experiment = Experiment.objects.first()
 
         load.return_value = FakeModule()
-        msg = FakeMessage()
+        msg = make_test_message(instrument.name)
         msg.reduction_script = "print(123)"
         msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
         msg.rb_number = 123456
@@ -268,7 +269,7 @@ class TestDatabaseRecords(TestCase):
         experiment: Experiment = Experiment.objects.first()
         text.return_value = "test script value"
 
-        msg = FakeMessage()
+        msg = make_test_message(instrument.name)
         msg.reduction_script = None
         msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
         msg.rb_number = 123456
