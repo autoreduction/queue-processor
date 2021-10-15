@@ -11,7 +11,6 @@ Test that data can traverse through the autoreduction system successfully.
 """
 from typing import Union
 from autoreduce_db.reduction_viewer.models import ReductionArguments
-from autoreduce_utils.message.message import Message
 
 from parameterized.parameterized import parameterized
 
