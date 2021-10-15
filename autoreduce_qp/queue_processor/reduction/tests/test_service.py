@@ -28,13 +28,6 @@ from autoreduce_qp.queue_processor.reduction.tests.module_to_import import TEST_
 REDUCTION_SERVICE_DIR = "autoreduce_qp.queue_processor.reduction.service"
 
 
-class TempDirPropertyMock(PropertyMock):
-    def __init__(self, path_string, *args) -> None:
-        super().__init__(*args)
-        with TemporaryDirectory() as directory:
-            self.return_value = directory + path_string
-
-
 # pylint:disable=protected-access
 class TestReductionService(unittest.TestCase):
     """

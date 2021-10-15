@@ -25,7 +25,6 @@ logger = logging.getLogger(__package__)
 class ReductionRunner:
     """ Main class for the ReductionRunner """
     def __init__(self, message, run_name: str):
-        self.read_write_map = {"R": "read", "W": "write"}
         self.message = message
         self.admin_log_stream = io.StringIO()
         self.run_name = run_name

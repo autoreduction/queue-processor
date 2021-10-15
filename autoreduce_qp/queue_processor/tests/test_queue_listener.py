@@ -26,9 +26,6 @@ class TestQueueProcessor(TestCase):
     """
     Exercises the functions within listener.py
     """
-    def setUp(self):
-        self.test_consumer_name = "Test_Autoreduction_QueueProcessor"
-
     @patch("autoreduce_qp.queue_processor.queue_listener.QueueClient.__init__", return_value=None)
     @patch("autoreduce_qp.queue_processor.queue_listener.QueueClient.connect")
     @patch("autoreduce_qp.queue_processor.queue_listener.QueueClient.subscribe")

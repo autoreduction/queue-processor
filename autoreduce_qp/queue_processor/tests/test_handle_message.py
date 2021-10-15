@@ -24,25 +24,6 @@ from autoreduce_qp.queue_processor.handle_message import HandleMessage
 from autoreduce_qp.queue_processor.queue_listener import QueueListener
 from autoreduce_qp.systemtests.utils.data_archive import DefaultDataArchive
 
-TEST_REDUCE_VARS_CONTENT = """
-standard_vars = {
-    "variable" : False
-}
-advanced_vars = {
-    "advanced" : 123
-}
-
-variable_help = {
-    "standard_vars" : {
-        "variable" : "I am help"
-    },
-    "advanced_vars":{
-        "advanced": "I am advanced help"
-    }
-}
-
-"""
-
 
 class FakeMessage:
     started_by = 0
