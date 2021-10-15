@@ -121,8 +121,6 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
     batch_run = isinstance(message.run_number, list)
 
     script, arguments = _make_script_and_arguments(experiment, instrument, message, batch_run)
-    message.reduction_script = script.text
-    message.reduction_arguments = arguments.as_dict()
 
     reduction_run = ReductionRun.objects.create(run_version=run_version,
                                                 run_description=message.description,
@@ -142,5 +140,14 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
                                                 message=message.serialize())
     _make_run_numbers(reduction_run, message.run_number)
     _make_data_locations(reduction_run, message.data)
+
+    # Changes the message values as they are used going forwards in the ReductionRunner
+    message.reduction_script = script.text
+    message.reduction_arguments = arguments.as_dict()
+    # Amends the run_version in the message, as the reduction_run object is not passed
+    # into the reduction execution and there is no other source of a run_version.
+    # The run_version is used to create the output folder name, if flat_output is False.
+    message.run_version = run_version
+    message.flat_output = instrument.is_flat_output
 
     return reduction_run, message

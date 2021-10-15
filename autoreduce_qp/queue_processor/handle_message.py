@@ -93,11 +93,6 @@ class HandleMessage:
                                                                      run_version=run_version,
                                                                      status=Status.get_queued())
 
-        # Amends the run_version in the message, as the reduction_run object is not passed
-        # into the reduction execution and there is no other source of a run_version.
-        # The run_version is used to create the output folder name, if flat_output is False.
-        message.run_version = run_version
-        message.flat_output = instrument.is_flat_output
         return reduction_run, message, instrument
 
     def send_message_onwards(self, reduction_run, message: Message, instrument):
