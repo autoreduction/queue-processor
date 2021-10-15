@@ -355,6 +355,28 @@ class TestReductionService(unittest.TestCase):
             file.write.assert_called_once()
             self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
 
+    @patch(f"{REDUCTION_SERVICE_DIR}.CEPH_DIRECTORY",
+           new_callable=PropertyMock(return_value="/instrument/%s/RBNumber/RB%s/autoreduced/%s"))
+    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _):
+        """
+        Tests: Run number is removed from path
+        When: _build_path is called for flat output instrument
+        """
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, 123, flat_output=True)
+        expected = Path(f"/instrument/{self.instrument}/RBNumber/RB{self.rb_number}/autoreduced")
+        self.assertEqual(expected, reduction_dir.path)
+
+    def test_reduction_directory_build_path_non_flat_builds_path(self):
+        """
+        Tests: _append_run_version is called
+        When: _build_path is called for non flat output instrument
+        """
+        expected_run_version = 123
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, expected_run_version)
+        expected = Path(CEPH_DIRECTORY %
+                        (self.instrument, self.rb_number, self.run_number)) / f"run-version-{expected_run_version}"
+        self.assertEqual(expected, reduction_dir.path)
+
 
 def fill_mockup_directory(directory):
     """

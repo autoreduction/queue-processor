@@ -34,7 +34,13 @@ class ReductionDirectory:
     """
     def __init__(self, instrument, rb_number, run_name, run_version, flat_output=False):
         self._is_flat_directory = flat_output
-        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_name)) / f"run-version-{run_version}"
+        self.run_version = run_version
+        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_name))
+        if self._is_flat_directory:
+            self.path = self.path.parent
+        else:
+            self.path = self.path / f"run-version-{self.run_version}"
+
         self.log_path = self.path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_name}_Mantid.log"
         self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_name}_Script.out"
