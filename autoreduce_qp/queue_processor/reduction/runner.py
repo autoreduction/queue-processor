@@ -24,21 +24,17 @@ logger = logging.getLogger(__package__)
 
 class ReductionRunner:
     """ Main class for the ReductionRunner """
-    def __init__(self, message, run_name: str):
+    def __init__(self, message: Message, run_name: str):
         self.message = message
         self.admin_log_stream = io.StringIO()
         self.run_name = run_name
-        try:
-            self.data_file = windows_to_linux_path(message.data, TEMP_ROOT_DIRECTORY)
-            self.facility = message.facility
-            self.instrument = message.instrument
-            self.proposal = message.rb_number
-            self.run_number = message.run_number
-            self.run_version = message.run_version
-            self.reduction_arguments = message.reduction_arguments
-        except ValueError:
-            logger.info('JSON data error', exc_info=True)
-            raise
+        self.data_file = windows_to_linux_path(message.data, TEMP_ROOT_DIRECTORY)
+        self.facility = message.facility
+        self.instrument = message.instrument
+        self.proposal = message.rb_number
+        self.run_number = message.run_number
+        self.run_version = message.run_version
+        self.reduction_arguments = message.reduction_arguments
 
     def reduce(self):
         """Start the reduction job."""
@@ -63,7 +59,8 @@ class ReductionRunner:
             self.message.reduction_log = "Exception:\n%s" % (err)
             return  # stops the reduction and allows the parent to read the outcome in the message
 
-        # Attempt to read the reduction script
+        # Attempt to read the reduction script. This does not currently respect
+        # any script passed in the message https://autoreduce.atlassian.net/browse/AR-1056
         try:
             reduction_script = ReductionScript(self.instrument)
             reduction_script_path = reduction_script.script_path
