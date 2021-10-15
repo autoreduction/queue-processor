@@ -138,7 +138,8 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
                                                 reduction_host=socket.getfqdn(),
                                                 batch_run=batch_run,
                                                 script=script,
-                                                arguments=arguments)
+                                                arguments=arguments,
+                                                message=message.serialize())
     _make_run_numbers(reduction_run, message.run_number)
     _make_data_locations(reduction_run, message.data)
 
