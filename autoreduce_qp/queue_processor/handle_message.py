@@ -17,7 +17,7 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import Experiment, Instrument, ReductionLocation, Status
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, ReductionLocation, ReductionRun, Status
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
@@ -58,7 +58,7 @@ class HandleMessage:
             self._handle_error(reduction_run, message, err)
             raise
 
-    def _handle_error(self, reduction_run, message, err):
+    def _handle_error(self, reduction_run: ReductionRun, message: Message, err: Exception):
         """
         Couldn't save the state in the database properly - mark the run as
         errored.
@@ -95,7 +95,7 @@ class HandleMessage:
 
         return reduction_run, message, instrument
 
-    def send_message_onwards(self, reduction_run, message: Message, instrument):
+    def send_message_onwards(self, reduction_run: ReductionRun, message: Message, instrument: Instrument):
         """
         Send the message onwards, either for processing, if validation is OK
         and instrument isn't paused, otherwiese skips if either of those is
@@ -112,7 +112,7 @@ class HandleMessage:
             self.do_reduction(reduction_run, message)
 
     @staticmethod
-    def find_reason_to_skip_run(reduction_run, message: Message, instrument) -> Optional[str]:
+    def find_reason_to_skip_run(reduction_run: ReductionRun, message: Message, instrument) -> Optional[str]:
         """
         Determine whether the processing should be skippped. The run will be
         skipped if the message validation fails or if the instrument is paused.
@@ -132,7 +132,7 @@ class HandleMessage:
 
         return None
 
-    def do_reduction(self, reduction_run, message: Message):
+    def do_reduction(self, reduction_run: ReductionRun, message: Message):
         """
         Handover to the ReductionProcessManager to actually run the reduction
         process and handle the outcome from the run.
@@ -150,7 +150,7 @@ class HandleMessage:
         else:
             self.reduction_complete(reduction_run, output_message)
 
-    def activate_db_inst(self, instrument):
+    def activate_db_inst(self, instrument: Instrument):
         """
         Get the DB instrument record from the database, if one is not found,
         create and save the record to the DB, then return it.
@@ -163,7 +163,7 @@ class HandleMessage:
 
         return instrument
 
-    def reduction_started(self, reduction_run, message: Message):
+    def reduction_started(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run as started/processing in the database. This is called
         when the run is ready to start.
@@ -174,7 +174,7 @@ class HandleMessage:
         reduction_run.save()
 
     @transaction.atomic
-    def reduction_complete(self, reduction_run, message: Message):
+    def reduction_complete(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run as complete in the database. This is called when the run
         has completed.
@@ -189,7 +189,7 @@ class HandleMessage:
 
         reduction_run.save()
 
-    def reduction_skipped(self, reduction_run, message: Message):
+    def reduction_skipped(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run status to 'Skipped' in the database. This is called when
         there was a reason to skip the run. Will NOT attempt re-run.
@@ -202,7 +202,7 @@ class HandleMessage:
         self._common_reduction_run_update(reduction_run, Status.get_skipped(), message)
         reduction_run.save()
 
-    def reduction_error(self, reduction_run, message: Message):
+    def reduction_error(self, reduction_run: ReductionRun, message: Message):
         """
         Update the run as complete in the database. This is called when the run
         encounters an error.
@@ -216,7 +216,7 @@ class HandleMessage:
         reduction_run.save()
 
     @staticmethod
-    def _common_reduction_run_update(reduction_run, status, message):
+    def _common_reduction_run_update(reduction_run: ReductionRun, status: Status, message: Message):
         reduction_run.status = status
         reduction_run.finished = timezone.now()
         reduction_run.reduction_log = message.reduction_log
