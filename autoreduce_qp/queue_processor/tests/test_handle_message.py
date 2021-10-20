@@ -9,7 +9,6 @@
 # pylint:disable=no-member,unsupported-membership-test
 import random
 from functools import partial
-# from typing import List, Union
 from unittest import main, mock
 from unittest.mock import Mock, patch
 
