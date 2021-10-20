@@ -1,12 +1,12 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Linux only!
-Tests that data can traverse through the autoreduction system successfully
+Linux only! Tests that data can traverse through the Autoreduction system
+successfully.
 """
 # pylint:disable=no-member
 import os
@@ -14,12 +14,12 @@ import shutil
 import time
 from pathlib import Path
 
+from django.test import TransactionTestCase
+
 from autoreduce_db.reduction_viewer.models import Instrument, ReductionRun
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import MANTID_PATH, PROJECT_DEV_ROOT
-from django.test import TransactionTestCase
-
 from autoreduce_qp.queue_processor.queue_listener import setup_connection
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.model.database import access as db
@@ -65,6 +65,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.instrument_obj, _ = Instrument.objects.get_or_create(name=self.instrument, is_active=True)
         self.rb_number = 1234567
         self.run_number = 101
+        self.run_title = "test title"
 
         # Create test archive and add data
         self.data_archive = DataArchive([self.instrument], 19, 19)
@@ -74,6 +75,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.data_ready_message = Message(rb_number=self.rb_number,
                                           instrument=self.instrument,
                                           run_number=self.run_number,
+                                          run_title=self.run_title,
                                           description="This is a system test",
                                           facility="ISIS",
                                           software="6.0.0",
@@ -154,6 +156,5 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
                 break
 
         results = self._find_run_in_database()
-
         assert results
         return results
