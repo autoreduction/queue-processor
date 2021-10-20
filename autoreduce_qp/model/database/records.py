@@ -118,10 +118,9 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
     """
     time_now = timezone.now()
     batch_run = isinstance(message.run_number, list)
-
     script, arguments = _make_script_and_arguments(experiment, instrument, message, batch_run)
-
     reduction_run = ReductionRun.objects.create(run_version=run_version,
+                                                run_title=message.run_title,
                                                 run_description=message.description,
                                                 hidden_in_failviewer=0,
                                                 admin_log='',
