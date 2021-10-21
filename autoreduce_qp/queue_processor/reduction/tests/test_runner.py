@@ -1,18 +1,16 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-# pylint:disable=protected-access
+
 import json
 import sys
 import unittest
 import tempfile
 from unittest.mock import patch, call, Mock
-
 from parameterized import parameterized
-import pytest
 
 from autoreduce_qp.queue_processor.reduction.exceptions import ReductionScriptError
 from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main
@@ -217,7 +215,7 @@ class TestReductionRunner(unittest.TestCase):
         """
         Test: Getting the mantid version
         """
-        pytest.importorskip("mantid", reason="Mantid not installed")
+        # pylint:disable=protected-access
         assert ReductionRunner._get_mantid_version() is None
         assert logger.error.call_count == 2
 

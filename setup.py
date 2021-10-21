@@ -1,7 +1,9 @@
+# pylint:skip-file
 """
-Functionality for project setup and various installations. Enter the following
-for more details:
-    `python setup.py --help`
+Wrapper for the functionality for various installation and project setup commands
+see:
+    `python setup.py help`
+for more details
 """
 from setuptools import setup, find_packages
 

@@ -2,19 +2,18 @@
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################
 """
-Handle an incoming message from the queue processor and take appropriate
-action(s) based on the message contents.
+This modules handles an incoming message from the queue processor and takes
+appropriate action(s) based on the message contents.
 
-This may include shuffling the message to another queue, updating relevant DB
-fields, or logging of the status.
+For example, this may include shuffling the message to another queue, update
+relevant DB fields or logging out the status.
 """
 import logging
 from typing import Optional
-
 from django.db import transaction
 from django.utils import timezone
 
@@ -72,13 +71,13 @@ class HandleMessage:
 
     def create_run_records(self, message: Message):
         """
-        Create or get the necessary records to construct a ReductionRun. This
-        must be done before looking up the run version to make sure the
+        Create or get the necessary records to construct a ReductionRun.
+
+        This must be done before looking up the run version to make sure the
         experiment record exists!
         """
         rb_number = self.normalise_rb_number(message.rb_number)
         experiment = db_access.get_experiment(rb_number)
-        #run_title = db_access.get_run_title(message.run_title)
         run_version = db_access.find_highest_run_version(experiment, run_number=message.run_number)
         instrument = db_access.get_instrument(str(message.instrument))
         return self.do_create_reduction_record(message, experiment, instrument, run_version)
@@ -166,8 +165,8 @@ class HandleMessage:
 
     def reduction_started(self, reduction_run: ReductionRun, message: Message):
         """
-        Update the run as 'started' / 'processing' in the database. This is
-        called when the run is ready to start.
+        Update the run as started/processing in the database. This is called
+        when the run is ready to start.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
         reduction_run.status = Status.get_processing()
@@ -177,7 +176,7 @@ class HandleMessage:
     @transaction.atomic
     def reduction_complete(self, reduction_run: ReductionRun, message: Message):
         """
-        Update the run as 'completed' in the database. This is called when the run
+        Update the run as complete in the database. This is called when the run
         has completed.
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
@@ -192,7 +191,7 @@ class HandleMessage:
 
     def reduction_skipped(self, reduction_run: ReductionRun, message: Message):
         """
-        Update the run status to 'skipped' in the database. This is called when
+        Update the run status to 'Skipped' in the database. This is called when
         there was a reason to skip the run. Will NOT attempt re-run.
         """
         if message.message is not None:
@@ -205,7 +204,7 @@ class HandleMessage:
 
     def reduction_error(self, reduction_run: ReductionRun, message: Message):
         """
-        Update the run as 'errored' in the database. This is called when the run
+        Update the run as complete in the database. This is called when the run
         encounters an error.
         """
         if message.message:

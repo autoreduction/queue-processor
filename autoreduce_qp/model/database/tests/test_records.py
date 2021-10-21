@@ -2,21 +2,24 @@
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################
-"""Unit tests for the record helper module."""
-# pylint:disable=no-member,protected-access
+"""
+Unit tests for the record helper module
+"""
+
 import socket
 from typing import List, Union
 from unittest import mock
-
 from django.test import TestCase
 from autoreduce_db.reduction_viewer.models import DataLocation, Experiment, Instrument, ReductionRun, RunNumber
 from parameterized import parameterized
 
 from autoreduce_qp.model.database import records
 from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message, FakeModule
+
+# pylint:disable=no-member
 
 
 class TestDatabaseRecords(TestCase):
@@ -73,7 +76,6 @@ class TestDatabaseRecords(TestCase):
             instrument=mock_inst,
             status_id=mock_status.id,
             started_by=mock_msg.started_by,
-            run_title=mock_msg.run_title,
             # Hardcoded below
             run_description=mock.ANY,
             hidden_in_failviewer=mock.ANY,
