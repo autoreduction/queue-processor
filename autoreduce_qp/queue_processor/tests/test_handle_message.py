@@ -2,23 +2,22 @@
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################
 """Tests message handling for the queue processor."""
 # pylint:disable=no-member,unsupported-membership-test
 import random
 from functools import partial
-from typing import List, Union
 from unittest import main, mock
 from unittest.mock import Mock, patch
 
-from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, Status)
-from autoreduce_utils.message.message import Message
 from django.db.utils import IntegrityError
 from django.test import TestCase
 from parameterized import parameterized
 
+from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, Status)
+from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database.records import create_reduction_run_record
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 from autoreduce_qp.queue_processor.queue_listener import QueueListener
@@ -32,6 +31,7 @@ def make_test_message(instrument: str) -> Message:
     msg.populate({
         "run_number": 7654321,
         "rb_number": 1234567,
+        "run_title": "test title",
         "run_version": 0,
         "reduction_data": "/path/1",
         "started_by": -1,
@@ -105,6 +105,7 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == Status._get_status(expected_status)
         assert self.reduction_run.message == "I am a message"
         assert self.reduction_run.run_description == "This is a fake description"
+        assert self.reduction_run.run_title == "test title"
         self.mocked_logger.info.assert_called_once()
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
