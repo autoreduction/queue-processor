@@ -106,7 +106,7 @@ def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, m
                 arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
     else:
         # Branch for reruns and batch runs
-        arguments, _ = instrument.arguments.get_or_create(raw=arguments_json, experiment_reference=None, start_run=None)
+        arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
     return script, arguments
 
 
