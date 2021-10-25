@@ -7,11 +7,15 @@
 """
 Class to deal with reduction run variables
 """
+import logging
+import traceback
 from copy import deepcopy
 import re
 from typing import List
 
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript
+
+logger = logging.getLogger(__file__)
 
 
 class VariableUtils:
@@ -116,9 +120,8 @@ class VariableUtils:
             for dict_name in ["standard_vars", "advanced_vars", "variable_help"]:
                 if hasattr(module, dict_name):
                     args[dict_name] = getattr(module, dict_name)
-
         except (FileNotFoundError, ImportError, SyntaxError):
-            pass
+            logger.error(traceback.format_exc())
 
         return args
 
