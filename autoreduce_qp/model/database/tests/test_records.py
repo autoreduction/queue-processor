@@ -223,16 +223,13 @@ class TestDatabaseRecords(TestCase):
 
     @parameterized.expand([[{"experiment_reference": 7272727}], [{"start_run": 1237474}]])
     @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.load")
-    def test_make_script_and_arguments_args_from_message_will_not_reuse_matching_exp_or_run_args(
+    def test_make_script_and_arguments_args_from_message_will_reuse_matching_exp_or_run_args(
             self, create_args: dict, load: mock.Mock):
         """
-        Test that the script is made, and arguments from the message.reduction_arguments
-        are picked over ALL others. This is used for reruns, and in that case a user would
-        expect that the arguments they re-ran with, take precedence over any others.
+        Test that the script object is made, and arguments from message.reduction_arguments
+        are picked over `start_run` and `experiment_reference` ones. This is used for reruns and batch_runs.
 
-        This test checks the case when the message.reduction_arguments
-        matches some other object in the database, it will not reuse
-        them if they have a value for start_run or experiment_reference.
+        However, if the arguments match any other ones in the database, the arguments object will be reused.
         """
         instrument: Instrument = Instrument.objects.first()
         experiment: Experiment = Experiment.objects.first()
@@ -249,9 +246,7 @@ class TestDatabaseRecords(TestCase):
         load.assert_not_called()
 
         assert rscript.text == "print(123)"
-        # args were passed in with the message, but they happen to match previous ones in the DB
-        # so the object should be re-used
-        assert rargs != expected_args
+        assert rargs == expected_args
 
     @mock.patch("autoreduce_qp.model.database.records.ReductionScriptFile.text")
     def test_make_script_and_arguments_load_script(self, text: mock.Mock):
