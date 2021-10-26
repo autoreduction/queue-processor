@@ -4,12 +4,15 @@
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+import logging
 from pathlib import Path
 from shutil import rmtree
 from contextlib import ContextDecorator
 from typing import List, Optional
 
 from autoreduce_utils.settings import SCRIPTS_DIRECTORY, CYCLE_DIRECTORY, ARCHIVE_ROOT
+
+logger = logging.getLogger(__name__)
 
 
 class DataArchive:
@@ -77,6 +80,7 @@ class DataArchive:
 
     @staticmethod
     def _create_file_at_location(location: Path, file_text: str) -> None:
+        logger.info("Creating file at location %s", location)
         with open(location, "w+") as fle:
             fle.write(file_text)
 

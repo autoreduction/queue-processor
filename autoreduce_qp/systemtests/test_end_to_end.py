@@ -10,7 +10,7 @@ Linux only!
 Test that data can traverse through the autoreduction system successfully.
 """
 from typing import Union
-from autoreduce_db.reduction_viewer.models import ReductionArguments
+from autoreduce_db.reduction_viewer.models import ReductionArguments, Status
 
 from parameterized.parameterized import parameterized
 
@@ -78,6 +78,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
         reduced_run = results[0]
 
+        assert reduced_run.status == Status.get_completed()
         assert f"run-version-{reduced_run.run_version}" not in reduced_run.reduction_location.first().file_path
 
     def test_end_to_end_not_flat_output_respected(self):
@@ -97,6 +98,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
 
         reduced_run = results[0]
 
+        assert reduced_run.status == Status.get_completed()
         assert f"run-version-{reduced_run.run_version}" in reduced_run.reduction_location.first().file_path
 
     def test_end_to_end_wish_bad_script_syntax_error(self):
