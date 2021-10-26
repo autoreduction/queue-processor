@@ -29,11 +29,11 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml autoreduce_qp
+          RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
 
       - name: Run system tests
         run: |
-          pytest autoreduce_qp/systemtests --cov-append
+          RUNNING_VIA_PYTEST=true pytest autoreduce_qp/systemtests --cov-append -v
 
       - uses: codecov/codecov-action@v1
         with:

@@ -17,6 +17,7 @@ from django.utils import timezone
 from autoreduce_db.reduction_viewer.models import (DataLocation, Experiment, Instrument, ReductionArguments,
                                                    ReductionScript, RunNumber, ReductionRun, Status)
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript as ReductionScriptFile
+from autoreduce_qp.queue_processor.variable_utils import VariableUtils
 
 logger = logging.getLogger(__file__)
 
@@ -63,18 +64,7 @@ def get_script_and_arguments(instrument: Instrument, script: str, arguments: dic
         script = rscript.text()
 
     if not arguments:
-        arguments = {
-            "standard_vars": {},
-            "advanced_vars": {},
-            "variable_help": {
-                "standard_vars": {},
-                "advanced_vars": {}
-            }
-        }
-        rargs = ReductionScriptFile(instrument, "reduce_vars.py")
-        module = rargs.load()
-        for dict_name in ["standard_vars", "advanced_vars", "variable_help"]:
-            arguments[dict_name] = getattr(module, dict_name, {})
+        arguments = VariableUtils.get_default_variables(instrument)
 
     arguments_str = json.dumps(arguments, separators=(',', ':'))
     return script, arguments_str
@@ -106,7 +96,7 @@ def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, m
                 arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
     else:
         # Branch for reruns and batch runs
-        arguments, _ = instrument.arguments.get_or_create(raw=arguments_json, experiment_reference=None, start_run=None)
+        arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
     return script, arguments
 
 

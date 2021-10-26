@@ -7,11 +7,15 @@
 """
 Class to deal with reduction run variables
 """
+import logging
+import traceback
 from copy import deepcopy
 import re
 from typing import List
 
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript
+
+logger = logging.getLogger(__file__)
 
 
 class VariableUtils:
@@ -100,14 +104,26 @@ class VariableUtils:
         If reduce_script is supplied, return variables using that script
         instead of the one on disk.
         """
-        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
-        module = reduce_vars.load()
-
-        return {
-            "standard_vars": getattr(module, 'standard_vars', {}),
-            "advanced_vars": getattr(module, 'advanced_vars', {}),
-            "variable_help": getattr(module, 'variable_help', {})
+        args = {
+            "standard_vars": {},
+            "advanced_vars": {},
+            "variable_help": {
+                "standard_vars": {},
+                "advanced_vars": {},
+            }
         }
+
+        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+        try:
+            module = reduce_vars.load()
+
+            for dict_name in ["standard_vars", "advanced_vars", "variable_help"]:
+                if hasattr(module, dict_name):
+                    args[dict_name] = getattr(module, dict_name)
+        except (FileNotFoundError, ImportError, SyntaxError):
+            logger.error(traceback.format_exc())
+
+        return args
 
 
 def merge_arguments(message_reduction_arguments: dict, reduce_vars_module):
