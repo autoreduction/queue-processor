@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="autoreduce_qp",
-    version="22.0.0.dev15",  # when updating the version here make sure to also update qp_mantid_python36.D
+    version="22.0.0.dev16",  # when updating the version here make sure to also update qp_mantid_python36.D
     description="ISIS Autoreduction queue processor",
     author="ISIS Autoreduction Team",
     url="https://github.com/ISISScientificComputing/autoreduce/",
