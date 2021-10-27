@@ -183,12 +183,11 @@ class HandleMessage:
         self._logger.info("Run %s has completed reduction", message.run_number)
         self._common_reduction_run_update(reduction_run, Status.get_completed(), message)
         reduction_run.software = db_access.get_software("Mantid", message.software)
+        reduction_run.save()
 
         if message.reduction_data is not None:
             reduction_location = ReductionLocation(file_path=message.reduction_data, reduction_run=reduction_run)
             reduction_location.save()
-
-        reduction_run.save()
 
     def reduction_skipped(self, reduction_run: ReductionRun, message: Message):
         """
