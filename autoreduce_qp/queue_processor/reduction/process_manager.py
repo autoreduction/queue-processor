@@ -16,6 +16,8 @@ from autoreduce_utils.message.message import Message
 
 RUNNER_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/runner.py"
 
+logger = logging.getLogger(__file__)
+
 
 class ReductionProcessManager:
     def __init__(self, message: Message, run_name: str) -> None:
@@ -33,8 +35,8 @@ class ReductionProcessManager:
             python_path = sys.executable
             with tempfile.NamedTemporaryFile("w+") as temp_output_file:
                 args = [python_path, RUNNER_PATH, self.message.serialize(), temp_output_file.name, self.run_name]
-                logging.info("Calling: %s %s %s %s %s", python_path, RUNNER_PATH,
-                             self.message.serialize(limit_reduction_script=True), temp_output_file.name, self.run_name)
+                logger.info("Calling: %s %s %s %s %s", python_path, RUNNER_PATH,
+                            self.message.serialize(limit_reduction_script=True), temp_output_file.name, self.run_name)
 
                 # copy and update the subprocess environment to inherit the parent one,
                 # and append the PYTHONPATH of the queue_processor module
@@ -48,7 +50,7 @@ class ReductionProcessManager:
             result_message = Message()
             result_message.populate(result_message_raw)
         except subprocess.CalledProcessError:
-            logging.error("Processing encountered an error: %s", traceback.format_exc())
+            logger.error("Processing encountered an error: %s", traceback.format_exc())
             self.message.message = f"Processing encountered an error: {traceback.format_exc()}"
             result_message = self.message
 
