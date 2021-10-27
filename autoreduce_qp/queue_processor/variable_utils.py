@@ -97,12 +97,18 @@ class VariableUtils:
         return value
 
     @staticmethod
-    def get_default_variables(instrument_name) -> dict:
+    def get_default_variables(instrument_name, raise_exc=False) -> dict:
         """
-        Creates and returns a list of variables from the reduction script
-        on disk for the instrument.
-        If reduce_script is supplied, return variables using that script
-        instead of the one on disk.
+        Loads the variables from the reduction script on disk for the instrument.
+
+        Args:
+            instrument_name: The name of the instrument to get the variables for
+            raise_exc: If True, re-raise any exception encountered while getting the variables.
+                       Some callers may want to catch the exception and handle it differently,
+                       e.g. show an error message to the user.
+
+        Returns:
+            A dictionary of variables for the instrument
         """
         args = {
             "standard_vars": {},
@@ -121,7 +127,13 @@ class VariableUtils:
                 if hasattr(module, dict_name):
                     args[dict_name] = getattr(module, dict_name)
         except (FileNotFoundError, ImportError, SyntaxError):
+            if not raise_exc:
+                logger.error(traceback.format_exc())
+            else:
+                raise
+        except Exception:
             logger.error(traceback.format_exc())
+            raise
 
         return args
 

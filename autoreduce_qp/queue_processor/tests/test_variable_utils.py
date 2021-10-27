@@ -151,7 +151,7 @@ class TestVariableUtils(TestCase):
                 "adv_var3": "test_help",
             }
         }
-        result = vu.get_default_variables("TestInstrument")
+        result = vu.get_default_variables("TESTINSTRUMENT")
 
         assert "standard_vars" in result
         assert "advanced_vars" in result
@@ -180,7 +180,7 @@ class TestVariableUtils(TestCase):
             },
             "variable_help": {}
         }
-        result = vu.get_default_variables("TestInstrument")
+        result = vu.get_default_variables("TESTINSTRUMENT")
 
         assert "standard_vars" in result
         assert "advanced_vars" in result
