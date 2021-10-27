@@ -64,7 +64,7 @@
         "model": "reduction_viewer.instrument",
         "pk": 1,
         "fields": {
-            "name": "TestInstrument",
+            "name": "TESTINSTRUMENT",
             "is_active": true,
             "is_paused": false
         }
