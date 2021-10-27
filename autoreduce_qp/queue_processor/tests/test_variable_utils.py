@@ -131,35 +131,56 @@ class TestVariableUtils(TestCase):
         """
         Test: Getting the default variables returns the expected keys
         """
-        reduction_script.load.return_value = {
-            "standard_vars": {
+        class ReduceVars:
+            standard_vars = {
                 "var1": 123,
                 "var2": 432,
-                "var3": 666
-            },
-            "advanced_vars": {
+                "var3": 666,
+            }
+            advanced_vars = {
                 "adv_var1": 123,
                 "adv_var2": 432,
-                "adv_var3": 666
-            },
-            "variable_help": {
-                "var1": "test_help",
-                "var2": "test_help",
-                "var3": "test_help",
-                "adv_var1": "test_help",
-                "adv_var2": "test_help",
-                "adv_var3": "test_help",
+                "adv_var3": 666,
             }
-        }
+            variable_help = {
+                "standard_vars": {
+                    "var1": "test_help",
+                    "var2": "test_help",
+                    "var3": "test_help",
+                },
+                "advanced_vars": {
+                    "adv_var1": "test_help",
+                    "adv_var2": "test_help",
+                    "adv_var3": "test_help",
+                },
+            }
+
+        reduction_script.return_value.load.return_value = ReduceVars()
         result = vu.get_default_variables("TESTINSTRUMENT")
 
         assert "standard_vars" in result
+        assert "var1" in result["standard_vars"]
         assert "advanced_vars" in result
+        assert "adv_var1" in result["advanced_vars"]
         assert "variable_help" in result
+        assert "standard_vars" in result["variable_help"]
+        assert "advanced_vars" in result["variable_help"]
 
-        for _, variables in result.items():
-            for var in variables:
-                assert var.help_text == "test_help"
+    @parameterized.expand([
+        [FileNotFoundError],
+        [ImportError],
+        [SyntaxError],
+        [Exception],
+    ])
+    @patch("autoreduce_qp.queue_processor.variable_utils.ReductionScript")
+    def test_get_default_variables_raises(self, exception_class, reduction_script):
+        """
+        Test: Getting the default variables re-raises the exception when raise_exc parameter is given
+        """
+        reduction_script.return_value.load.side_effect = exception_class("msg")
+
+        with self.assertRaises(exception_class):
+            vu.get_default_variables("TESTINSTRUMENT", raise_exc=True)
 
     @staticmethod
     @patch("autoreduce_qp.queue_processor.variable_utils.ReductionScript")
