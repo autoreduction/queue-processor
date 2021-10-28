@@ -1,10 +1,10 @@
-# ############################################################################
+# ############################################################################ #
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################
+# ############################################################################ #
 """
 Handle an incoming message from the queue processor and take appropriate
 action(s) based on the message contents.
@@ -78,7 +78,6 @@ class HandleMessage:
         """
         rb_number = self.normalise_rb_number(message.rb_number)
         experiment = db_access.get_experiment(rb_number)
-        #run_title = db_access.get_run_title(message.run_title)
         run_version = db_access.find_highest_run_version(experiment, run_number=message.run_number)
         instrument = db_access.get_instrument(str(message.instrument))
         return self.do_create_reduction_record(message, experiment, instrument, run_version)
