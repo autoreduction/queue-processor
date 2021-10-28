@@ -9,9 +9,6 @@ Class to deal with reduction run variables
 """
 import logging
 import traceback
-from copy import deepcopy
-import re
-from typing import List
 
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript
 

@@ -26,5 +26,5 @@ class TimeOut:
         signal.signal(signal.SIGALRM, self.handle_timeout)  # pylint: disable=no-member
         signal.alarm(self.seconds)  # pylint: disable=no-member
 
-    def __exit__(self, _, value, traceback):  # pragma: no cover
+    def __exit__(self, *_):  # pragma: no cover
         signal.alarm(0)  # pylint: disable=no-member
