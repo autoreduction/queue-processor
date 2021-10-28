@@ -43,7 +43,7 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-      - name: Publish package on master commit
+      - name: Build package for publishing
         if: ${{ github.ref == 'refs/heads/master' }}
         run: python3 -m pip install wheel && python3 setup.py sdist bdist_wheel
 
