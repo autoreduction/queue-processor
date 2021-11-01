@@ -116,8 +116,13 @@ def find_highest_run_version(experiment: str, run_number: Union[int, List[int]])
     if isinstance(run_number, int):
         last_run = experiment.reduction_runs.filter(run_numbers__run_number=run_number).order_by('-run_version').first()
     else:
-        last_run = experiment.reduction_runs.filter(
-            batch_run=True, run_numbers__run_number__in=run_number).order_by('-run_version').first()
+        runs_containing_run_numbers = experiment.reduction_runs.filter(
+            batch_run=True, run_numbers__run_number__in=run_number).order_by('-run_version').distinct()
+        runs_matching_run_number_range = [
+            run for run in runs_containing_run_numbers if run.run_numbers.first().run_number == run_number[0]
+            and run.run_numbers.last().run_number == run_number[-1]
+        ]
+        last_run = runs_matching_run_number_range[0] if runs_matching_run_number_range else None
 
     if last_run:  # previous run exists - increment version by 1 for this run
         return last_run.run_version + 1
