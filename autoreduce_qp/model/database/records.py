@@ -1,10 +1,10 @@
-# ############################################################################
+# ############################################################################ #
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################
+# ############################################################################ #
 """Contains various helper methods for managing or creating ORM records."""
 # pylint:disable=no-member
 import json
@@ -12,6 +12,7 @@ import socket
 import logging
 from typing import List, Tuple, Union
 
+import requests
 from django.utils import timezone
 
 from autoreduce_db.reduction_viewer.models import (DataLocation, Experiment, Instrument, ReductionArguments,
@@ -52,7 +53,7 @@ def get_script_and_arguments(instrument: Instrument, script: str, arguments: dic
 
     Args:
         instrument: Instrument name for which the scripts will be loaded.
-        script: Any Python code to be excecuted.
+        script: Contents of the reduction script to be used.
         arguments: Reduction arguments that will be used for the reduction. If
         None, the default arguments will be loaded from reduce_vars.py.
 
@@ -67,8 +68,28 @@ def get_script_and_arguments(instrument: Instrument, script: str, arguments: dic
     if not arguments:
         arguments = VariableUtils.get_default_variables(instrument)
 
+    fetch_from_remote_source(arguments)
     arguments_str = json.dumps(arguments, separators=(',', ':'))
     return script, arguments_str
+
+
+def fetch_from_remote_source(arguments):
+    """
+    Update a supplied dictionary to contain the texts within any supplied raw
+    GitHub files.
+    """
+    for k1, v1 in arguments.items():
+        for k2 in v1:
+            nested_value = arguments[k1][k2]
+            if isinstance(nested_value, dict):
+                if "url" in nested_value and "default" in nested_value:
+                    url = nested_value["url"] + nested_value["default"]
+
+                    req = requests.get(url)
+                    if req.status_code != requests.codes.ok:
+                        raise ValueError(f"The supplied {k2} for {k1} could not be found at {url}")
+
+                    arguments[k1][k2]["value"] = req.text
 
 
 def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, message, batch_run: bool):
