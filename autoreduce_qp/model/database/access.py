@@ -113,16 +113,24 @@ def find_highest_run_version(experiment: str, run_number: Union[int, List[int]])
     Returns:
         The highest known run version for a given run number.
     """
+    last_run = None
     if isinstance(run_number, int):
         last_run = experiment.reduction_runs.filter(run_numbers__run_number=run_number).order_by('-run_version').first()
     else:
+        # filter the batch runs that contain any of the run numbers in the list
         runs_containing_run_numbers = experiment.reduction_runs.filter(
             batch_run=True, run_numbers__run_number__in=run_number).order_by('-run_version').distinct()
-        runs_matching_run_number_range = [
-            run for run in runs_containing_run_numbers if run.run_numbers.first().run_number == run_number[0]
-            and run.run_numbers.last().run_number == run_number[-1]
-        ]
-        last_run = runs_matching_run_number_range[0] if runs_matching_run_number_range else None
+
+        # now find one that matches all run numbers inside the list.
+        # If any mismatch then this is is considered a new batch run
+        for run in runs_containing_run_numbers:
+            # converts the RunNumber DB objects to a list of run numbers,
+            # then compares with the ones we are looking for
+            if [run_number_obj.run_number for run_number_obj in run.run_numbers.all()] == run_number:
+                last_run = run
+                # the runs are ordered by highest run_number, so we can break out
+                # as soon as a matching run_number list is found
+                break
 
     if last_run:  # previous run exists - increment version by 1 for this run
         return last_run.run_version + 1

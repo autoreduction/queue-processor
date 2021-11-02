@@ -115,9 +115,10 @@ class TestAccess(TestCase):
 
         assert access.find_highest_run_version(experiment, msg.run_number) == 3
 
-    def test_find_highest_run_version_batch_run_number(self):
+    def test_find_highest_run_version_batch_run_number_consecutive(self):
         """
-        Test: The expected highest version number is returned
+        Test: The expected highest version number is returned when the
+              run_numbers are in a consecutive range
         When: Calling find_highest_run_version
         """
 
@@ -131,7 +132,36 @@ class TestAccess(TestCase):
         for i in range(3):
             create_reduction_run_record(experiment, instrument, msg, i, status)
 
-        assert access.find_highest_run_version(experiment, [1234567, 1234568, 1234569]) == 3
+        assert access.find_highest_run_version(experiment, msg.run_number) == 3
+
+        # cases where run numbers mismatch the run numbers of already existing batch runs
+        assert access.find_highest_run_version(experiment, [1234567, 1234568, 1234569, 1234570]) == 0
+        assert access.find_highest_run_version(experiment, [1234566, 1234567, 1234568, 1234569]) == 0
+
+    def test_find_highest_run_version_batch_run_number_non_consecutive(self):
+        """
+        Test: The expected highest version number is returned when the
+              run_numbers are in ANY order, e.g. randomly picked run numbers from all available
+        When: Calling find_highest_run_version
+        """
+
+        experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
+        instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        msg = make_test_message(instrument.name)
+
+        msg.run_number = [1234567, 1234570, 1234572]
+        status = access.get_status("q")
+
+        for i in range(3):
+            create_reduction_run_record(experiment, instrument, msg, i, status)
+
+        assert access.find_highest_run_version(experiment, msg.run_number) == 3
+
+        # last one doesn't match
+        assert access.find_highest_run_version(experiment, [1234567, 1234570, 1234571]) == 0
+        # first and last match, but middle does not
+        assert access.find_highest_run_version(experiment, [1234567, 1234568, 1234572]) == 0
+        assert access.find_highest_run_version(experiment, [1234566, 1234567, 1234568, 1234572]) == 0
 
     # pylint:disable=no-self-use
     def test_save_record(self):
