@@ -1,12 +1,11 @@
-# ############################################################################### #
-# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+# ############################################################################ #
+# Autoreduction Repository :
+# https://github.com/ISISScientificComputing/autoreduce
 #
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################### #
-"""
-Class to deal with reduction run variables
-"""
+# ############################################################################ #
+"""Class to deal with reduction run variables."""
 import logging
 import traceback
 from copy import deepcopy
@@ -22,9 +21,13 @@ class VariableUtils:
     @staticmethod
     def get_type_string(value):
         """
-        Returns a textual representation of the type of the given value.
-        The possible returned types are: text, number, list_text, list_number, boolean
-        If the type isn't supported, it defaults to text.
+        Return a string representation of the type of the given value. If the
+        type isn't supported, it defaults to text. Possible return strings:
+        - text
+        - number
+        - list_text
+        - list_number
+        - boolean
         """
         var_type = type(value).__name__
         if var_type == 'str':
@@ -53,13 +56,16 @@ class VariableUtils:
     @staticmethod
     def convert_variable_to_type(value, var_type):
         """
-        Convert the given value a type matching that of var_type.
-        Options for var_type: text, number, list_text, list_number, boolean
-        If the var_type isn't recognised, the value is returned unchanged
-        :param value: A string of the value to convert
-        :param var_type: The desired type to convert the value to
-        :return: The value as the desired type,
-                 or if failed to convert the original value as string
+        Cast the given value to a type matching that of var_type.
+
+        Args:
+            value: A string of the value being casted to another type.
+            var_type: Can be 'text', 'number', 'list_text', 'list_number',
+            'boolean'.
+
+        Returns:
+            The value casted to the specified type. If the var_type is
+            unrecognised, return the original value.
         """
         # pylint: disable=too-many-return-statements,too-many-branches
         if var_type == "text":
@@ -99,12 +105,11 @@ class VariableUtils:
     @staticmethod
     def get_default_variables(instrument_name) -> dict:
         """
-        Creates and returns a list of variables from the reduction script
-        on disk for the instrument.
-        If reduce_script is supplied, return variables using that script
-        instead of the one on disk.
+        Create and return a list of variables from the reduction script on disk
+        for the instrument. If reduce_script is supplied, return variables
+        using that script instead of the one on disk.
         """
-        args = {
+        arguments = {
             "standard_vars": {},
             "advanced_vars": {},
             "variable_help": {
@@ -119,29 +124,31 @@ class VariableUtils:
 
             for dict_name in ["standard_vars", "advanced_vars", "variable_help"]:
                 if hasattr(module, dict_name):
-                    args[dict_name] = getattr(module, dict_name)
+                    arguments[dict_name] = getattr(module, dict_name)
         except (FileNotFoundError, ImportError, SyntaxError):
             logger.error(traceback.format_exc())
 
-        return args
+        return arguments
 
 
 def merge_arguments(message_reduction_arguments: dict, reduce_vars_module):
     """
-    Merges the reduction arguments provided from the message and from the reduce_vars module,
-    with the ones from the message taking precedent.
+    Merge the reduction arguments provided from the message and from the
+    reduce_vars module, with the ones from the message taking precedent.
     """
     def set_with_correct_type(message_reduction_arguments: dict, reduction_args: dict, dict_name: str):
         """
         Set the value of the variable with the correct type.
 
-        It retrieves the type string of the value in reduce_vars.py (the reduction_args param),
-        and converts the value to that type.
+        It retrieves the type string of the value in reduce_vars.py (the
+        reduction_args param), and converts the value to that type.
 
-        This is done to enforce type consistency between reduce_vars.py and message_reduction_arguments.
+        This is done to enforce type consistency between reduce_vars.py and
+        message_reduction_arguments.
 
-        message_reduction_arguments can contain bad types when it gets sent from the web app - some
-        values are incorrectly strings and they create extra duplicates.
+        message_reduction_arguments can contain bad types when it gets sent from
+        the web app - some values are incorrectly strings and they create extra
+        duplicates.
         """
         if dict_name in message_reduction_arguments and dict_name in reduction_args:
             for name, value in message_reduction_arguments[dict_name].items():
