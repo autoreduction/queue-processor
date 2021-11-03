@@ -8,12 +8,13 @@
 """Contains various helper methods for managing or creating ORM records."""
 # pylint:disable=no-member
 import json
-import socket
 import logging
+import socket
 from typing import List, Tuple, Union
 
-import requests
 from django.utils import timezone
+import requests
+from requests.exceptions import ConnectionError
 
 from autoreduce_db.reduction_viewer.models import (DataLocation, Experiment, Instrument, ReductionArguments,
                                                    ReductionScript, RunNumber, ReductionRun, Status)
@@ -68,32 +69,52 @@ def get_script_and_arguments(instrument: Instrument, script: str, arguments: dic
     if not arguments:
         arguments = VariableUtils.get_default_variables(instrument)
 
-    fetch_from_remote_source(arguments)
+    error_msgs = fetch_from_remote_source(arguments)
     arguments_str = json.dumps(arguments, separators=(',', ':'))
-    return script, arguments_str
+    return script, arguments_str, error_msgs
 
 
-def fetch_from_remote_source(arguments):
+def fetch_from_remote_source(arguments: dict) -> str:
     """
-    Update a supplied dictionary to contain the texts within any supplied raw
-    GitHub files.
+    Search through a supplied dictionary and fetch the values for any variables
+    that match the remote syntax expected in reduce_vars.py.
+
+    Args:
+        arguments: Reduction arguments that will be used for the reduction.
+
+    Returns:
+        A string of comma separated error messages, if any, otherwise None.
+
+    Examples of variable values:
+        category: 'standard_vars', 'advanced_vars'
+        headings: 'monovan_mapfile', 'hard_mask_file'
+        heading_value: {'url': <GitHub path>, 'default': 'mari_res2013.map'}
     """
-    for k1, v1 in arguments.items():
-        for k2 in v1:
-            nested_value = arguments[k1][k2]
-            if isinstance(nested_value, dict):
-                if "url" in nested_value and "default" in nested_value:
-                    url = nested_value["url"] + nested_value["default"]
+    error_msgs = []
 
-                    req = requests.get(url)
-                    if req.status_code != requests.codes.ok:
-                        raise ValueError(f"The supplied {k2} for {k1} could not be found at {url}")
+    for category, headings in arguments.items():
+        for heading, heading_value in headings.items():
+            if isinstance(heading_value, dict):
+                if all(key in heading_value for key in ("url" and "default")):
+                    url = heading_value["url"] + heading_value["default"]
 
-                    arguments[k1][k2]["value"] = req.text
+                    try:
+                        req = requests.get(url)
+                        status = req.status_code
+                        if status == requests.codes.ok:
+                            arguments[category][heading]["value"] = req.text
+                        else:
+                            error_msgs.append(f"{status} error at {url} for {heading} under {category}")
+
+                    except ConnectionError:
+                        error_msgs.append(f"Could not connect to remote source at {url} for {heading} under {category}")
+
+    return ", ".join(error_msgs) if error_msgs else None
 
 
 def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, message, batch_run: bool):
-    script, arguments_json = get_script_and_arguments(instrument, message.reduction_script, message.reduction_arguments)
+    script, arguments_json, error_msgs = get_script_and_arguments(instrument, message.reduction_script,
+                                                                  message.reduction_arguments)
     script, _ = ReductionScript.objects.get_or_create(text=script)
 
     if message.reduction_arguments is None and not batch_run:
@@ -119,7 +140,8 @@ def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, m
     else:
         # Branch for reruns and batch runs
         arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
-    return script, arguments
+
+    return script, arguments, error_msgs
 
 
 def create_reduction_run_record(experiment: Experiment, instrument: Instrument, message, run_version: int,
@@ -130,7 +152,7 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
     """
     time_now = timezone.now()
     batch_run = isinstance(message.run_number, list)
-    script, arguments = _make_script_and_arguments(experiment, instrument, message, batch_run)
+    script, arguments, error_msgs = _make_script_and_arguments(experiment, instrument, message, batch_run)
     reduction_run = ReductionRun.objects.create(run_version=run_version,
                                                 run_title=message.run_title,
                                                 run_description=message.description,
@@ -162,4 +184,5 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
     message.run_version = run_version
     message.flat_output = instrument.is_flat_output
 
+    message.message = error_msgs
     return reduction_run, message

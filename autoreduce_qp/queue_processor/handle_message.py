@@ -107,6 +107,8 @@ class HandleMessage:
             message.message = skip_reason
             message.reduction_log = skip_reason
             self.reduction_skipped(reduction_run, message)
+        elif message.message:
+            self.reduction_error(reduction_run, message)
         else:
             self.activate_db_inst(instrument)
             self.do_reduction(reduction_run, message)
@@ -176,8 +178,8 @@ class HandleMessage:
     @transaction.atomic
     def reduction_complete(self, reduction_run: ReductionRun, message: Message):
         """
-        Update the run as 'completed' in the database. This is called when the run
-        has completed.
+        Update the run as 'completed' in the database. This is called when the
+        run has completed.
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
         self._common_reduction_run_update(reduction_run, Status.get_completed(), message)
