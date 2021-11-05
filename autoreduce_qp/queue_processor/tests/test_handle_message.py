@@ -305,68 +305,6 @@ class TestHandleMessage(TestCase):
         assert "Validation error" in self.reduction_run.message
         assert "Validation error" in self.reduction_run.reduction_log
 
-    @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")
-    def test_valid_url_paths(self, load: Mock):
-        """
-        Test that `fetch_from_remote_source()` can correctly fetch the text
-        of raw GitHub file paths.
-        """
-        self.msg.reduction_arguments = None
-        load.return_value = {
-            "standard_vars": {
-                "standard_var1": "standard_value1"
-            },
-            "advanced_vars": {
-                "monovan_mapfile": {
-                    "url":
-                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MapFiles/",
-                    "default": "mari_res2013.map"
-                },
-                "hard_mask_file": {
-                    "url":
-                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
-                    "default": "mari_mask2015_3.msk"
-                }
-            },
-            "variable_help": {
-                "standard_vars": {},
-                "advanced_vars": {}
-            }
-        }
-        #with self.assertRaises(ValueError):
-        self.handler.data_ready(self.msg)
-
-    @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")
-    def test_invalid_url_path(self, load: Mock):
-        """
-        Test that `fetch_from_remote_source()` throws a `ValueError` when an any
-        unknown file path is supplied.
-        """
-        self.msg.reduction_arguments = None
-        load.return_value = {
-            "standard_vars": {
-                "standard_var1": "standard_value1"
-            },
-            "advanced_vars": {
-                "monovan_mapfile": {
-                    "url":
-                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MapFiles/",
-                    "default": "mari_res2013.map"
-                },
-                "hard_mask_file": {
-                    "url":
-                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
-                    "default": "missing_file.msk"
-                }
-            },
-            "variable_help": {
-                "standard_vars": {},
-                "advanced_vars": {}
-            }
-        }
-        with self.assertRaises(ValueError):
-            self.handler.data_ready(self.msg)
-
     def test_create_run_records_multiple_versions(self):
         """Test creating multiple version of the same run."""
         self.instrument.is_active = False
@@ -423,6 +361,103 @@ class TestHandleMessage(TestCase):
         with DefaultDataArchive(self.instrument_name):
             reduction_run, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == self.msg.rb_number
+
+    @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")
+    def test_valid_url_paths(self, load: Mock):
+        """
+        Test that fetch_from_remote_source() correctly returns None when valid
+        arguments are supplied.
+        """
+        self.msg.reduction_arguments = None
+        load.return_value = {
+            "advanced_vars": {
+                "monovan_mapfile": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MapFiles/",
+                    "default": "mari_res2013.map"
+                },
+                "hard_mask_file": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
+                    "default": "mari_mask2015_3.msk"
+                }
+            }
+        }
+        _, message = self.handler.data_ready(self.msg)
+        assert message.message is None
+
+    @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")
+    def test_single_invalid_filename(self, load: Mock):
+        """
+        Test that fetch_from_remote_source() returns an error string containing
+        the path to missing_file.msk.
+        """
+        self.msg.reduction_arguments = None
+        load.return_value = {
+            "advanced_vars": {
+                "monovan_mapfile": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MapFiles/",
+                    "default": "mari_res2013.map"
+                },
+                "hard_mask_file": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
+                    "default": "missing_file.msk"
+                }
+            }
+        }
+        reduction_run, message = self.handler.data_ready(self.msg)
+        assert "missing_file.msk" in message.message
+        assert reduction_run.message == message.message
+
+    @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")
+    def test_multiple_invalid_filenames(self, load: Mock):
+        """
+        Test that fetch_from_remote_source() returns an error string containing
+        the path to not_found_file.map AND the path to missing_file.msk.
+        """
+        self.msg.reduction_arguments = None
+        load.return_value = {
+            "advanced_vars": {
+                "monovan_mapfile": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MapFiles/",
+                    "default": "not_found_file.map"
+                },
+                "hard_mask_file": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
+                    "default": "missing_file.msk"
+                }
+            }
+        }
+        reduction_run, message = self.handler.data_ready(self.msg)
+        assert all(text in message.message for text in ("not_found_file.map", "missing_file.msk"))
+        assert reduction_run.message == message.message
+
+    @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")
+    def test_missing_file_paths(self, load: Mock):
+        """
+        Test that fetch_from_remote_source() returns an error string containing
+        the metadata of files missing a 'url' and 'default' keys.
+        """
+        self.msg.reduction_arguments = None
+        load.return_value = {
+            "advanced_vars": {
+                "monovan_mapfile": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MapFiles/",
+                },
+                "hard_mask_file": {
+                    "default": "mari_mask2015_3.msk"
+                }
+            }
+        }
+        reduction_run, message = self.handler.data_ready(self.msg)
+        assert "no file name supplied for monovan_mapfile under advanced_vars" in message.message
+        assert "no path supplied for hard_mask_file under advanced_vars" in message.message
+        assert reduction_run.message == message.message
 
 
 if __name__ == '__main__':

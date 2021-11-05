@@ -59,6 +59,8 @@ class HandleMessage:
             self._handle_error(reduction_run, message, err)
             raise
 
+        return reduction_run, message
+
     def _handle_error(self, reduction_run: ReductionRun, message: Message, err: Exception):
         """
         Couldn't save the state in the database properly - mark the run as
@@ -146,6 +148,7 @@ class HandleMessage:
 
         reduction_process_manager = ReductionProcessManager(message, run_name)
         self.reduction_started(reduction_run, message)
+
         output_message = reduction_process_manager.run()
         if output_message.message is not None:
             self.reduction_error(reduction_run, output_message)

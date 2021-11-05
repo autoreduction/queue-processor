@@ -76,8 +76,8 @@ def get_script_and_arguments(instrument: Instrument, script: str, arguments: dic
 
 def fetch_from_remote_source(arguments: dict) -> str:
     """
-    Search through a supplied dictionary and fetch the values for any variables
-    that match the remote syntax expected in reduce_vars.py.
+    Search through a supplied dictionary and fetch the content of any raw GitHub
+    files.
 
     Args:
         arguments: Reduction arguments that will be used for the reduction.
@@ -91,23 +91,31 @@ def fetch_from_remote_source(arguments: dict) -> str:
         heading_value: {'url': <GitHub path>, 'default': 'mari_res2013.map'}
     """
     error_msgs = []
-
     for category, headings in arguments.items():
         for heading, heading_value in headings.items():
-            if isinstance(heading_value, dict):
-                if all(key in heading_value for key in ("url" and "default")):
-                    url = heading_value["url"] + heading_value["default"]
 
-                    try:
-                        req = requests.get(url)
-                        status = req.status_code
-                        if status == requests.codes.ok:
-                            arguments[category][heading]["value"] = req.text
-                        else:
-                            error_msgs.append(f"{status} error at {url} for {heading} under {category}")
+            # Check if current heading is a file and if it points to a dict
+            if "file" in heading and isinstance(heading_value, dict):
 
-                    except ConnectionError:
-                        error_msgs.append(f"Could not connect to remote source at {url} for {heading} under {category}")
+                # Check if the nested dict contains keys for "url" and "default"
+                if not all(key in heading_value for key in ("url", "default")):
+                    if "url" not in heading_value:
+                        error_msgs.append(f"no path supplied for {heading} under {category}")
+                    if "default" not in heading_value:
+                        error_msgs.append(f"no file name supplied for {heading} under {category}")
+                    continue
+
+                url = heading_value["url"] + heading_value["default"]
+
+                try:
+                    req = requests.get(url)
+                    status = req.status_code
+                    if status == requests.codes.ok:
+                        arguments[category][heading]["value"] = req.text
+                    else:
+                        error_msgs.append(f"{status} error at {url} for {heading} under {category}")
+                except ConnectionError:
+                    error_msgs.append(f"Could not connect to remote source at {url} for {heading} under {category}")
 
     return ", ".join(error_msgs) if error_msgs else None
 
