@@ -16,7 +16,8 @@ from parameterized import parameterized
 
 from autoreduce_db.reduction_viewer.models import DataLocation, Experiment, Instrument, ReductionRun, RunNumber
 from autoreduce_qp.model.database import records
-from autoreduce_qp.queue_processor.tests.test_handle_message import FakeModule, make_test_message
+from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
+from autoreduce_qp.queue_processor.tests.test_variable_utils import FakeModule
 
 
 class TestDatabaseRecords(TestCase):

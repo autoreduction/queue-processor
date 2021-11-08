@@ -49,30 +49,6 @@ def make_test_message(instrument: str) -> Message:
     return msg
 
 
-class FakeModule:
-    def __init__(self, standard_vars=None, advanced_vars=None, variable_help=None) -> None:
-        """
-        Allows overwriting the advanced vars
-        """
-        self.standard_vars = {"standard_var1": "standard_value1"}
-        self.advanced_vars = {"advanced_var1": "advanced_value1"}
-
-        self.variable_help = {
-            "standard_vars": {
-                "standard_var1": "This is help for standard_value1"
-            },
-            "advanced_vars": {
-                "advanced_var1": "This is help for advanced_value1"
-            }
-        }
-        if standard_vars is not None:
-            self.standard_vars = standard_vars
-        if advanced_vars is not None:
-            self.advanced_vars = advanced_vars
-        if variable_help is not None:
-            self.variable_help.update(variable_help)
-
-
 class TestHandleMessage(TestCase):
     """Directly test the message handling classes."""
     fixtures = ["status_fixture"]
