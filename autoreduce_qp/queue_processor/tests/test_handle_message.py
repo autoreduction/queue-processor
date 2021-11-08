@@ -220,7 +220,8 @@ class TestHandleMessage(TestCase):
 
     def test_find_reason_to_skip_run_empty_script(self):
         """
-        Test find_reason_to_skip_run correctly captures validation failing on the message
+        Test find_reason_to_skip_run correctly captures validation failing on
+        the message.
         """
         self.reduction_run.script.text = ""
         reason = self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
@@ -416,7 +417,7 @@ class TestHandleMessage(TestCase):
     def test_missing_file_paths(self, load: Mock):
         """
         Test that fetch_from_remote_source() returns an error string containing
-        the metadata of files missing a 'url' and 'default' keys.
+        the metadata of files missing 'url' and 'default' keys.
         """
         self.msg.reduction_arguments = None
         load.return_value = {
