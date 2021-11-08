@@ -1,17 +1,18 @@
-# ############################################################################### #
-# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+# ############################################################################ #
+# Autoreduction Repository :
+# https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################### #
+# ############################################################################ #
 
 import contextlib
 import io
 import unittest
 from pathlib import Path
 
-from parameterized import parameterized
 from unittest.mock import patch
+from parameterized import parameterized
 
 from autoreduce_qp.queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
 
