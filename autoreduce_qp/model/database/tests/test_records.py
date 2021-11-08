@@ -6,7 +6,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################ #
 """Unit tests for the record helper module."""
-# pylint:disable=no-member,protected-access,no-self-use,invalid-name
+# pylint:disable=no-member,protected-access,no-self-use,invalid-name,redefined-outer-name,redefined-builtin,line-too-long
 import socket
 from typing import List, Union
 from unittest import mock

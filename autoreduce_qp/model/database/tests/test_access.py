@@ -4,6 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+# pylint:disable=no-self-use,no-member
 """
 Unit tests to exercise the code responsible for common database access methods
 """
@@ -17,7 +18,6 @@ from autoreduce_qp.model.database.records import create_reduction_run_record
 from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
 
 
-# pylint:disable=no-member
 class TestAccess(TestCase):
     """
     Test the access functionality for the database
@@ -133,7 +133,6 @@ class TestAccess(TestCase):
 
         assert access.find_highest_run_version(experiment, [1234567, 1234568, 1234569]) == 3
 
-    # pylint:disable=no-self-use
     def test_save_record(self):
         """
         Test: .save() is called on the provided object
