@@ -6,24 +6,23 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################ #
 """Unit tests for the record helper module."""
-# pylint:disable=no-member,protected-access,no-self-use
+# pylint:disable=no-member,protected-access,no-self-use,invalid-name
 import socket
 from typing import List, Union
 from unittest import mock
 
 from django.test import TestCase
-from autoreduce_db.reduction_viewer.models import DataLocation, Experiment, Instrument, ReductionRun, RunNumber
 from parameterized import parameterized
 
+from autoreduce_db.reduction_viewer.models import DataLocation, Experiment, Instrument, ReductionRun, RunNumber
 from autoreduce_qp.model.database import records
-from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message, FakeModule
+from autoreduce_qp.queue_processor.tests.test_handle_message import FakeModule, make_test_message
 
 
 class TestDatabaseRecords(TestCase):
     """Tests the Record helpers for the ORM layer."""
     fixtures = ["status_fixture", "run_with_multiple_variables"]
 
-    # pylint:disable=invalid-name
     @mock.patch("autoreduce_qp.model.database.records.timezone")
     @mock.patch.multiple("autoreduce_qp.model.database.records",
                          ReductionRun=mock.DEFAULT,
@@ -50,15 +49,14 @@ class TestDatabaseRecords(TestCase):
         mock_script = mock.NonCallableMock()
         mock_arguments = mock.NonCallableMock()
         mock_status = mock.NonCallableMock()
+        mock_message = mock.NonCallableMagicMock()
 
-        _make_script_and_arguments.return_value = (mock_script, mock_arguments)
-
+        _make_script_and_arguments.return_value = mock_script, mock_arguments, mock_message
         returned_run, returned_msg = records.create_reduction_run_record(experiment=mock_experiment,
                                                                          instrument=mock_inst,
                                                                          message=mock_msg,
                                                                          run_version=mock_run_version,
                                                                          status=mock_status)
-
         self.assertEqual(ReductionRun.objects.create.return_value, returned_run)
         self.assertEqual(mock_msg, returned_msg)
 
@@ -132,9 +130,11 @@ class TestDatabaseRecords(TestCase):
         msg.rb_number = experiment.reference_number
 
         expected_args = instrument.arguments.create(raw="{}", experiment_reference=experiment.reference_number)
-        # add arguments for a run range, just to make sure they don't get selected over the other ones
+
+        # Add arguments for a run range, just to make sure they don't get
+        # selected over the other ones
         instrument.arguments.create(raw="{}", start_run=msg.run_number)
-        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
+        rscript, rargs, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript.text == "print(123)"
         assert rargs == expected_args
@@ -156,10 +156,12 @@ class TestDatabaseRecords(TestCase):
         msg.rb_number = experiment.reference_number
 
         expected_args = instrument.arguments.create(raw="{}", start_run=msg.run_number)
-        # add some more arguments that start earlier, to verify that only the latest one is selected
+
+        # Add some more arguments that start earlier, to verify that only the
+        # latest one is selected
         instrument.arguments.create(raw="{}", start_run=msg.run_number - 1)
         instrument.arguments.create(raw="{}", start_run=msg.run_number - 2)
-        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
+        rscript, rargs, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript.text == "print(123)"
         assert rargs == expected_args
@@ -184,11 +186,11 @@ class TestDatabaseRecords(TestCase):
         msg.reduction_arguments = None
         msg.rb_number = 123456
 
-        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
-
+        rscript, rargs, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
         assert rscript.text == "print(123)"
+
         # Running it again should `get` the first object return the same DB record
-        rscript_second_run, rargs_second_run = records._make_script_and_arguments(experiment, instrument, msg, False)
+        rscript_second_run, rargs_second_run, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript == rscript_second_run
         assert rargs == rargs_second_run
@@ -214,16 +216,17 @@ class TestDatabaseRecords(TestCase):
         msg.rb_number = 123456
 
         expected_args = instrument.arguments.create(raw="{}", start_run=msg.run_number)
-        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
-
+        rscript, rargs, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
         load.assert_not_called()
-
         assert rscript.text == "print(123)"
-        # args were passed in with the message, so they would not equal the ones we have made
-        assert rargs != expected_args
-        # But running it again should `get` the first object return the same DB record
-        rscript_second_run, rargs_second_run = records._make_script_and_arguments(experiment, instrument, msg, False)
 
+        # Argumentss were passed in with the message, so they would not equal
+        # the ones we have made
+        assert rargs != expected_args
+
+        # But running it again should `get` the first object return the same DB
+        # record
+        rscript_second_run, rargs_second_run, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
         assert rscript == rscript_second_run
         assert rargs == rargs_second_run
 
@@ -249,7 +252,7 @@ class TestDatabaseRecords(TestCase):
         msg.rb_number = 123456
 
         expected_args = instrument.arguments.create(raw='{"standard_vars":{"variable":"value"}}', **create_args)
-        rscript, rargs = records._make_script_and_arguments(experiment, instrument, msg, False)
+        rscript, rargs, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         load.assert_not_called()
 
@@ -276,6 +279,6 @@ class TestDatabaseRecords(TestCase):
         msg.reduction_arguments = {"standard_vars": {"variable": "value"}}
         msg.rb_number = 123456
 
-        rscript, _ = records._make_script_and_arguments(experiment, instrument, msg, False)
+        rscript, *_ = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript.text == text.return_value
