@@ -1,12 +1,10 @@
-# ############################################################################### #
+# ############################################################################ #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################### #
-"""
-Tests for parts of the reduction_service
-"""
+# ############################################################################ #
+"""Tests for parts of the reduction_service."""
 import io
 import os
 import tempfile
@@ -14,15 +12,13 @@ import unittest
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
 from parameterized import parameterized
 
-from unittest.mock import patch, MagicMock, call
 from autoreduce_utils.settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
-
 from autoreduce_qp.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
-from autoreduce_qp.queue_processor.reduction.service import ReductionDirectory, \
-    TemporaryReductionDirectory, Datafile, ReductionScript, reduce
+from autoreduce_qp.queue_processor.reduction.service import (Datafile, ReductionDirectory, ReductionScript,
+                                                             TemporaryReductionDirectory, reduce)
 from autoreduce_qp.queue_processor.reduction.tests.module_to_import import TEST_DICTIONARY
 
 REDUCTION_SERVICE_DIR = "autoreduce_qp.queue_processor.reduction.service"
