@@ -13,6 +13,7 @@ from unittest import mock
 
 from django.test import TestCase
 from parameterized import parameterized
+from requests.exceptions import ConnectionError
 
 from autoreduce_db.reduction_viewer.models import DataLocation, Experiment, Instrument, ReductionRun, RunNumber
 from autoreduce_qp.model.database import records
@@ -283,3 +284,21 @@ class TestDatabaseRecords(TestCase):
         rscript, *_ = records._make_script_and_arguments(experiment, instrument, msg, False)
 
         assert rscript.text == text.return_value
+
+    @mock.patch("autoreduce_qp.model.database.records.requests.get")
+    def test_fetch_from_remote_source_catches_connection_error(self, text: mock.Mock):
+        """
+        Test that fetch_from_remote_source() catches a ConnectionError and
+        appends an error message when requests.get is patched out.
+        """
+        text.side_effect = ConnectionError()
+        text.return_value = records.fetch_from_remote_source({
+            "advanced_vars": {
+                "hard_mask_file": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
+                    "default": "mari_mask2015_3.msk"
+                }
+            }
+        })
+        assert "Could not connect to remote source at" in text.return_value
