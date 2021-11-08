@@ -6,7 +6,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################ #
 """Contains various helper methods for managing or creating ORM records."""
-# pylint:disable=no-member
+# pylint:disable=no-member,redefined-builtin
 import json
 import logging
 import socket
