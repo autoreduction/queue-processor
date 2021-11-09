@@ -58,7 +58,7 @@ def get_status(status_value: str) -> Status:
         The Status object from the database.
 
     Raises:
-        `ValueError` if status_value is not Error, Queued, Processing,
+        ValueError: If status_value is not Error, Queued, Processing,
         Completed, or Skipped
     """
     # Verbose values = ["Error", "Queued", "Processing", "Completed", "Stopped"]

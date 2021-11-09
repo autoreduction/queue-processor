@@ -1,10 +1,10 @@
-# ############################################################################
+# ############################################################################ #
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################
+# ############################################################################ #
 """
 Handle an incoming message from the queue processor and take appropriate
 action(s) based on the message contents.
@@ -59,6 +59,8 @@ class HandleMessage:
             self._handle_error(reduction_run, message, err)
             raise
 
+        return reduction_run, message
+
     def _handle_error(self, reduction_run: ReductionRun, message: Message, err: Exception):
         """
         Couldn't save the state in the database properly - mark the run as
@@ -78,7 +80,6 @@ class HandleMessage:
         """
         rb_number = self.normalise_rb_number(message.rb_number)
         experiment = db_access.get_experiment(rb_number)
-        #run_title = db_access.get_run_title(message.run_title)
         run_version = db_access.find_highest_run_version(experiment, run_number=message.run_number)
         instrument = db_access.get_instrument(str(message.instrument))
         return self.do_create_reduction_record(message, experiment, instrument, run_version)
@@ -108,6 +109,8 @@ class HandleMessage:
             message.message = skip_reason
             message.reduction_log = skip_reason
             self.reduction_skipped(reduction_run, message)
+        elif message.message:
+            self.reduction_error(reduction_run, message)
         else:
             self.activate_db_inst(instrument)
             self.do_reduction(reduction_run, message)
@@ -145,6 +148,7 @@ class HandleMessage:
 
         reduction_process_manager = ReductionProcessManager(message, run_name)
         self.reduction_started(reduction_run, message)
+
         output_message = reduction_process_manager.run()
         if output_message.message is not None:
             self.reduction_error(reduction_run, output_message)
@@ -177,8 +181,8 @@ class HandleMessage:
     @transaction.atomic
     def reduction_complete(self, reduction_run: ReductionRun, message: Message):
         """
-        Update the run as 'completed' in the database. This is called when the run
-        has completed.
+        Update the run as 'completed' in the database. This is called when the
+        run has completed.
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
         self._common_reduction_run_update(reduction_run, Status.get_completed(), message)

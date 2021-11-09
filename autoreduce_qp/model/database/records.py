@@ -1,18 +1,20 @@
-# ############################################################################
+# ############################################################################ #
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################
+# ############################################################################ #
 """Contains various helper methods for managing or creating ORM records."""
-# pylint:disable=no-member
+# pylint:disable=no-member,redefined-builtin
 import json
-import socket
 import logging
+import socket
 from typing import List, Tuple, Union
 
 from django.utils import timezone
+import requests
+from requests.exceptions import ConnectionError
 
 from autoreduce_db.reduction_viewer.models import (DataLocation, Experiment, Instrument, ReductionArguments,
                                                    ReductionScript, RunNumber, ReductionRun, Status)
@@ -47,11 +49,12 @@ def _make_run_numbers(reduction_run, message_run_number: Union[int, List[int]]):
 def get_script_and_arguments(instrument: Instrument, script: str, arguments: dict) -> Tuple[str, str]:
     """
     Load the reduction script, reduce.py, as a string. If arguments are not
-    provided load them from reduce_vars.py as a module, which is then converted
+    provided load them from reduce_vars.py as a module which is then converted
     to a dictionary.
 
     Args:
         instrument: Instrument name for which the scripts will be loaded.
+        script: Contents of the reduction script to be used.
         arguments: Reduction arguments that will be used for the reduction. If
         None, the default arguments will be loaded from reduce_vars.py.
 
@@ -66,12 +69,60 @@ def get_script_and_arguments(instrument: Instrument, script: str, arguments: dic
     if not arguments:
         arguments = VariableUtils.get_default_variables(instrument)
 
+    error_msgs = fetch_from_remote_source(arguments)
     arguments_str = json.dumps(arguments, separators=(',', ':'))
-    return script, arguments_str
+    return script, arguments_str, error_msgs
+
+
+def fetch_from_remote_source(arguments: dict) -> str:
+    """
+    Search through a supplied dictionary and fetch the content of any raw GitHub
+    files.
+
+    Args:
+        arguments: Reduction arguments that will be used for the reduction.
+
+    Returns:
+        A string of comma separated error messages, if any, otherwise None.
+
+    Examples of variable values:
+        category: 'standard_vars', 'advanced_vars'
+        headings: 'monovan_mapfile', 'hard_mask_file'
+        heading_value: {'url': <GitHub path>, 'default': 'mari_res2013.map'}
+    """
+    error_msgs = []
+    for category, headings in arguments.items():
+        for heading, heading_value in headings.items():
+
+            # Check if current heading is a file and if it points to a dict
+            if "file" in heading and isinstance(heading_value, dict):
+
+                # Check if the nested dict contains keys for "url" and "default"
+                if not all(key in heading_value for key in ("url", "default")):
+                    if "url" not in heading_value:
+                        error_msgs.append(f"no path supplied for {heading} under {category}")
+                    if "default" not in heading_value:
+                        error_msgs.append(f"no file name supplied for {heading} under {category}")
+                    continue
+
+                url = heading_value["url"] + heading_value["default"]
+
+                try:
+                    req = requests.get(url)
+                    status = req.status_code
+                    if status == requests.codes.ok:
+                        arguments[category][heading]["value"] = req.text
+                    else:
+                        error_msgs.append(f"{status} error at {url} for {heading} under {category}")
+                except ConnectionError:
+                    error_msgs.append(f"Could not connect to remote source at {url} for {heading} under {category}")
+
+    return ", ".join(error_msgs) if error_msgs else None
 
 
 def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, message, batch_run: bool):
-    script, arguments_json = get_script_and_arguments(instrument, message.reduction_script, message.reduction_arguments)
+    script, arguments_json, error_msgs = get_script_and_arguments(instrument, message.reduction_script,
+                                                                  message.reduction_arguments)
     script, _ = ReductionScript.objects.get_or_create(text=script)
 
     if message.reduction_arguments is None and not batch_run:
@@ -97,7 +148,8 @@ def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, m
     else:
         # Branch for reruns and batch runs
         arguments, _ = instrument.arguments.get_or_create(raw=arguments_json)
-    return script, arguments
+
+    return script, arguments, error_msgs
 
 
 def create_reduction_run_record(experiment: Experiment, instrument: Instrument, message, run_version: int,
@@ -108,7 +160,7 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
     """
     time_now = timezone.now()
     batch_run = isinstance(message.run_number, list)
-    script, arguments = _make_script_and_arguments(experiment, instrument, message, batch_run)
+    script, arguments, error_msgs = _make_script_and_arguments(experiment, instrument, message, batch_run)
     reduction_run = ReductionRun.objects.create(run_version=run_version,
                                                 run_title=message.run_title,
                                                 run_description=message.description,
@@ -140,4 +192,5 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
     message.run_version = run_version
     message.flat_output = instrument.is_flat_output
 
+    message.message = error_msgs
     return reduction_run, message

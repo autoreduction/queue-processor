@@ -1,14 +1,14 @@
-# ############################################################################
+# ############################################################################ #
 # Autoreduction Repository :
 # https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################
+# ############################################################################ #
 """
-This module deals with the updating of the database backend.
-It consumes messages from the queues and then updates the reduction run
-status in the database.
+This module deals with the updating of the database backend. It consumes
+messages from the queues and then updates the reduction run status in the
+database.
 """
 import logging
 import time
@@ -17,38 +17,35 @@ from contextlib import contextmanager
 from typing import Tuple
 
 from stomp import ConnectionListener
+
 from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
-
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 
 class QueueListener(ConnectionListener):
-    """ Listener class that is used to consume messages from ActiveMQ. """
+    """Listener class that is used to consume messages from ActiveMQ."""
     def __init__(self, client: QueueClient):
-        """ Initialise listener. """
+        """Initialise listener."""
         self.client: QueueClient = client
         self.message_handler = HandleMessage()
-
         self.logger = logging.getLogger(__package__)
 
-        # Keeps track of whether there is currently a message being processed.
-        # Just a raw bool is OK because the subscription is configured to
-        # prefetch 1 message at a time - i.e. this function should NOT run in parallel
+        # Track whether there is currently a message being processed. Just a raw
+        # bool is OK because the subscription is configured to prefetch 1
+        # message at a time - i.e. this function should NOT run in parallel
         self._processing = False
 
     def is_processing_message(self):
-        """
-        Getter for the processing state
-        """
+        """Return the processing state."""
         return self._processing
 
     @contextmanager
     def mark_processing(self):
         """
-        Function usable by using `with ...` for context management
-        and to ensure processing is always set to false at the end
+        Function usable by using `with ...` for context management and to ensure
+        processing is always set to false at the end.
         """
         self._processing = True
         try:
@@ -57,9 +54,7 @@ class QueueListener(ConnectionListener):
             self._processing = False
 
     def on_disconnected(self):
-        """
-        Called when the listener loses connection to activemq
-        """
+        """Called when the listener loses connection to ActiveMQ."""
         self.logger.warning("Connection to ActiveMQ lost unexpectedly, attempting to reconnect...")
         try:
             self.client.connect()
@@ -70,8 +65,10 @@ class QueueListener(ConnectionListener):
             self.on_disconnected()
 
     def on_message(self, frame):
-        """ This method is where consumed messages are dealt with. It will
-        consume a message. """
+        """
+        This method is where consumed messages are dealt with. It will consume a
+        message.
+        """
         with self.mark_processing():
             destination = frame.headers["destination"]
             priority = frame.headers["priority"]
@@ -84,9 +81,10 @@ class QueueListener(ConnectionListener):
                 self.logger.error("Could not decode message from %s\n\n%s", destination, traceback.format_exc())
                 return
 
-            # the connection is configured with client-individual, meaning that each client
-            # has to submit an acknowledgement for receiving the message
-            # (otherwise I think that it is not removed from the queue but I am not sure about that)
+            # The connection is configured with client-individual, meaning that
+            # each client has to submit an acknowledgement for receiving the
+            # message (otherwise I think that it is not removed from the queue
+            # but I am not sure about that)
             self.client.ack(frame.headers["message-id"], frame.headers["subscription"])
             try:
                 if destination == '/queue/DataReady':
@@ -100,9 +98,11 @@ class QueueListener(ConnectionListener):
 
 def setup_connection() -> Tuple[QueueClient, QueueListener]:
     """
-    Starts the ActiveMQ connection and registers the event listener
-    :return: A client connected and subscribed to the queue specified in credentials, and
-             a listener instance which will handle incoming messages
+    Starts the ActiveMQ connection and registers the event listener.
+
+    Returns:
+        A client connected and subscribed to the queue specified in credentials,
+        and a listener instance which will handle incoming messages.
     """
     # Connect to ActiveMQ
     activemq_client = QueueClient()
@@ -117,10 +117,7 @@ def setup_connection() -> Tuple[QueueClient, QueueListener]:
 
 
 def main():
-    """
-    Main method.
-    :return: (Listener) returns a handle to a connected Active MQ listener
-    """
+    """Entry point for the module."""
     try:
         setup_connection()
     except ConnectionException as exp:
@@ -128,10 +125,11 @@ def main():
                                              type(exp).__name__, exp, traceback.format_exc())
         raise
 
-    # print a success message to the terminal in case it's not being run through the daemon
+    # Print a success message to the terminal in case it's not being run through
+    # the daemon
     print("QueueClient connected and QueueListener active.")
 
-    # if running this script as main (e.g. when debugging the queue listener)
+    # If running this script as main (e.g. when debugging the queue listener)
     # the activemq connection runs async and without this sleep the process will
     # just connect to activemq then exit completely
     while True:
