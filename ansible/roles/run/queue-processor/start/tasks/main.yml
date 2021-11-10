@@ -14,9 +14,10 @@
 - name: Set run_command depending on deployment stage
   include_vars: "{{ deployment_stage }}.yml"
 
-- name: Start the Singularity instance
+- name: Pull the docker container to get any updates
   become: yes
-  become_user: "{{ autoreduction_user }}"
+  command: docker pull autoreduction/qp
+
+- name: Start the detached Docker container
+  become: yes
   command: "{{ run_command }}"
-  args:
-    chdir: /home/{{ autoreduction_user }}/

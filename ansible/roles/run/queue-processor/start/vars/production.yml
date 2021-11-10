@@ -1,9 +1,11 @@
 run_command: >
-  singularity instance start
-  --env AUTOREDUCTION_PRODUCTION=true
-  --bind ./autoreduce:/autoreduce/
-  --bind /instrument:/instrument
-  --bind /isis:/isis
-  --bind /isis:/archive
-  --bind /shared-config:/shared-config
-  qp_mantid_python36.sif qp
+  docker run --env AUTOREDUCTION_PRODUCTION=true
+  --volume /home/isisautoreduce/.autoreduce:/home/isisautoreduce/.autoreduce
+  --volume /instrument:/instrument
+  --volume /isis:/isis
+  --volume /isis:/archive
+  --volume /shared-config:/shared-config
+  --rm
+  --name qp
+  --detach
+  autoreduction/qp
