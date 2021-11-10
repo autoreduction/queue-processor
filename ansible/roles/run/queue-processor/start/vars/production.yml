@@ -7,5 +7,6 @@ run_command: >
   --volume /shared-config:/shared-config
   --rm
   --name qp
+  --network=host
   --detach
   autoreduction/qp
