@@ -1,7 +1,6 @@
 ---
 
-- name: Stop the Singularity instance
+- name: Stop the Docker instance
   become: yes
-  become_user: "{{ autoreduction_user }}"
-  command: singularity instance stop -t 60 -s SIGTERM qp
+  command: docker stop --time=60 qp-instance
   ignore_errors: yes

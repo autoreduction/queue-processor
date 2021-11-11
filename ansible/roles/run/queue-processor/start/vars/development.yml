@@ -1,7 +1,10 @@
 run_command: >
-  singularity instance start
-  --bind ./autoreduce:/autoreduce/
-  --bind /instrument:/instrument
-  --bind /isis:/isis
-  --bind /isis:/archive
-  qp_mantid_python36.sif qp
+  --volume /home/isisautoreduce/.autoreduce:/home/isisautoreduce/.autoreduce
+  --volume /instrument:/instrument
+  --volume /isis:/isis
+  --volume /isis:/archive
+  --volume /shared-config:/shared-config
+  --name qp-instance
+  --rm
+  --network=host
+  --detach

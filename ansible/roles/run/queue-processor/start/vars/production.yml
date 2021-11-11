@@ -1,12 +1,11 @@
 run_command: >
-  docker run --env AUTOREDUCTION_PRODUCTION=true
+  --env AUTOREDUCTION_PRODUCTION=true
   --volume /home/isisautoreduce/.autoreduce:/home/isisautoreduce/.autoreduce
   --volume /instrument:/instrument
   --volume /isis:/isis
   --volume /isis:/archive
   --volume /shared-config:/shared-config
+  --name qp-instance
   --rm
-  --name qp
   --network=host
   --detach
-  autoreduction/qp
