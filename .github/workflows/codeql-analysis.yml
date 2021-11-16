@@ -12,32 +12,19 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-18.04
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
-        options: >-
-          --health-cmd="mysqladmin ping" --health-interval=10s 
-          --health-timeout=5s --health-retries=3
     strategy:
       fail-fast: false
       matrix:
         language: ['python', 'javascript']
-        
+
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      
+
       - uses: actions/cache@v1
         with:
           path: ~/.cache/pip
@@ -45,15 +32,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - uses: ./.github/actions/build-autoreduction
-      
+      - uses: ISISScientificComputing/autoreduce-actions/build@master
+        with:
+          package_name: autoreduce_qp
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
           setup-python-dependencies: false
-      
+
       - name: Set CODEQL_PYTHON path
         run: echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
 
