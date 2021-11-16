@@ -52,7 +52,7 @@ class TestReductionService(unittest.TestCase):
 
     @contextmanager
     def _test_module(self, test_string: str):
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".py") as script_file:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix=".py") as script_file:
             script_file.write(test_string)
             script_file.flush()
             red_script = ReductionScript(self.instrument)

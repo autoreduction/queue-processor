@@ -155,7 +155,7 @@ class ReductionScript:
         """Returns the text of the script file. Does not load it as a module"""
         # Read raw bytes and determine encoding
         try:
-            with io.open(self.script_path, 'r') as open_file:
+            with io.open(self.script_path, encoding='utf-8', mode='r+') as open_file:
                 return open_file.read()
         except IOError:
             return ""
@@ -181,8 +181,7 @@ class ReductionScript:
                 old_dict.update(source_dict)
                 setattr(self.module.web_var, dict_name, old_dict)
 
-            encoded_dict = dict(reduction_arguments[dict_name].items())
-            merge_dict_to_name(encoded_dict)
+            merge_dict_to_name(reduction_arguments[dict_name])
 
         if not self.module:
             raise RuntimeError("The script has not been loaded yet")
