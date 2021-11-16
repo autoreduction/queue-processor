@@ -181,7 +181,7 @@ class ReductionScript:
                 old_dict.update(source_dict)
                 setattr(self.module.web_var, dict_name, old_dict)
 
-            encoded_dict = {k: (v) for k, v in reduction_arguments[dict_name].items()}
+            encoded_dict = dict(reduction_arguments[dict_name].items())
             merge_dict_to_name(encoded_dict)
 
         if not self.module:
