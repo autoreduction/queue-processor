@@ -1,4 +1,5 @@
 from autoreduce_utils.message.message import Message
+from autoreduce_utils.settings import CYCLE_DIRECTORY
 
 
 def add_data_and_message():
@@ -6,9 +7,9 @@ def add_data_and_message():
     Makes and returns some test data and message
     """
     data = {
-        'data': '\\\\isis\\inst$\\data.nxs',
+        'data': CYCLE_DIRECTORY % ("TESTINSTRUMENT", "21_1") + '/data.nxs',
         'facility': 'ISIS',
-        'instrument': 'GEM',
+        'instrument': 'TESTINSTRUMENT',
         'rb_number': '1234',
         'run_number': '4321',
         'run_version': 1,

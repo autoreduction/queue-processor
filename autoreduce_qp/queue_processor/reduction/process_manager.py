@@ -8,13 +8,11 @@
 import logging
 import os
 import subprocess
-import sys
 import tempfile
 import traceback
+import docker
 
 from autoreduce_utils.message.message import Message
-
-RUNNER_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/runner.py"
 
 logger = logging.getLogger(__file__)
 
@@ -30,24 +28,53 @@ class ReductionProcessManager:
             # We need to run the reduction in a new process, otherwise scripts
             # will fail when they use things that require access to a main loop
             # e.g. a GUI main loop, for matplotlib or Mantid
-            python_path = sys.executable
             with tempfile.NamedTemporaryFile("w+") as temp_output_file:
-                args = [python_path, RUNNER_PATH, self.message.serialize(), temp_output_file.name, self.run_name]
-                logger.info("Calling: %s %s %s %s %s", python_path, RUNNER_PATH,
-                            self.message.serialize(limit_reduction_script=True), temp_output_file.name, self.run_name)
+                serialized_vars = self.message.serialize()
+                serialized_vars_truncated = self.message.serialize(limit_reduction_script=True)
+                args = ["python3", "runner.py", serialized_vars, temp_output_file.name, self.run_name]
+                logger.info("Calling: %s %s %s %s %s", "python3", "runner.py", serialized_vars_truncated,
+                            temp_output_file.name, self.run_name)
 
-                # Copy and update the subprocess environment to inherit the
-                # parent one, and append the PYTHONPATH of the queue_processor
-                # module
-                environment = os.environ.copy()
-                environment["PYTHONPATH"] = RUNNER_PATH.split("autoreduce_qp")[0]
+                os.environ["AUTOREDUCTION_PRODUCTION"] = "true"
+                # Return a client configured from environment variables
+                # The environment variables used are the same as those used by the Docker command-line client
+                # https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
+                client = docker.from_env()
 
-                # Run process until finished and check the exit code for success
-                subprocess.run(args, check=True, env=environment)
+                # Create a container without starting it. Similar to docker create.
+                # To get autoreduction/mantid image, run:
+                # DOCKER_BUILDKIT=1 docker build -t autoreduce/mantid .
+                container = client.containers.create('autoreduce/mantid',
+                                                     command="/bin/sh",
+                                                     volumes={
+                                                         f'{os.path.expanduser("~")}/.autoreduce/': {
+                                                             'bind': f'{os.path.expanduser("~")}/.autoreduce/',
+                                                             'mode': 'rw'
+                                                         },
+                                                         f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive': {
+                                                             'bind': '/isis/',
+                                                             'mode': 'rw'
+                                                         },
+                                                         f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data': {
+                                                             'bind': '/instrument/',
+                                                             'mode': 'rw'
+                                                         }
+                                                     },
+                                                     tty=True,
+                                                     environment=["AUTOREDUCTION_PRODUCTION=true"],
+                                                     tmpfs={'/tmp': ''},
+                                                     stdin_open=True,
+                                                     auto_remove=False)
 
-                # The subprocess will write out the result message in the
-                # tempfile, read it back
+                # Start the container
+                # Container should write out the results to the temporary file
+                container.start()
+                exe = container.exec_run(cmd=args)
+
+                # Read the output from the temporary file
                 result_message_raw = temp_output_file.file.read()
+
+                container.stop()
 
             result_message = Message()
             result_message.populate(result_message_raw)

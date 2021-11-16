@@ -10,6 +10,7 @@ import sys
 import unittest
 import tempfile
 from unittest.mock import patch, call, Mock
+from autoreduce_utils.settings import CYCLE_DIRECTORY
 
 from parameterized import parameterized
 import pytest
@@ -34,9 +35,12 @@ class TestReductionRunner(unittest.TestCase):
         runner = ReductionRunner(self.message, self.run_name)
         self.assertEqual(runner.message, self.message)
         self.assertIsNotNone(runner.admin_log_stream)
-        self.assertEqual(runner.data_file, '/isis/data.nxs')
+        self.assertEqual(
+            runner.data_file,
+            CYCLE_DIRECTORY % ("TESTINSTRUMENT", "21_1") + '/data.nxs',
+        )
         self.assertEqual(runner.facility, 'ISIS')
-        self.assertEqual(runner.instrument, 'GEM')
+        self.assertEqual(runner.instrument, 'TESTINSTRUMENT')
         self.assertEqual(runner.proposal, '1234')
         self.assertEqual(runner.run_number, '4321')
         self.assertEqual(runner.reduction_arguments, 'None')
