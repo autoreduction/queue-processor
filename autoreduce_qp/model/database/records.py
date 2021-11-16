@@ -86,9 +86,9 @@ def fetch_from_remote_source(arguments: dict) -> str:
         A string of comma separated error messages, if any, otherwise None.
 
     Examples of variable values:
-        category: 'standard_vars', 'advanced_vars'
-        headings: 'monovan_mapfile', 'hard_mask_file'
-        heading_value: {'url': <GitHub path>, 'default': 'mari_res2013.map'}
+        category: "standard_vars", "advanced_vars"
+        headings: "monovan_mapfile", "hard_mask_file"
+        heading_value: {"url": <GitHub path>, "default": "mari_res2013.map"}
     """
     error_msgs = []
     for category, headings in arguments.items():
@@ -96,13 +96,17 @@ def fetch_from_remote_source(arguments: dict) -> str:
 
             # Check if current heading is a file and if it points to a dict
             if "file" in heading and isinstance(heading_value, dict):
+                errored = False
 
                 # Check if the nested dict contains keys for "url" and "default"
-                if not all(key in heading_value for key in ("url", "default")):
-                    if "url" not in heading_value:
-                        error_msgs.append(f"no path supplied for {heading} under {category}")
-                    if "default" not in heading_value:
-                        error_msgs.append(f"no file name supplied for {heading} under {category}")
+                if "url" not in heading_value:
+                    error_msgs.append(f"no path supplied for {heading} under {category}")
+                    errored = True
+                if "default" not in heading_value:
+                    error_msgs.append(f"no file name supplied for {heading} under {category}")
+                    errored = True
+
+                if errored:
                     continue
 
                 url = heading_value["url"] + heading_value["default"]
