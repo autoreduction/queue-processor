@@ -23,7 +23,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - uses: ISISScientificComputing/autoreduce-actions/build@master
+      - uses: ISISScientificComputing/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
 
@@ -44,11 +44,11 @@ jobs:
           verbose: true
 
       - name: Build package for publishing
-        if: ${{ github.ref == 'refs/heads/master' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: python3 -m pip install wheel && python3 setup.py sdist bdist_wheel
 
       - name: Publish distribution 📦 to PyPI
-        if: ${{ github.ref == 'refs/heads/master' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
@@ -97,11 +97,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - uses: ISISScientificComputing/autoreduce-actions/build@master
+      - uses: ISISScientificComputing/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
 
-      - uses: ISISScientificComputing/autoreduce-actions/code_inspection@master
+      - uses: ISISScientificComputing/autoreduce-actions/code_inspection@main
         with:
           package_name: autoreduce_qp
 
