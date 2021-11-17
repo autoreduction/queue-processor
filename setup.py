@@ -13,7 +13,7 @@ setup(
     url="https://github.com/ISISScientificComputing/autoreduce/",
     install_requires=[
         "autoreduce_db==22.0.0.dev20", "Django==3.2.8", "fire==0.4.0", "plotly==5.3.1", "kaleido==0.2.1",
-        "stomp.py==7.0.0"
+        "stomp.py==7.0.0", "docker==5.0.3"
     ],
     packages=find_packages(),
     entry_points={"console_scripts": ["autoreduce-qp-start = autoreduce_qp.queue_processor.queue_listener:main"]},

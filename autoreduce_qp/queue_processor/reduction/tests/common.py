@@ -14,7 +14,16 @@ def add_data_and_message():
         'run_number': '4321',
         'run_version': 1,
         'reduction_script': 'print("hello")',  # not actually used for the reduction
-        'reduction_arguments': 'None',
+        'reduction_arguments': {
+            "standard_vars": {
+                "arg1": "somevalue",
+                "arg2": 123
+            },
+            "advanced_vars": {
+                "adv_arg1": "advancedvalue",
+                "adv_arg2": ""
+            }
+        },
         'description': 'This is a test',
     }
 

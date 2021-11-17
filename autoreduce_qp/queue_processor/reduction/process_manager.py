@@ -7,9 +7,11 @@
 # ############################################################################ #
 import logging
 import os
+from pathlib import Path
 import subprocess
 import tempfile
 import traceback
+from autoreduce_utils.settings import CEPH_DIRECTORY
 import docker
 
 from autoreduce_utils.message.message import Message
@@ -28,7 +30,7 @@ class ReductionProcessManager:
             # We need to run the reduction in a new process, otherwise scripts
             # will fail when they use things that require access to a main loop
             # e.g. a GUI main loop, for matplotlib or Mantid
-            with tempfile.NamedTemporaryFile("w+") as temp_output_file:
+            with tempfile.NamedTemporaryFile(encoding='utf-8', mode="w+") as temp_output_file:
                 serialized_vars = self.message.serialize()
                 serialized_vars_truncated = self.message.serialize(limit_reduction_script=True)
                 args = ["python3", "runner.py", serialized_vars, temp_output_file.name, self.run_name]
@@ -72,6 +74,8 @@ class ReductionProcessManager:
                 exe = container.exec_run(cmd=args)
 
                 # Read the output from the temporary file
+                expected_path = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number))
+
                 result_message_raw = temp_output_file.file.read()
 
                 container.stop()
