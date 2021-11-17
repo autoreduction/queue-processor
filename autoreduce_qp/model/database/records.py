@@ -116,12 +116,16 @@ def fetch_from_remote_source(arguments: dict) -> str:
                     status = req.status_code
                     if status == requests.codes.ok:
                         arguments[category][heading]["value"] = req.text
+                    elif status == requests.codes.forbidden:
+                        error_msgs.append(f"cannot access {url} for {heading} under {category}")
+                    elif status == requests.codes.not_found:
+                        error_msgs.append(f"cannot find {url} for {heading} under {category}")
                     else:
                         error_msgs.append(f"{status} error at {url} for {heading} under {category}")
                 except ConnectionError:
-                    error_msgs.append(f"Could not connect to remote source at {url} for {heading} under {category}")
+                    error_msgs.append(f"could not connect to remote source at {url} for {heading} under {category}")
 
-    return ", ".join(error_msgs) if error_msgs else None
+    return (", ".join(error_msgs)).capitalize() if error_msgs else None
 
 
 def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, message, batch_run: bool):
