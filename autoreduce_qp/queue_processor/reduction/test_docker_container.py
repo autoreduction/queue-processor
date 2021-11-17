@@ -23,8 +23,8 @@ container = client.containers.create(
             'mode': 'rw'
         }
     },
-    tmpfs={'/tmp': ''},
     tty=True,
+    environment=["AUTOREDUCTION_PRODUCTION=1"],
     stdin_open=True,
 )
 

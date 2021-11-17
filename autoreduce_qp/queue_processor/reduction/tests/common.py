@@ -25,6 +25,9 @@ def add_data_and_message():
             }
         },
         'description': 'This is a test',
+        'software': "6.2.0",
+        "reduction_data": "/instrument/TESTINSTRUMENT/RBNumber/RB1234/autoreduced/Test run name/run-version-1",
+        "reduction_log": "Running reduction script: /isis/NDXTESTINSTRUMENT/user/scripts/autoreduction/reduce.py"
     }
 
     message = Message()

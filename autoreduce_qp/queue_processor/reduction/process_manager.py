@@ -37,7 +37,6 @@ class ReductionProcessManager:
                 logger.info("Calling: %s %s %s %s %s", "python3", "runner.py", serialized_vars_truncated,
                             temp_output_file.name, self.run_name)
 
-                os.environ["AUTOREDUCTION_PRODUCTION"] = "true"
                 # Return a client configured from environment variables
                 # The environment variables used are the same as those used by the Docker command-line client
                 # https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
@@ -46,27 +45,27 @@ class ReductionProcessManager:
                 # Create a container without starting it. Similar to docker create.
                 # To get autoreduction/mantid image, run:
                 # DOCKER_BUILDKIT=1 docker build -t autoreduce/mantid .
-                container = client.containers.create('autoreduce/mantid',
-                                                     command="/bin/sh",
-                                                     volumes={
-                                                         f'{os.path.expanduser("~")}/.autoreduce/': {
-                                                             'bind': f'{os.path.expanduser("~")}/.autoreduce/',
-                                                             'mode': 'rw'
-                                                         },
-                                                         f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive': {
-                                                             'bind': '/isis/',
-                                                             'mode': 'rw'
-                                                         },
-                                                         f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data': {
-                                                             'bind': '/instrument/',
-                                                             'mode': 'rw'
-                                                         }
-                                                     },
-                                                     tty=True,
-                                                     environment=["AUTOREDUCTION_PRODUCTION=true"],
-                                                     tmpfs={'/tmp': ''},
-                                                     stdin_open=True,
-                                                     auto_remove=False)
+                container = client.containers.create(
+                    'autoreduce/mantid',
+                    command="/bin/sh",
+                    volumes={
+                        f'{os.path.expanduser("~")}/.autoreduce/': {
+                            'bind': f'{os.path.expanduser("~")}/.autoreduce/',
+                            'mode': 'rw'
+                        },
+                        f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive': {
+                            'bind': '/isis/',
+                            'mode': 'rw'
+                        },
+                        f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data': {
+                            'bind': '/instrument/',
+                            'mode': 'rw'
+                        }
+                    },
+                    tty=True,
+                    environment=["AUTOREDUCTION_PRODUCTION=1"],
+                    stdin_open=True,
+                )
 
                 # Start the container
                 # Container should write out the results to the temporary file
@@ -74,9 +73,9 @@ class ReductionProcessManager:
                 exe = container.exec_run(cmd=args)
 
                 # Read the output from the temporary file
-                expected_path = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number))
-
-                result_message_raw = temp_output_file.file.read()
+                path = Path(CEPH_DIRECTORY % (self.message.instrument, self.message.rb_number, self.run_name))
+                temp_output = path / "run-version-{}".format(self.message.run_version) / "temp_output_file.txt"
+                result_message_raw = temp_output.read_text()
 
                 container.stop()
 

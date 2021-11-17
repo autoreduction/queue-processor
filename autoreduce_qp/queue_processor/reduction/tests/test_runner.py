@@ -43,7 +43,17 @@ class TestReductionRunner(unittest.TestCase):
         self.assertEqual(runner.instrument, 'TESTINSTRUMENT')
         self.assertEqual(runner.proposal, '1234')
         self.assertEqual(runner.run_number, '4321')
-        self.assertEqual(runner.reduction_arguments, 'None')
+        self.assertEqual(
+            runner.reduction_arguments, {
+                "standard_vars": {
+                    "arg1": "somevalue",
+                    "arg2": 123
+                },
+                "advanced_vars": {
+                    "adv_arg1": "advancedvalue",
+                    "adv_arg2": ""
+                }
+            })
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce):
@@ -221,9 +231,8 @@ class TestReductionRunner(unittest.TestCase):
         """
         Test: Getting the mantid version
         """
-        pytest.importorskip("mantid", reason="Mantid not installed")
-        assert ReductionRunner._get_mantid_version() is None
-        assert logger.error.call_count == 2
+        pytest.importorskip(modname="mantid", minversion="6.2.0", reason="Mantid not installed")
+        assert ReductionRunner._get_mantid_version() is not None
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')

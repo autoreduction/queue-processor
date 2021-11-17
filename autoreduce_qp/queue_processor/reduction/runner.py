@@ -9,11 +9,12 @@
 
 import io
 import logging
+from pathlib import Path
 import sys
 import traceback
 
 from autoreduce_utils.message.message import Message
-from autoreduce_utils.settings import MANTID_PATH, TEMP_ROOT_DIRECTORY
+from autoreduce_utils.settings import CEPH_DIRECTORY, MANTID_PATH, TEMP_ROOT_DIRECTORY
 from autoreduce_qp.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
 from autoreduce_qp.queue_processor.reduction.utilities import windows_to_linux_path
 from autoreduce_qp.queue_processor.reduction.service import (Datafile, ReductionDirectory, ReductionScript,
@@ -142,8 +143,12 @@ def main():
     logger.addHandler(log_stream_handler)
     try:
         reduction.reduce()
+        instrument = reduction.instrument
+        rb_number = reduction.proposal
         # write out the reduction message
-        with open(temp_output_file, "w") as out_file:
+        path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_name))
+        temp_output = path / "run-version-{}".format(reduction.run_version) / "temp_output_file.txt"
+        with temp_output.open("w+", encoding="utf-8") as out_file:
             out_file.write(reduction.message.serialize())
 
     except Exception as exp:
