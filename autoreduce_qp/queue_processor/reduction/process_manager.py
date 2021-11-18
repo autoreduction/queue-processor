@@ -8,10 +8,9 @@
 import logging
 import os
 from pathlib import Path
-import subprocess
 import tempfile
 import traceback
-from autoreduce_utils.settings import CEPH_DIRECTORY
+from autoreduce_utils.settings import CEPH_DIRECTORY, PROJECT_DEV_ROOT
 import docker
 
 from autoreduce_utils.message.message import Message
@@ -73,7 +72,8 @@ class ReductionProcessManager:
                 exe = container.exec_run(cmd=args)
 
                 # Read the output from the temporary file
-                path = Path(CEPH_DIRECTORY % (self.message.instrument, self.message.rb_number, self.run_name))
+                path = Path(f"{PROJECT_DEV_ROOT}/reduced-data/%s/RBNumber/RB%s/autoreduced/%s/" %
+                            (self.message.instrument, self.message.rb_number, self.run_name))
                 temp_output = path / "run-version-{}".format(self.message.run_version) / "temp_output_file.txt"
                 result_message_raw = temp_output.read_text()
 
@@ -81,7 +81,8 @@ class ReductionProcessManager:
 
             result_message = Message()
             result_message.populate(result_message_raw)
-        except subprocess.CalledProcessError:
+        except BaseException as err:
+            print(f"Unexpected {err=}, {type(err)=}")
             logger.error("Processing encountered an error: %s", traceback.format_exc())
             self.message.message = f"Processing encountered an error: {traceback.format_exc()}"
             result_message = self.message
