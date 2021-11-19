@@ -286,7 +286,7 @@ class TestDatabaseRecords(TestCase):
         assert rscript.text == text.return_value
 
     @mock.patch("autoreduce_qp.model.database.records.requests.get")
-    def test_fetch_from_remote_source_catches_connection_error(self, text: mock.Mock):
+    def test_remote_source_connection_error(self, text: mock.Mock):
         """
         Test that fetch_from_remote_source() catches a ConnectionError and
         appends an error message when requests.get is patched out.
@@ -302,3 +302,61 @@ class TestDatabaseRecords(TestCase):
             }
         })
         assert "Could not connect to remote source at" in text.return_value
+
+    # pylint:disable=unsupported-membership-test
+    @mock.patch("autoreduce_qp.model.database.records.requests.get")
+    def test_remote_source_403_code(self, text: mock.Mock):
+        """
+        Test that fetch_from_remote_source() appends an appropriate error
+        message when a URL's status code returns 403.
+        """
+        text.return_value.status_code = 403
+        result = records.fetch_from_remote_source({
+            "advanced_vars": {
+                "hard_mask_file": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
+                    "default": "mari_mask2015_3.msk"
+                }
+            }
+        })
+        assert "Cannot access" in result
+
+    # pylint:disable=unsupported-membership-test
+    @mock.patch("autoreduce_qp.model.database.records.requests.get")
+    def test_remote_source_404_code(self, text: mock.Mock):
+        """
+        Test that fetch_from_remote_source() appends an appropriate error
+        message when a URL's status code returns 404.
+        """
+        text.return_value.status_code = 404
+        result = records.fetch_from_remote_source({
+            "advanced_vars": {
+                "hard_mask_file": {
+                    "url":
+                    "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
+                    "default": "mari_mask2015_3.msk"
+                }
+            }
+        })
+        assert "Cannot find" in result
+
+    # pylint:disable=unsupported-membership-test
+    @mock.patch("autoreduce_qp.model.database.records.requests.get")
+    def test_remote_source_other_codes(self, text: mock.Mock):
+        """
+        Test that fetch_from_remote_source() appends an appropriate error
+        message when a URL's status code returns an uncommon code.
+        """
+        for code in (400, 401, 408):
+            text.return_value.status_code = code
+            result = records.fetch_from_remote_source({
+                "advanced_vars": {
+                    "hard_mask_file": {
+                        "url":
+                        "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MaskFiles/",
+                        "default": "mari_mask2015_3.msk"
+                    }
+                }
+            })
+            assert f"{code} error" in result
