@@ -10,7 +10,7 @@
 import json
 import logging
 import socket
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from django.utils import timezone
 import requests
@@ -74,7 +74,7 @@ def get_script_and_arguments(instrument: Instrument, script: str, arguments: dic
     return script, arguments_str, error_msgs
 
 
-def fetch_from_remote_source(arguments: dict) -> str:
+def fetch_from_remote_source(arguments: dict) -> Optional[str]:
     """
     Search through a supplied dictionary and fetch the content of any raw GitHub
     files.
