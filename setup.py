@@ -10,7 +10,7 @@ setup(
     version="22.0.0.dev18",  # when updating the version here make sure to also update qp_mantid_python36.D
     description="ISIS Autoreduction queue processor",
     author="ISIS Autoreduction Team",
-    url="https://github.com/ISISScientificComputing/autoreduce/",
+    url="https://github.com/autoreduction/autoreduce/",
     install_requires=[
         "autoreduce_db==22.0.0.dev20", "Django==3.2.8", "fire==0.4.0", "plotly==5.3.1", "kaleido==0.2.1",
         "stomp.py==7.0.0"
