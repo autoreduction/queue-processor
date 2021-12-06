@@ -4,3 +4,8 @@
   become: yes
   command: docker stop --time=60 qp-instance
   ignore_errors: yes
+
+- name: Remove the Docker instance
+  become: yes
+  command: docker rm qp-instance
+  ignore_errors: yes
