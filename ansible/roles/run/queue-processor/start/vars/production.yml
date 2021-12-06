@@ -6,6 +6,5 @@ run_command: >
   --volume /isis:/archive
   --volume /shared-config:/shared-config
   --name qp-instance
-  --rm
   --network=host
   --detach
