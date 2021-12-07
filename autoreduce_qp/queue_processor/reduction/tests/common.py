@@ -33,3 +33,27 @@ def add_data_and_message():
     message = Message()
     message.populate(data)
     return data, message
+
+
+def add_bad_data_and_message():
+    """
+    Makes and returns some test data and message
+    """
+    data = {
+        'data': CYCLE_DIRECTORY % ("TESTINSTRUMENT", "21_1") + '/data.nxs',
+        'facility': 'ISIS',
+        'instrument': 'TESTINSTRUMENT',
+        'rb_number': '1234',
+        'run_number': '4321',
+        'run_version': 1,
+        'reduction_script': 'print("hello")',  # not actually used for the reduction
+        'reduction_arguments': "None",
+        'description': 'This is a test',
+        'software': "6.2.0",
+        "reduction_data": "/instrument/TESTINSTRUMENT/RBNumber/RB1234/autoreduced/Test run name/run-version-1",
+        "reduction_log": "Running reduction script: /isis/NDXTESTINSTRUMENT/user/scripts/autoreduction/reduce.py"
+    }
+
+    message = Message()
+    message.populate(data)
+    return data, message
