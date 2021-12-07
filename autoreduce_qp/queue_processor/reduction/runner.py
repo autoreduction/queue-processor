@@ -46,7 +46,7 @@ class ReductionRunner:
         """Actually do the reduction job."""
         self.message.software = self._get_mantid_version()
         if self.message.description is not None:
-            logger.info("DESCRIPTION: %s", self.message.description)
+            logger.info(f"DESCRIPTION: {self.message.description}")
 
         # Attempt to read the datafile
         try:
@@ -55,9 +55,9 @@ class ReductionRunner:
             elif isinstance(self.data_file, list):
                 datafiles = [Datafile(df) for df in self.data_file]
         except DatafileError as err:
-            logger.error("Problem reading datafile: %s", traceback.format_exc())
-            self.message.message = "Error encountered when trying to access the datafile %s" % self.data_file
-            self.message.reduction_log = "Exception:\n%s" % (err)
+            logger.error(f"Problem reading datafile: {traceback.format_exc()}")
+            self.message.message = f"Error encountered when trying to access the datafile {self.data_file}"
+            self.message.reduction_log = f"Exception: {err}"
             return  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to read the reduction script. This does not currently respect
@@ -67,7 +67,7 @@ class ReductionRunner:
             reduction_script_path = reduction_script.script_path
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction script"
-            self.message.reduction_log = "Exception:\n%s" % (err)
+            self.message.reduction_log = f"Exception: {err}"
             return  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to open the reduction directory
@@ -80,7 +80,7 @@ class ReductionRunner:
             temp_dir = TemporaryReductionDirectory(self.proposal, self.run_name)
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction directory"
-            self.message.reduction_log = "Exception:\n%s" % (err)
+            self.message.reduction_log = f"Exception: {err}"
             return  # stops the reduction and allows the parent to read the outcome in the message
 
         reduction_log_stream = io.StringIO()
@@ -89,13 +89,13 @@ class ReductionRunner:
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
         except ReductionScriptError as err:
-            logger.error("Reduction script path: %s", reduction_script_path)
+            logger.error(f"Reduction script path: {reduction_script_path}")
             self.message.message = "Error encountered when running the reduction script"
-            self.message.reduction_log = "Exception:\n%s\n\n%s\n\n## Script output ##\n%s" % (
-                reduction_script_path, err, reduction_log_stream.getvalue())
+            self.message.reduction_log = f"""Exception: {reduction_script_path} {err} ## Script output ## 
+                {reduction_log_stream.getvalue()}"""
         except Exception as err:
             logger.error(traceback.format_exc())
-            self.message.message = "REDUCTION Error: %s" % err
+            self.message.message = f"REDUCTION Error: {err}"
 
     @staticmethod
     def _get_mantid_version():
@@ -124,19 +124,19 @@ def main():
     Additionally, the resulting Message is written to a temporary file which the
     parent process reads back to mark the result of the reduction run in the DB.
     """
-    data, temp_output_file, run_name = sys.argv[1], sys.argv[2], sys.argv[3]
+    data, run_name = sys.argv[1], sys.argv[2]
     try:
         message = Message()
         message.populate(data)
     except ValueError as exp:
-        logger.error("Could not populate message from data: %s", str(exp))
+        logger.error(f"Could not populate message from data: {str(exp)}")
         raise
 
     try:
         reduction = ReductionRunner(message, run_name)
     except Exception as exp:
         message.message = str(exp)
-        logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
+        logger.info(f"Message data error: {message.serialize(limit_reduction_script=True)}")
         raise
 
     log_stream_handler = logging.StreamHandler(reduction.admin_log_stream)
@@ -152,7 +152,7 @@ def main():
             out_file.write(reduction.message.serialize())
 
     except Exception as exp:
-        logger.info("ReductionRunner error: %s", str(exp))
+        logger.info(f"ReductionRunner error: {str(exp)}")
         raise
 
     finally:
