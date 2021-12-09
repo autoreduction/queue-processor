@@ -17,7 +17,7 @@
     env:
       AUTOREDUCTION_PRODUCTION: "true"
     volumes:
-      - /home/isisautoreduce/.autoreduce:/home/isisautoreduce/.autoreduce:rw
+      - /home/{{ autoreduction_user }}/.autoreduce:/home/{{ autoreduction_user }}/.autoreduce:rw
       - /instrument:/instrument:rw
       - /isis:/isis
       - /isis:/archive
