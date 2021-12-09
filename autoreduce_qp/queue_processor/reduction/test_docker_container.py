@@ -5,7 +5,7 @@ import os
 # The environment variables used are the same as those used by the Docker command-line client
 # https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
 client = docker.from_env()
-args = ["pytest", "tests/test_service.py"]
+args = ["pytest", "tests/"]
 container = client.containers.create(
     'autoreduce/mantid',
     command="/bin/sh",
@@ -26,6 +26,8 @@ container = client.containers.create(
     tty=True,
     environment=["AUTOREDUCTION_PRODUCTION=1"],
     stdin_open=True,
+    detach=True,
+    auto_remove=True,
 )
 
 # Start the container
