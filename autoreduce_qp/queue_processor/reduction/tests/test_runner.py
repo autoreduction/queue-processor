@@ -123,8 +123,8 @@ class TestReductionRunner(unittest.TestCase):
         """
         Test: Bad datafile is provided
         """
-        self.message.description = "testdescription"
-        runner = ReductionRunner(self.message, self.run_name)
+        self.bad_message.description = "testdescription"
+        runner = ReductionRunner(self.bad_message, self.run_name)
         runner.reduce()
         mock_logger_info.assert_called_once()
         assert mock_logger_info.call_args[0][1] == "testdescription"
