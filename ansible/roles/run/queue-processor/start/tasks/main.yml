@@ -5,8 +5,24 @@
 
 - name: Pull the docker container to get any updates
   become: yes
-  command: docker pull ghcr.io/autoreduction/autoreduce:latest
+  community.docker.docker_image:
+    name: ghcr.io/autoreduction/autoreduce:latest
+    source: pull
 
-- name: Start the detached Docker container
-  become: yes
-  command: docker run {{ run_command }} ghcr.io/autoreduction/autoreduce:latest
+- name: Start the container
+  community.docker.docker_container:
+    name: queue-processor
+    image: ghcr.io/autoreduction/autoreduce:latest
+    state: started
+    env:
+      AUTOREDUCTION_PRODUCTION: "true"
+    volumes:
+      - /home/isisautoreduce/.autoreduce:/home/isisautoreduce/.autoreduce:rw
+      - /instrument:/instrument:rw
+      - /isis:/isis
+      - /isis:/archive
+      - /shared-config:/shared-config
+    network_mode: host
+    detach: yes
+    comparisons:
+      image: strict
