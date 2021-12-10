@@ -5,36 +5,58 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
-import pytest
+import unittest
+from unittest.mock import Mock, patch
 
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
-from autoreduce_qp.queue_processor.reduction.tests.common import add_bad_data_and_message, add_data_and_message
+from autoreduce_qp.queue_processor.reduction.tests.common import add_bad_data_and_message, add_data_and_message, expected_return_data_and_message
 
 
-class TestReductionProcessManager():
+class TestReductionProcessManager(unittest.TestCase):
+    def setUp(self) -> None:
+        self.data, self.message = add_data_and_message()
+        self.expected_data, self.expected_message = expected_return_data_and_message()
+        self.bad_data, self.bad_message = add_bad_data_and_message()
+        self.run_name = "Test run name"
+
     def test_init(self):
         """Test that the constructor is doing what's expected"""
-        data, message = add_data_and_message()
-        run_name = "Test run name"
-        rpm = ReductionProcessManager(message, run_name)
+        self.data, self.message = add_data_and_message()
 
-        assert rpm.message == message
+        rpm = ReductionProcessManager(self.message, self.run_name)
+
+        assert rpm.message == self.message
 
     def test_run(self):
         """Tests success path"""
-        data, message = add_data_and_message()
         run_name = "Test run name"
-        rpm = ReductionProcessManager(message, run_name)
+        rpm = ReductionProcessManager(self.message, run_name)
         result_message = rpm.run()
 
-        assert result_message == message
+        self.assertEqual(result_message.facility, 'ISIS')
+        self.assertEqual(result_message.instrument, 'TESTINSTRUMENT')
+        self.assertEqual(result_message.run_number, '4321')
+        self.assertEqual(
+            result_message.reduction_arguments, {
+                "standard_vars": {
+                    "arg1": "differentvalue",
+                    "arg2": 321
+                },
+                "advanced_vars": {
+                    "adv_arg1": "advancedvalue2",
+                    "adv_arg2": ""
+                }
+            })
 
-    # TODO: This test should be changed to check for an exception in the Docker container
-    def test_bad_run(self):
-        """Tests failure path"""
-        data, message = add_bad_data_and_message()
-        run_name = "Test run name"
-        rpm = ReductionProcessManager(message, run_name)
-        result_message = rpm.run()
+    @patch('queue_processor.reduction.process_manager.docker.models.containers.ContainerCollection.run')
+    def test_run_subprocess_error(self, docker_run: Mock):
+        """Test proper handling of container encountering an error"""
+        def side_effect(args, **_kwargs):
+            raise Exception("test error")
 
-        assert result_message != message
+        docker_run.side_effect = side_effect
+        rpm = ReductionProcessManager(self.message, self.run_name)
+        rpm.run()
+
+        docker_run.assert_called_once()
+        assert "Processing encountered an error" in rpm.message.message
