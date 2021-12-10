@@ -58,7 +58,7 @@ class ReductionRunner:
             logger.error("Problem reading datafile: %s", traceback.format_exc())
             self.message.message = f"Error encountered when trying to access the datafile {self.data_file}"
             self.message.reduction_log = f"Exception: {err}"
-            return  # stops the reduction and allows the parent to read the outcome in the message
+            raise  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to read the reduction script. This does not currently respect
         # any script passed in the message https://autoreduce.atlassian.net/browse/AR-1056
@@ -68,7 +68,7 @@ class ReductionRunner:
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction script"
             self.message.reduction_log = f"Exception: {err}"
-            return  # stops the reduction and allows the parent to read the outcome in the message
+            raise  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to open the reduction directory
         try:
@@ -81,7 +81,7 @@ class ReductionRunner:
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction directory"
             self.message.reduction_log = f"Exception: {err}"
-            return  # stops the reduction and allows the parent to read the outcome in the message
+            raise  # stops the reduction and allows the parent to read the outcome in the message
 
         reduction_log_stream = io.StringIO()
         try:
@@ -124,7 +124,7 @@ def main():
     Additionally, the resulting Message is written to a temporary file which the
     parent process reads back to mark the result of the reduction run in the DB.
     """
-    data, temp_output_file, run_name = sys.argv[1], sys.argv[2], sys.argv[3]
+    data, run_name = sys.argv[1], sys.argv[2]
     try:
         message = Message()
         message.populate(data)
@@ -150,9 +150,6 @@ def main():
         temp_output = path / "run-version-{}".format(reduction.run_version) / "temp_output_file.txt"
         with temp_output.open("w+", encoding="utf-8") as out_file:
             out_file.write(reduction.message.serialize())
-
-        with open(temp_output_file, "w") as temp_out_file:
-            temp_out_file.write(reduction.message.serialize())
 
     except Exception as exp:
         logger.info("ReductionRunner error: %s", str(exp))
