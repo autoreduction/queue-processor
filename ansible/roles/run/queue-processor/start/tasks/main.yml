@@ -1,19 +1,11 @@
 ---
 
-- name: Set run_command depending on deployment stage
-  include_vars: "{{ deployment_stage }}.yml"
-
-- name: Pull the docker container to get any updates
-  become: yes
-  community.docker.docker_image:
-    name: ghcr.io/autoreduction/autoreduce:latest
-    source: pull
-
 - name: Start the container
   community.docker.docker_container:
     name: queue-processor
     image: ghcr.io/autoreduction/autoreduce:latest
     state: started
+    pull: true
     env:
       AUTOREDUCTION_PRODUCTION: "true"
     volumes:
