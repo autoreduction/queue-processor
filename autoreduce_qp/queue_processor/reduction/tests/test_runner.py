@@ -6,18 +6,21 @@
 # ############################################################################### #
 # pylint:disable=protected-access
 import json
+from pathlib import Path
+import pathlib
 import sys
 import unittest
 import tempfile
-from unittest.mock import patch, call, Mock
+from unittest.mock import create_autospec, mock_open, patch, call, Mock
+from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import CYCLE_DIRECTORY
 
 from parameterized import parameterized
 import pytest
 
 from autoreduce_qp.queue_processor.reduction.exceptions import ReductionScriptError
-from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main
-from autoreduce_qp.queue_processor.reduction.tests.common import add_data_and_message
+from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main, write_reduction_message
+from autoreduce_qp.queue_processor.reduction.tests.common import add_data_and_message, add_bad_data_and_message
 
 
 class TestReductionRunner(unittest.TestCase):
@@ -25,6 +28,7 @@ class TestReductionRunner(unittest.TestCase):
 
     def setUp(self) -> None:
         self.data, self.message = add_data_and_message()
+        self.bad_data, self.bad_message = add_bad_data_and_message()
         self.run_name = "Test run name"
 
     def test_init(self):
@@ -46,14 +50,32 @@ class TestReductionRunner(unittest.TestCase):
         self.assertEqual(
             runner.reduction_arguments, {
                 "standard_vars": {
-                    "arg1": "somevalue",
-                    "arg2": 123
+                    "arg1": "differentvalue",
+                    "arg2": 321
                 },
                 "advanced_vars": {
-                    "adv_arg1": "advancedvalue",
+                    "adv_arg1": "advancedvalue2",
                     "adv_arg2": ""
                 }
             })
+
+    # Create test for write_reduction_message
+    def test_main_write_reduction_message(self):
+        """
+        Test: write_reduction_message is called
+        When: called with expected arguments
+        """
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            runner = ReductionRunner(self.message, self.run_name)
+            write_reduction_message(runner, self.run_name, tmp_file.name)
+            data = json.load(tmp_file)
+            assert self.data["facility"] == data["facility"]
+            assert self.data["run_number"] == data["run_number"]
+            assert self.data["instrument"] == data["instrument"]
+            assert self.data["rb_number"] == data["rb_number"]
+            assert self.data["data"] == data["data"]
+            assert self.data["reduction_script"] == data["reduction_script"]
+            assert self.data["reduction_arguments"] == data["reduction_arguments"]
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce):
@@ -62,7 +84,7 @@ class TestReductionRunner(unittest.TestCase):
         When: The main method is called
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
+            sys.argv = ['', json.dumps(self.data), self.run_name, tmp_file.name]
             main()
             out_data = json.loads(tmp_file.read())
         mock_reduce.assert_called_once()
@@ -81,7 +103,7 @@ class TestReductionRunner(unittest.TestCase):
         When: The main method is called
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
+            sys.argv = ['', json.dumps(self.data), self.run_name, tmp_file.name]
             self.assertRaises(Exception, main)
         mock_reduce.assert_called_once()
 
@@ -90,7 +112,7 @@ class TestReductionRunner(unittest.TestCase):
         Test: Providing bad data for the `main` function, i.e. not enough arguments
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps({"apples": 13}), tmp_file.name, self.run_name]
+            sys.argv = ['', json.dumps({"apples": 13}), self.run_name, tmp_file.name]
             self.assertRaises(ValueError, main)
 
     @patch(f'{DIR}.runner.logger.info')
@@ -110,7 +132,7 @@ class TestReductionRunner(unittest.TestCase):
 
         mock_runner_init.side_effect = raise_value_error
         with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
+            sys.argv = ['', json.dumps(self.data), self.run_name, tmp_file.name]
             self.assertRaises(Exception, main)
 
         self.message.message = expected_error_msg
@@ -129,7 +151,8 @@ class TestReductionRunner(unittest.TestCase):
         mock_logger_info.assert_called_once()
         assert mock_logger_info.call_args[0][1] == "testdescription"
         _get_mantid_version.assert_called_once()
-        assert runner.message.message == 'Error encountered when trying to access the datafile /isis/data.nxs'
+        assert runner.message.message, ('Error encountered when trying to access the datafile'
+                                        ' /isis/NDXTESTINSTRUMENT/Instrument/data/cycle_21_1/data.nxs')
 
     @patch(f'{DIR}.runner.ReductionScript', side_effect=PermissionError("error message"))
     def test_reduce_reductionscript_any_raise(self, _: Mock):
