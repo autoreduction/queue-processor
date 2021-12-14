@@ -58,7 +58,7 @@ class ReductionRunner:
             logger.error("Problem reading datafile: %s", traceback.format_exc())
             self.message.message = f"Error encountered when trying to access the datafile {self.data_file}"
             self.message.reduction_log = f"Exception: {err}"
-            raise  # stops the reduction and allows the parent to read the outcome in the message
+            return  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to read the reduction script. This does not currently respect
         # any script passed in the message https://autoreduce.atlassian.net/browse/AR-1056
@@ -68,7 +68,7 @@ class ReductionRunner:
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction script"
             self.message.reduction_log = f"Exception: {err}"
-            raise  # stops the reduction and allows the parent to read the outcome in the message
+            return  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to open the reduction directory
         try:
@@ -81,7 +81,7 @@ class ReductionRunner:
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction directory"
             self.message.reduction_log = f"Exception: {err}"
-            raise  # stops the reduction and allows the parent to read the outcome in the message
+            return  # stops the reduction and allows the parent to read the outcome in the message
 
         reduction_log_stream = io.StringIO()
         try:
@@ -115,6 +115,19 @@ class ReductionRunner:
         return None
 
 
+def write_reduction_message(reduction, run_name, path=None):
+    """
+    Write the reduction message to the reduction directory
+    """
+    instrument = reduction.instrument
+    rb_number = reduction.proposal
+    if path is None:
+        path = f'{CEPH_DIRECTORY % (instrument, rb_number, run_name)}/run-version-{reduction.run_version}/temp_output_file.txt'
+
+    with open(path, 'r+') as out_file:
+        out_file.write(reduction.message.serialize())
+
+
 def main():
     """
     This is the entrypoint when a reduction is started. This is run in a subprocess from
@@ -125,6 +138,10 @@ def main():
     parent process reads back to mark the result of the reduction run in the DB.
     """
     data, run_name = sys.argv[1], sys.argv[2]
+    if sys.argv[3]:
+        temp_output_file = sys.argv[3]
+    else:
+        temp_output_file = None
     try:
         message = Message()
         message.populate(data)
@@ -143,13 +160,13 @@ def main():
     logger.addHandler(log_stream_handler)
     try:
         reduction.reduce()
-        instrument = reduction.instrument
-        rb_number = reduction.proposal
-        # write out the reduction message
-        path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_name))
-        temp_output = path / "run-version-{}".format(reduction.run_version) / "temp_output_file.txt"
-        with temp_output.open("w+", encoding="utf-8") as out_file:
-            out_file.write(reduction.message.serialize())
+
+        # If temp_output_file is set, write the reduction message to the file
+        if temp_output_file is not None:
+            write_reduction_message(reduction, run_name, temp_output_file)
+
+        else:
+            write_reduction_message(reduction, run_name)
 
     except Exception as exp:
         logger.info("ReductionRunner error: %s", str(exp))
