@@ -32,7 +32,7 @@ class ReductionProcessManager:
             # e.g. a GUI main loop, for matplotlib or Mantid
             serialized_vars = self.message.serialize()
             serialized_vars_truncated = self.message.serialize(limit_reduction_script=True)
-            args = ["python3", "runner.py", serialized_vars, self.run_name]
+            args = ["python3", "runner.py", serialized_vars, self.run_name, None]
             logger.info("Calling: %s %s %s %s", "python3", "runner.py", serialized_vars_truncated, self.run_name)
 
             # Return a client configured from environment variables
