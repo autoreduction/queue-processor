@@ -32,7 +32,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - uses: ISISScientificComputing/autoreduce-actions/build@main
+      - uses: autoreduction/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
 

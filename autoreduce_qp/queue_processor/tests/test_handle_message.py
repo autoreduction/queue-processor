@@ -1,6 +1,6 @@
 # ############################################################################ #
 # Autoreduction Repository :
-# https://github.com/ISISScientificComputing/autoreduce
+# https://github.com/autoreduction/autoreduce
 #
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
@@ -417,7 +417,7 @@ class TestHandleMessage(TestCase):
     def test_missing_file_paths(self, load: Mock):
         """
         Test that fetch_from_remote_source() returns an error string containing
-        the metadata of files missing 'url' and 'default' keys.
+        the details about files missing "url" and "default" keys.
         """
         self.msg.reduction_arguments = None
         load.return_value = {
@@ -432,8 +432,8 @@ class TestHandleMessage(TestCase):
             }
         }
         reduction_run, message = self.handler.data_ready(self.msg)
-        assert "no file name supplied for monovan_mapfile under advanced_vars" in message.message
-        assert "no path supplied for hard_mask_file under advanced_vars" in message.message
+        assert "no file name supplied for monovan_mapfile under advanced_vars" in message.message.lower()
+        assert "no path supplied for hard_mask_file under advanced_vars" in message.message.lower()
         assert reduction_run.message == message.message
 
 
