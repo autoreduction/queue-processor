@@ -9,7 +9,8 @@ import unittest
 from unittest.mock import Mock, patch
 
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
-from autoreduce_qp.queue_processor.reduction.tests.common import add_bad_data_and_message, add_data_and_message, expected_return_data_and_message
+from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_and_message, add_data_and_message,
+                                                                  expected_return_data_and_message)
 
 
 class TestReductionProcessManager(unittest.TestCase):

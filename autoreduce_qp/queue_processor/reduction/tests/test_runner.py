@@ -6,12 +6,10 @@
 # ############################################################################### #
 # pylint:disable=protected-access
 import json
-from pathlib import Path
-import pathlib
 import sys
 import unittest
 import tempfile
-from unittest.mock import create_autospec, mock_open, patch, call, Mock
+from unittest.mock import patch, call, Mock
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import CYCLE_DIRECTORY
 

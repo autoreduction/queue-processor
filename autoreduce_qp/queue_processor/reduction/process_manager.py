@@ -8,11 +8,10 @@
 import logging
 import os
 from pathlib import Path
-import tempfile
 import traceback
-from autoreduce_utils.settings import PROJECT_DEV_ROOT
 import docker
 
+from autoreduce_utils.settings import PROJECT_DEV_ROOT
 from autoreduce_utils.message.message import Message
 
 logger = logging.getLogger(__file__)
@@ -86,15 +85,15 @@ class ReductionProcessManager:
                 self.message.message = f"Processing encountered an error: {traceback.format_exc()}"
                 result_message = self.message
 
-        # If the server returns an error.
-        except docker.errors.APIError as exc:
-            raise Exception('Docker API error: {}'.format(exc))
-        # If the container exits with a non-zero exit code and detach is False.
-        except docker.errors.ContainerError as exc:
-            print(exc.container.logs())
         # If the specified image does not exist.
         except docker.errors.ImageNotFound as exc:
-            raise Exception('Docker image not found: {}'.format(exc))
+            raise exc
+        # If the server returns an error.
+        except docker.errors.APIError as exc:
+            raise exc
+        # If the container exits with a non-zero exit code and detach is False.
+        except docker.errors.ContainerError as exc:
+            raise exc
         except Exception:
             logger.error("Processing encountered an error: %s", traceback.format_exc())
             self.message.message = f"Processing encountered an error: {traceback.format_exc()}"

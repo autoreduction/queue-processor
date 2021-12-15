@@ -85,7 +85,7 @@ class TemporaryReductionDirectory:
         already present.
         :param destination: (Path like) the copy destination
         """
-        logger.info(f"Copying {self.path} to {destination}")
+        logger.info("Copying %s to %s", self.path, destination)
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
 
     @property
@@ -145,10 +145,10 @@ class ReductionScript:
             spec.loader.exec_module(self.module)
             return self.module
         except ImportError as exp:
-            logger.error(f"Unable to load reduction script {self.script_path} due to missing import. {exp}")
+            logger.error("Unable to load reduction script %s due to missing import. (%s)", self.script_path, exp)
             raise
         except SyntaxError:
-            logger.error(f"Syntax error in reduction script {self.script_path}")
+            logger.error("Syntax error in reduction script %s", self.script_path)
             raise
 
     def text(self) -> str:
@@ -198,7 +198,7 @@ class ReductionScript:
         :param output_dir: (ReductionDirectory) Directory to output to
         :return:
         """
-        logger.info(f"Running reduction script: {self.script_path}")
+        logger.info("Running reduction script: %s", self.script_path)
         final_input_files = str(
             input_files[0].path) if len(input_files) == 1 else [in_file.path for in_file in input_files]
         with TimeOut(SCRIPT_TIMEOUT):
@@ -218,12 +218,12 @@ def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction
     """
     reduction_dir.create()
     logger.info("-------------------------------------------------------")
-    logger.info(f"Temporary result directory: {temp_dir.path}")
-    logger.info(f"Final Result directory: {reduction_dir.path}")
-    logger.info(f"Temporary log dir: {temp_dir.log_path}")
-    logger.info(f"Final log dir: {reduction_dir.log_path}")
-    logger.info(f"Datafile: {[datafile.path for datafile in datafiles]}")
-    logger.info(f"Reduction script: {script.script_path}")
+    logger.info("Temporary result directory: %s", temp_dir.path)
+    logger.info("Final Result directory: %s", reduction_dir.path)
+    logger.info("Temporary log dir: %s", temp_dir.log_path)
+    logger.info("Final log dir: %s", reduction_dir.log_path)
+    logger.info("Datafile: %s", [datafile.path for datafile in datafiles])
+    logger.info("Reduction script: %s", script.script_path)
     logger.info("-------------------------------------------------------")
     logger.info("Starting reduction...")
 
