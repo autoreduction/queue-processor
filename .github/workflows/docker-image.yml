@@ -1,0 +1,16 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ 1506-generic-processing-environ-AR-1506 ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build . --file autoreduce_q[/queue_processor/reduction/Dockerfile --tag autoreduce/mantid
