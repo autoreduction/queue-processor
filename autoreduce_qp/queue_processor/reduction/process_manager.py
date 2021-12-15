@@ -40,11 +40,11 @@ class ReductionProcessManager:
             client = docker.from_env()
 
             # Create a container and run it. Equivalent to docker run.
-            # To get autoreduction/mantid image, run:
-            # DOCKER_BUILDKIT=1 docker build -t autoreduce/mantid .
+            # To get runner-mantid image, run:
+            # docker build -t runner-mantid .
 
             container = client.containers.run(
-                'autoreduce/mantid',
+                'runner-mantid',
                 command=args,
                 volumes={
                     f'{os.path.expanduser("~")}/.autoreduce/': {

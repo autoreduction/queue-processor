@@ -27,12 +27,9 @@ jobs:
         with:
           package_name: autoreduce_qp
 
-      - name: Build Docker Reduction Image
-        uses: ./.github/workflows/docker-image
-
       - name: Run unit tests
         run: >-
-          RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
+          RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --ignore=autoreduce_qp/queue_processor/reduction/tests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
 
       - name: Run system tests
         run: |
@@ -55,6 +52,16 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+  pytest-reduction:
+    name: Pytest-Reduction
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/autoreduction/runner-mantid
+    steps:
+      - name: Run unit tests for Reduction
+        run: |
+          RUNNING_VIA_PYTEST=true pytest autoreduce_qp/queue_processor/reduction/tests -v autoreduce_qp/queue_processor/reduction
 
   dependency-check:
     name: Dependency-Check
