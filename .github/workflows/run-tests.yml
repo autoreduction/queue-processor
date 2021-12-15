@@ -27,6 +27,9 @@ jobs:
         with:
           package_name: autoreduce_qp
 
+      - name: Build Docker Reduction Image
+        uses: ./.github/workflows/docker-image
+
       - name: Run unit tests
         run: >-
           RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
