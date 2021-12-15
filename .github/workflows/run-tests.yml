@@ -29,7 +29,7 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --ignore=autoreduce_qp/queue_processor/reduction/tests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
+          RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --ignore=autoreduce_qp/queue_processor/reduction --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
 
       - name: Run system tests
         run: |
@@ -57,7 +57,7 @@ jobs:
     name: Pytest-Reduction
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/autoreduction/runner-mantid
+      image: ghcr.io/autoreduction/runner-mantid:6.2.0
     steps:
       - name: Run unit tests for Reduction
         run: |
