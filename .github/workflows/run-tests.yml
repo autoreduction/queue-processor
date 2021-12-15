@@ -59,6 +59,9 @@ jobs:
     container:
       image: ghcr.io/autoreduction/runner-mantid:6.2.0
     steps:
+      - uses: autoreduction/autoreduce-actions/build@main
+        with:
+          package_name: autoreduce_qp
       - name: Run unit tests for Reduction
         run: |
           RUNNING_VIA_PYTEST=true pytest autoreduce_qp/queue_processor/reduction/tests -v autoreduce_qp/queue_processor/reduction
