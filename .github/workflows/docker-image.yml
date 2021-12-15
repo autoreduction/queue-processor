@@ -13,4 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file autoreduce_q[/queue_processor/reduction/Dockerfile --tag autoreduce/mantid
+      run: docker build . --file autoreduce_qp/queue_processor/reduction/Dockerfile --tag autoreduce/mantid
