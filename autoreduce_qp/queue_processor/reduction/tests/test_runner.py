@@ -10,7 +10,6 @@ import sys
 import unittest
 import tempfile
 from unittest.mock import patch, call, Mock
-from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import CYCLE_DIRECTORY
 
 from parameterized import parameterized
@@ -247,8 +246,7 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.software == "5.1.0"
 
     @staticmethod
-    @patch(f'{DIR}.runner.logger')
-    def test_get_mantid_version(logger: Mock):
+    def test_get_mantid_version():
         """
         Test: Getting the mantid version
         """
