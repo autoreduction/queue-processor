@@ -123,7 +123,7 @@ def write_reduction_message(reduction, run_name, path=None):
     if path is None:
         path = f'{CEPH_DIRECTORY % (instrument, rb_number, run_name)}/run-version-{reduction.run_version}/temp_output_file.txt'
 
-    with open(path, 'r+') as out_file:
+    with path.open("w+", encoding="utf-8") as out_file:
         out_file.write(reduction.message.serialize())
 
 
@@ -136,11 +136,7 @@ def main():
     Additionally, the resulting Message is written to a temporary file which the
     parent process reads back to mark the result of the reduction run in the DB.
     """
-    data, run_name = sys.argv[1], sys.argv[2]
-    if sys.argv[3]:
-        temp_output_file = sys.argv[3]
-    else:
-        temp_output_file = None
+    data, run_name, temp_output_file = sys.argv[1], sys.argv[2], sys.argv[3]
     try:
         message = Message()
         message.populate(data)

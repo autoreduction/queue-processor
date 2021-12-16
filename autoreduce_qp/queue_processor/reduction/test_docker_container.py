@@ -10,17 +10,15 @@ def test_reduction_pytests():
 
     client = docker.from_env()
     args = ["pytest", "tests/"]
-    container = client.containers.run(
+    container = client.containers.create(
         'ghcr.io/autoreduction/runner-mantid:6.2.0',
-        command=args,
+        command="/bin/sh",
         tty=True,
         environment=["AUTOREDUCTION_PRODUCTION=1"],
         stdin_open=True,
         detach=True,
     )
 
-    result = container.wait()
-    container.remove()
-
-    # Exit code is 0 if tests pass
-    assert result['StatusCode'] == 0
+    container.start()
+    container.exec_run(cmd=args)
+    container.stop()
