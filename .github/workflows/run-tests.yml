@@ -29,7 +29,7 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --ignore=autoreduce_qp/queue_processor/reduction --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
+          RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
 
       - name: Run system tests
         run: |
@@ -52,34 +52,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-
-  pytest-reduction:
-    name: Pytest-Reduction
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/autoreduction/runner-mantid:6.2.0
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - uses: autoreduction/autoreduce-actions/build@main
-        with:
-          package_name: autoreduce_qp
-          
-      - name: Run unit tests for Reduction
-        run: |
-          RUNNING_VIA_PYTEST=true pytest autoreduce_qp/queue_processor/reduction/tests -v autoreduce_qp/queue_processor/reduction
 
   dependency-check:
     name: Dependency-Check

@@ -11,7 +11,7 @@ def test_reduction_pytests():
     client = docker.from_env()
     args = ["pytest", "tests/"]
     container = client.containers.run(
-        'runner-mantid',
+        'ghcr.io/autoreduction/runner-mantid',
         command=args,
         tty=True,
         environment=["AUTOREDUCTION_PRODUCTION=1"],
