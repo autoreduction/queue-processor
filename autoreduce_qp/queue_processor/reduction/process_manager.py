@@ -44,7 +44,7 @@ class ReductionProcessManager:
             # docker build -t runner-mantid .
 
             container = client.containers.run(
-                'ghcr.io/autoreduction/runner-mantid',
+                'ghcr.io/autoreduction/runner-mantid:6.2.0',
                 command=args,
                 volumes={
                     f'{os.path.expanduser("~")}/.autoreduce/': {
