@@ -224,6 +224,7 @@ def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction
     logger.info("Final log dir: %s", reduction_dir.log_path)
     logger.info("Datafile: %s", [datafile.path for datafile in datafiles])
     logger.info("Reduction script: %s", script.script_path)
+    logger.info("Env: %s", ",".join(f"{k}={v}" for k, v in os.environ.items()))
     logger.info("-------------------------------------------------------")
     logger.info("Starting reduction...")
 
