@@ -8,11 +8,9 @@
 import logging
 import os
 import tempfile
-from pathlib import Path
 import traceback
 import docker
 
-from autoreduce_utils.settings import PROJECT_DEV_ROOT
 from autoreduce_utils.message.message import Message
 
 logger = logging.getLogger(__file__)
@@ -81,8 +79,8 @@ class ReductionProcessManager:
             result = container.exec_run(cmd=args)
             container.stop()
 
-            with open(f'{temp_dir.name}/output.txt', 'r') as f:
-                result_message_raw = f.read()
+            with open(f'{temp_dir.name}/output.txt', 'r') as out_file:
+                result_message_raw = out_file.read()
 
             container.remove()
 
