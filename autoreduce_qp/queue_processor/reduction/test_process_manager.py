@@ -37,7 +37,6 @@ class TestReductionProcessManager(unittest.TestCase):
         self.assertEqual(result_message.facility, 'ISIS')
         self.assertEqual(result_message.instrument, 'TESTINSTRUMENT')
         self.assertEqual(result_message.run_number, '4321')
-        self.assertEqual(result_message.message, None)
         self.assertEqual(
             result_message.reduction_arguments, {
                 "standard_vars": {

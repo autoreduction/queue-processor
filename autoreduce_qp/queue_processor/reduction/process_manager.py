@@ -26,9 +26,7 @@ class ReductionProcessManager:
         try:
             temp_dir = tempfile.TemporaryDirectory()
             os.chmod(temp_dir.name, 0o777)
-            with open(f'{temp_dir.name}/output.txt', "w") as out_file:
-                out_file.write("Output goes here")
-            os.chmod(f'{temp_dir.name}/output.txt', 0o777)
+
             # We need to run the reduction in a new process, otherwise scripts
             # will fail when they use things that require access to a main loop
             # e.g. a GUI main loop, for matplotlib or Mantid

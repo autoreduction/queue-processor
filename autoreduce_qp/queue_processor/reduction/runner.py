@@ -9,6 +9,7 @@
 
 import io
 import logging
+import os
 import sys
 import traceback
 
@@ -121,10 +122,12 @@ def write_reduction_message(reduction, temp_output_file=None):
     if temp_output_file is None:
         with open("/output/output.txt", "w") as out_file:
             out_file.write(reduction.message.serialize())
+        os.chmod("/output/output.txt", 0o777)
 
     else:
         with open(temp_output_file, "w") as out_file:
             out_file.write(reduction.message.serialize())
+        os.chmod(temp_output_file, 0o777)
 
 
 def main():
