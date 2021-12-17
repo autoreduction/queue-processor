@@ -43,8 +43,10 @@ class ReductionProcessManager:
             # To get runner-mantid image, run:
             # docker build -t runner-mantid .
 
+            image = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
+
             container = client.containers.create(
-                'ghcr.io/autoreduction/runner-mantid:6.2.0',
+                image=image,
                 command="/bin/sh",
                 volumes={
                     f'{os.path.expanduser("~")}/.autoreduce/': {
