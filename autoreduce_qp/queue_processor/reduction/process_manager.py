@@ -31,7 +31,7 @@ class ReductionProcessManager:
             # e.g. a GUI main loop, for matplotlib or Mantid
             serialized_vars = self.message.serialize()
             serialized_vars_truncated = self.message.serialize(limit_reduction_script=True)
-            args = ["python3", "runner.py", serialized_vars, self.run_name, None]
+            args = ["python3", "runner.py", serialized_vars, self.run_name]
             logger.info("Calling: %s %s %s %s", "python3", "runner.py", serialized_vars_truncated, self.run_name)
 
             # Return a client configured from environment variables
@@ -43,9 +43,9 @@ class ReductionProcessManager:
             # To get runner-mantid image, run:
             # docker build -t runner-mantid .
 
-            container = client.containers.run(
-                'ghcr.io/autoreduction/runner-mantid:6.2.0',
-                command=args,
+            container = client.containers.create(
+                'runner-mantid',
+                command="/bin/sh",
                 volumes={
                     f'{os.path.expanduser("~")}/.autoreduce/': {
                         'bind': f'{os.path.expanduser("~")}/.autoreduce/',
@@ -66,14 +66,15 @@ class ReductionProcessManager:
                 detach=True,
             )
 
-            # Wait for the container to finish, then get the exit code
-            result = container.wait()
+            container.start()
+            result = container.exec_run(cmd=args)
+            container.stop()
             container.remove()
 
             result_message = Message()
 
             # Status code of 0 means success
-            if result["StatusCode"] == 0:
+            if result.exit_code == 0:
                 # Read the output from the temporary file
                 path = Path(f"{PROJECT_DEV_ROOT}/reduced-data/%s/RBNumber/RB%s/autoreduced/%s/" %
                             (self.message.instrument, self.message.rb_number, self.run_name))
