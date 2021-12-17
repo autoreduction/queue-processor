@@ -115,19 +115,16 @@ class ReductionRunner:
         return None
 
 
-def write_reduction_message(reduction, run_name, path=None):
+def write_reduction_message(reduction, temp_output_file=None):
     """
     Write the reduction message to the reduction directory
     """
-    instrument = reduction.instrument
-    rb_number = reduction.proposal
-    if path is None:
-        origin_path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_name))
-        path = origin_path / "run-version-{}".format(reduction.run_version) / "temp_output_file.txt"
-        with path.open("w+", encoding="utf-8") as out_file:
+    if temp_output_file is None:
+        with open("/output/output.txt", "w") as out_file:
             out_file.write(reduction.message.serialize())
+
     else:
-        with open(path, 'r+') as out_file:
+        with open(temp_output_file, "w") as out_file:
             out_file.write(reduction.message.serialize())
 
 
@@ -164,12 +161,11 @@ def main():
     try:
         reduction.reduce()
 
-        # If temp_output_file is set, write the reduction message to the file
         if temp_output_file is not None:
-            write_reduction_message(reduction, run_name, temp_output_file)
+            write_reduction_message(reduction, temp_output_file)
 
         else:
-            write_reduction_message(reduction, run_name)
+            write_reduction_message(reduction)
 
     except Exception as exp:
         logger.info("ReductionRunner error: %s", str(exp))
