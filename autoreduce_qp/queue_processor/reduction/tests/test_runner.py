@@ -64,7 +64,7 @@ class TestReductionRunner(unittest.TestCase):
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
             runner = ReductionRunner(self.message, self.run_name)
-            write_reduction_message(runner, self.run_name, tmp_file.name)
+            write_reduction_message(runner, tmp_file.name)
             data = json.load(tmp_file)
             assert self.data["facility"] == data["facility"]
             assert self.data["run_number"] == data["run_number"]
