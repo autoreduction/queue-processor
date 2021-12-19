@@ -45,6 +45,10 @@ class ReductionProcessManager:
             # docker build -t runner-mantid .
 
             image = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
+            if "RUNNING_VIA_PYTEST" in os.environ or "PYTEST_CURRENT_TEST" in os.environ:
+                mount = f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive'
+            else:
+                mount = f'{os.path.expanduser("~")}/.autoreduce/dev/test-archive'
 
             container = client.containers.create(
                 image=image,
@@ -54,7 +58,7 @@ class ReductionProcessManager:
                         'bind': f'{os.path.expanduser("~")}/.autoreduce/',
                         'mode': 'rw'
                     },
-                    f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive': {
+                    mount: {
                         'bind': '/isis/',
                         'mode': 'rw'
                     },
