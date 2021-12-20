@@ -51,7 +51,7 @@ class ReductionProcessManager:
                 mount = f'{os.path.expanduser("~")}/.autoreduce/dev/test-archive'
 
             container = client.containers.create(
-                image=image,
+                image="ghcr.io/autoreduction/runner-mantid:6.2.0",
                 command="/bin/sh",
                 volumes={
                     f'{os.path.expanduser("~")}/.autoreduce/': {

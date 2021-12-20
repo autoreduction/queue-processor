@@ -51,7 +51,7 @@ class ReductionDirectory:
         """
         #TODO: Fix permission issues with the creation of the directory
         logger.info("Creating reduction directory: %s", self.path)
-        self.path.mkdir(mode=0o777, parents=True, exist_ok=True)
+        os.makedirs(self.path, mode=0o777, exist_ok=True)
         self.log_path.mkdir(exist_ok=True)
         self.script_log.touch(exist_ok=True)
         self.mantid_log.touch(exist_ok=True)
