@@ -46,7 +46,7 @@ def _make_run_numbers(reduction_run, message_run_number: Union[int, List[int]]):
             [RunNumber(reduction_run=reduction_run, run_number=run_number) for run_number in message_run_number])
 
 
-def get_script_and_arguments(instrument: Instrument, script: str, arguments: dict) -> Tuple[str, str]:
+def get_script_and_arguments(instrument: Instrument, script: str, arguments: dict) -> Tuple[str, str, Optional[str]]:
     """
     Load the reduction script, reduce.py, as a string. If arguments are not
     provided load them from reduce_vars.py as a module which is then converted
