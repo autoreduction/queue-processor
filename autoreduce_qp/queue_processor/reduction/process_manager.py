@@ -10,6 +10,7 @@ import os
 import tempfile
 import traceback
 import docker
+from pathlib import Path
 
 from autoreduce_utils.message.message import Message
 
@@ -49,6 +50,9 @@ class ReductionProcessManager:
                 mount = f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive'
             else:
                 mount = f'{os.path.expanduser("~")}/.autoreduce/dev/test-archive'
+
+            Path(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data').mkdir(parents=True, exist_ok=True)
+            os.chmod(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data', 0o777)
 
             container = client.containers.create(
                 image="ghcr.io/autoreduction/runner-mantid:6.2.0",
