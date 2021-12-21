@@ -47,10 +47,10 @@ class ReductionProcessManager:
 
             image = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
 
-            if "RUNNING_VIA_PYTEST" in os.environ or "PYTEST_CURRENT_TEST" in os.environ:
-                mount = f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive'
-            else:
-                mount = f'{os.path.expanduser("~")}/.autoreduce/dev/test-archive'
+            #if "RUNNING_VIA_PYTEST" in os.environ or "PYTEST_CURRENT_TEST" in os.environ:
+            #mount = f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive/'
+            #else:
+            mount = f'{os.path.expanduser("~")}/.autoreduce/dev/test-archive/'
 
             Path(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data').mkdir(parents=True, exist_ok=True)
             os.chmod(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data', 0o777)
@@ -71,7 +71,7 @@ class ReductionProcessManager:
                         'bind': '/isis/',
                         'mode': 'rw'
                     },
-                    f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data': {
+                    f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data/': {
                         'bind': '/instrument/',
                         'mode': 'rw'
                     },
