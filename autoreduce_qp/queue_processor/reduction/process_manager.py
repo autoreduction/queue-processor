@@ -25,6 +25,8 @@ class ReductionProcessManager:
     def run(self) -> Message:
         """Run the reduction subprocess."""
         try:
+            # Create a temp directory to store reduction result
+            # Volume bind for the container to write to and host to read from
             temp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
             os.chmod(temp_dir.name, 0o777)
 
@@ -42,7 +44,7 @@ class ReductionProcessManager:
             client = docker.from_env()
 
             # Create a container and run it. Equivalent to docker run.
-            # To get runner-mantid image, run:
+            # To build runner-mantid image, in same directory as Dockerfile run:
             # docker build -t runner-mantid .
 
             # Pull image, containers.create doesn't pull everytime
@@ -90,6 +92,7 @@ class ReductionProcessManager:
             result = container.exec_run(cmd=args)
             container.stop()
 
+            # # Error raised if exit code is not 0
             if result.exit_code != 0:
                 raise Exception(f"Reduction failed with output {result.output}")
 
