@@ -50,6 +50,7 @@ class ReductionDirectory:
         Creates the reduction directory including the log path, Script.out and Mantid.log files
         """
         logger.info("Creating reduction directory: %s", self.path)
+        os.umask(0)
         os.makedirs(self.path, mode=0o777, exist_ok=False)
         self.log_path.mkdir(exist_ok=True)
         self.script_log.touch(exist_ok=True)
