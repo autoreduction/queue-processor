@@ -85,7 +85,7 @@
             },
             "justMyCode": false,
             "env": {
-                "AUTOREDUCTION_PRODUCTION": "true",
+                // "AUTOREDUCTION_PRODUCTION": "true",
             }
         },
         {
