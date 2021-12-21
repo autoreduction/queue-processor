@@ -9,8 +9,8 @@ import logging
 import os
 import tempfile
 import traceback
-import docker
 from pathlib import Path
+import docker
 
 from autoreduce_utils.message.message import Message
 
@@ -25,7 +25,7 @@ class ReductionProcessManager:
     def run(self) -> Message:
         """Run the reduction subprocess."""
         try:
-            temp_dir = tempfile.TemporaryDirectory()
+            temp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
             os.chmod(temp_dir.name, 0o777)
 
             # We need to run the reduction in a new process, otherwise scripts
@@ -45,13 +45,13 @@ class ReductionProcessManager:
             # To get runner-mantid image, run:
             # docker build -t runner-mantid .
 
-            image = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
+            # Pull image, containers.create doesn't pull everytime
+            client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
 
-            #if "RUNNING_VIA_PYTEST" in os.environ or "PYTEST_CURRENT_TEST" in os.environ:
-            #mount = f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive/'
-            #else:
             mount = f'{os.path.expanduser("~")}/.autoreduce/dev/test-archive/'
 
+            # Create directory for reduced-data on host machine if it doesn't exist
+            # 777 is needed to allow the container to write to the directory via the mount
             Path(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data').mkdir(parents=True, exist_ok=True)
             os.chmod(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data', 0o777)
 
@@ -90,6 +90,9 @@ class ReductionProcessManager:
             result = container.exec_run(cmd=args)
             container.stop()
 
+            if result.exit_code != 0:
+                raise Exception(f"Reduction failed with output {result.output}")
+
             with open(f'{temp_dir.name}/output.txt', 'r') as out_file:
                 result_message_raw = out_file.read()
 
@@ -109,7 +112,7 @@ class ReductionProcessManager:
         # If the container exits with a non-zero exit code and detach is False.
         except docker.errors.ContainerError as exc:
             raise exc
-        except Exception:
+        except Exception:  # pylint:disable=broad-except
             logger.error("Processing encountered an error: %s", traceback.format_exc())
             self.message.message = f"Processing encountered an error: {traceback.format_exc()}"
             result_message = self.message

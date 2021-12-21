@@ -49,7 +49,6 @@ class ReductionDirectory:
         """
         Creates the reduction directory including the log path, Script.out and Mantid.log files
         """
-        #TODO: Fix permission issues with the creation of the directory
         logger.info("Creating reduction directory: %s", self.path)
         os.umask(0)
         os.makedirs(self.path, mode=0o777, exist_ok=False)
@@ -218,7 +217,6 @@ def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction
     :param log_stream: (StringIO) A stream to which the log output will be written
     :return (StringIO): The log stream of the reduction script
     """
-    #TODO: Fix permission issues with the creation of the directory
     reduction_dir.create()
 
     logger.info("-------------------------------------------------------")
