@@ -53,8 +53,9 @@ class ReductionProcessManager:
             Path(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data').mkdir(parents=True, exist_ok=True)
             os.chmod(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data', 0o777)
 
-            Path(mount).mkdir(parents=True, exist_ok=True)
-            os.chmod(mount)
+            if not os.path.exists(mount):
+                Path(mount).mkdir(parents=True, exist_ok=True)
+            os.chmod(mount, 0o777)
 
             container = client.containers.create(
                 image="ghcr.io/autoreduction/runner-mantid:6.2.0",
