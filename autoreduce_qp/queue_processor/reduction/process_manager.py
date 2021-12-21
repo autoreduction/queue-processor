@@ -45,6 +45,8 @@ class ReductionProcessManager:
             # To get runner-mantid image, run:
             # docker build -t runner-mantid .
 
+            image = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
+
             if "RUNNING_VIA_PYTEST" in os.environ or "PYTEST_CURRENT_TEST" in os.environ:
                 mount = f'{os.path.expanduser("~")}/.autoreduce/dev/data-archive'
             else:
