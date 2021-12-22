@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 import tempfile
 import traceback
-from autoreduce_utils.settings import ARCHIVE_ROOT, PROJECT_DEV_ROOT
+from autoreduce_utils.settings import ARCHIVE_ROOT, AUTOREDUCE_HOME_ROOT, PROJECT_DEV_ROOT
 import docker
 
 from autoreduce_utils.message.message import Message
@@ -68,8 +68,8 @@ class ReductionProcessManager:
                 image="ghcr.io/autoreduction/runner-mantid:6.2.0",
                 command="/bin/sh",
                 volumes={
-                    f'{os.path.expanduser("~")}/.autoreduce/': {
-                        'bind': f'{os.path.expanduser("~")}/.autoreduce/',
+                    AUTOREDUCE_HOME_ROOT: {
+                        'bind': '/home/isisautoreduce/.autoreduce/',
                         'mode': 'rw'
                     },
                     ARCHIVE_ROOT: {
