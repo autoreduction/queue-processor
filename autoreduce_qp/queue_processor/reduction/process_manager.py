@@ -52,24 +52,17 @@ class ReductionProcessManager:
             # Pull image, containers.create doesn't pull everytime
             client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
 
-            if not os.path.exists(ARCHIVE_ROOT):
-                Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
-            os.chmod(ARCHIVE_ROOT, 0o777)
-
             if "AUTOREDUCTION_PRODUCTION" in os.environ:
                 REDUCED_DATA = Path('/instrument')
             else:
                 REDUCED_DATA = Path(f'{PROJECT_DEV_ROOT}/reduced-data')
 
-            REDUCED_DATA.mkdir(parents=True, exist_ok=True)
-            REDUCED_DATA.chmod(0o777)
-
             container = client.containers.create(
                 image="ghcr.io/autoreduction/runner-mantid:6.2.0",
                 command="/bin/sh",
                 volumes={
-                    AUTOREDUCE_HOME_ROOT: {
-                        'bind': '/home/isisautoreduce/.autoreduce/',
+                    f'{os.path.expanduser("~")}/.autoreduce/': {
+                        'bind': f'{os.path.expanduser("~")}/.autoreduce/',
                         'mode': 'rw'
                     },
                     ARCHIVE_ROOT: {
