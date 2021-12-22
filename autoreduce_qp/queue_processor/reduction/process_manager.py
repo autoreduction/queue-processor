@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 import tempfile
 import traceback
-from autoreduce_utils.settings import ARCHIVE_ROOT
+from autoreduce_utils.settings import ARCHIVE_ROOT, PROJECT_DEV_ROOT
 import docker
 
 from autoreduce_utils.message.message import Message
@@ -56,8 +56,13 @@ class ReductionProcessManager:
                 Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
             os.chmod(ARCHIVE_ROOT, 0o777)
 
-            Path(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data').mkdir(parents=True, exist_ok=True)
-            os.chmod(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data', 0o777)
+            if "AUTOREDUCTION_PRODUCTION" in os.environ:
+                REDUCED_DATA = Path('/instrument')
+            else:
+                REDUCED_DATA = Path(f'{PROJECT_DEV_ROOT}/reduced-data')
+
+            REDUCED_DATA.mkdir(parents=True, exist_ok=True)
+            REDUCED_DATA.chmod(0o777)
 
             container = client.containers.create(
                 image="ghcr.io/autoreduction/runner-mantid:6.2.0",
@@ -71,7 +76,7 @@ class ReductionProcessManager:
                         'bind': '/isis/',
                         'mode': 'rw'
                     },
-                    f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data': {
+                    REDUCED_DATA: {
                         'bind': '/instrument/',
                         'mode': 'rw'
                     },
