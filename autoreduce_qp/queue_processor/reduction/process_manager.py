@@ -86,7 +86,6 @@ class ReductionProcessManager:
                     },
                 },
                 tty=True,
-                environment=["AUTOREDUCTION_PRODUCTION=1"],
                 stdin_open=True,
                 detach=True,
             )
