@@ -8,7 +8,6 @@
 import logging
 import os
 from pathlib import Path
-import sys
 import tempfile
 import traceback
 from autoreduce_utils.settings import ARCHIVE_ROOT, AUTOREDUCE_HOME_ROOT, PROJECT_DEV_ROOT
@@ -50,7 +49,11 @@ class ReductionProcessManager:
             # docker build -t runner-mantid .
 
             # Pull image, containers.create doesn't pull everytime
-            client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
+            images = client.images.pull('ghcr.io/autoreduction/runner-mantid', all_tags=True)
+
+            if not os.path.exists(ARCHIVE_ROOT):
+                Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
+            os.chmod(ARCHIVE_ROOT, 0o777)
 
             if "AUTOREDUCTION_PRODUCTION" in os.environ:
                 REDUCED_DATA = Path('/instrument')
