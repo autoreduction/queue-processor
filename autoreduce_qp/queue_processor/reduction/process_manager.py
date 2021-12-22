@@ -8,8 +8,10 @@
 import logging
 import os
 from pathlib import Path
+import sys
 import tempfile
 import traceback
+from autoreduce_utils.settings import ARCHIVE_ROOT
 import docker
 
 from autoreduce_utils.message.message import Message
@@ -49,10 +51,10 @@ class ReductionProcessManager:
 
             # Pull image, containers.create doesn't pull everytime
             client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
-            mount = f'{os.path.expanduser("~")}/.autoreduce/dev/test-archive'
-            if not os.path.exists(mount):
-                Path(mount).mkdir(parents=True, exist_ok=True)
-            os.chmod(mount, 0o777)
+
+            if not os.path.exists(ARCHIVE_ROOT):
+                Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
+            os.chmod(ARCHIVE_ROOT, 0o777)
 
             Path(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data').mkdir(parents=True, exist_ok=True)
             os.chmod(f'{os.path.expanduser("~")}/.autoreduce/dev/reduced-data', 0o777)
@@ -65,7 +67,7 @@ class ReductionProcessManager:
                         'bind': f'{os.path.expanduser("~")}/.autoreduce/',
                         'mode': 'rw'
                     },
-                    mount: {
+                    ARCHIVE_ROOT: {
                         'bind': '/isis/',
                         'mode': 'rw'
                     },
