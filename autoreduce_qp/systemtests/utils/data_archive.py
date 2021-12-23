@@ -87,7 +87,7 @@ class DataArchive:
     @staticmethod
     def _create_file_at_location(location: Path, file_text: str) -> None:
         logger.info("Creating file at location %s", location)
-        with open(location, "w+") as fle:
+        with open(location, encoding="utf-8", mode="w+") as fle:
             fle.write(file_text)
         os.chmod(location, 0o777)
 

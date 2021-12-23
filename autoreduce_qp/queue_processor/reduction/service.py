@@ -242,7 +242,7 @@ def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction
     except Exception as ex:
         logger.error("Exception caught in reduction script. Traceback is logged below:")
         logger.error(traceback.format_exc())
-        with open(temp_dir.script_log, "a") as target:
+        with open(temp_dir.script_log, encoding="utf-8", mode="a") as target:
             target.writelines(str(ex) + "\n")
             target.write(traceback.format_exc())
         raise ReductionScriptError("Exception in reduction script", ex) from ex

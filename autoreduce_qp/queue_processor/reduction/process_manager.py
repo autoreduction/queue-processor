@@ -94,7 +94,7 @@ class ReductionProcessManager:
 
                 logger.info("Container logs %s", logs.decode("utf-8"))
 
-                with open(f'{temp_dir}/output.txt', 'r') as out_file:
+                with open(f'{temp_dir}/output.txt', encoding="utf-8", mode='r') as out_file:
                     result_message_raw = out_file.read()
 
                 result_message = Message()
