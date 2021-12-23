@@ -12,7 +12,7 @@ import tempfile
 import traceback
 import docker
 
-from autoreduce_utils.settings import ARCHIVE_ROOT, PROJECT_DEV_ROOT
+from autoreduce_utils.settings import ARCHIVE_ROOT, AUTOREDUCE_HOME_ROOT, PROJECT_DEV_ROOT
 from autoreduce_utils.message.message import Message
 
 logger = logging.getLogger(__file__)
@@ -64,13 +64,15 @@ class ReductionProcessManager:
                 # Chmod
                 reduced_data.chmod(0o777)
                 Path(ARCHIVE_ROOT).chmod(0o777)
+                Path(f'{AUTOREDUCE_HOME_ROOT}/logs').chmod(0o777)
+                Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
 
-                logs = client.containers.run(
+                container = client.containers.run(
                     image=images[0],
                     command=args,
                     volumes={
-                        f'{os.path.expanduser("~")}/.autoreduce/': {
-                            'bind': f'{os.path.expanduser("~")}/.autoreduce/',
+                        AUTOREDUCE_HOME_ROOT: {
+                            'bind': '/home/isisautoreduce/.autoreduce/',
                             'mode': 'rw'
                         },
                         ARCHIVE_ROOT: {
@@ -86,14 +88,13 @@ class ReductionProcessManager:
                             'mode': 'rw'
                         },
                     },
-                    tty=True,
                     stdin_open=True,
                     environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
                     stdout=True,
                     stderr=True,
                 )
 
-                logger.info("Container logs %s", logs.decode("utf-8"))
+                logger.info("Container logs %s", container.decode("utf-8"))
 
                 with open(f'{temp_dir}/output.txt', encoding="utf-8", mode='r') as out_file:
                     result_message_raw = out_file.read()

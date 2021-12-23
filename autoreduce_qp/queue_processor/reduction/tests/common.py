@@ -7,7 +7,7 @@ def add_data_and_message():
     Makes and returns some test data and message
     """
     data = {
-        'data': CYCLE_DIRECTORY % ("TESTINSTRUMENT", "21_1") + '/data.nxs',
+        'data': '\\\\isis\\inst$\\NDXTESTINSTRUMENT\\Instrument\\data\\cycle_21_1\\data.nxs',
         'facility': 'ISIS',
         'instrument': 'TESTINSTRUMENT',
         'rb_number': '1234',
@@ -37,7 +37,7 @@ def expected_return_data_and_message():
     Makes and returns some test data and message
     """
     data = {
-        'data': CYCLE_DIRECTORY % ("TESTINSTRUMENT", "21_1") + '/data.nxs',
+        'data': '\\\\isis\\inst$\\NDXTESTINSTRUMENT\\Instrument\\data\\cycle_21_1\\data.nxs',
         'facility': 'ISIS',
         'instrument': 'TESTINSTRUMENT',
         'rb_number': '1234',

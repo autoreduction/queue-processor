@@ -38,7 +38,7 @@ class TestReductionRunner(unittest.TestCase):
         self.assertIsNotNone(runner.admin_log_stream)
         self.assertEqual(
             runner.data_file,
-            CYCLE_DIRECTORY % ("TESTINSTRUMENT", "21_1") + '/data.nxs',
+            '/isis/NDXTESTINSTRUMENT/Instrument/data/cycle_21_1/data.nxs',
         )
         self.assertEqual(runner.facility, 'ISIS')
         self.assertEqual(runner.instrument, 'TESTINSTRUMENT')
