@@ -28,7 +28,7 @@ class ReductionProcessManager:
         try:
             # Create a temp directory to store reduction result
             # Volume bind for the container to write to and host to read from
-            with tempfile.TemporaryDirectory() as temp_dir:  # pylint: disable=consider-using-with
+            with tempfile.TemporaryDirectory() as temp_dir:
                 os.chmod(temp_dir, 0o777)
 
                 # We need to run the reduction in a new process, otherwise scripts
@@ -48,7 +48,8 @@ class ReductionProcessManager:
                 # To build runner-mantid image, in same directory as Dockerfile run:
                 # docker build -t runner-mantid .
 
-                # Pull image, containers.create doesn't pull everytime
+                # Pull all tags of runner-mantid as a list
+                # Could be used to populate a dropdown menu of images
                 images = client.images.pull('ghcr.io/autoreduction/runner-mantid', all_tags=True)
 
                 if "AUTOREDUCTION_PRODUCTION" in os.environ:
@@ -65,7 +66,7 @@ class ReductionProcessManager:
                 Path(ARCHIVE_ROOT).chmod(0o777)
 
                 logs = client.containers.run(
-                    image="ghcr.io/autoreduction/runner-mantid:6.2.0",
+                    image=images[0],
                     command=args,
                     volumes={
                         f'{os.path.expanduser("~")}/.autoreduce/': {
