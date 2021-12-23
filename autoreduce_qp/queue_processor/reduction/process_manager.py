@@ -90,7 +90,6 @@ class ReductionProcessManager:
                     stdin_open=True,
                     environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
                     stdout=True,
-                    stderr=True,
                 )
 
                 logger.info("Container logs %s", logs.decode("utf-8"))
