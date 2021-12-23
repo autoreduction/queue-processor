@@ -87,7 +87,7 @@ class ReductionProcessManager:
                     },
                     tty=True,
                     stdin_open=True,
-                    environment=["AUTOREDUCTION_PRODUCTION=1"],
+                    environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
                     stdout=True,
                     stderr=True,
                 )
