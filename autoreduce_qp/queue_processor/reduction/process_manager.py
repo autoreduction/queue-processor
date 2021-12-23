@@ -64,7 +64,6 @@ class ReductionProcessManager:
                 # Chmod
                 reduced_data.chmod(0o777)
                 Path(ARCHIVE_ROOT).chmod(0o777)
-                Path(f'{AUTOREDUCE_HOME_ROOT}/logs').chmod(0o777)
                 Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
 
                 container = client.containers.run(

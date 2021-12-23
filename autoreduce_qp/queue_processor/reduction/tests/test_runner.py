@@ -10,7 +10,6 @@ import sys
 import unittest
 import tempfile
 from unittest.mock import patch, call, Mock
-from autoreduce_utils.settings import CYCLE_DIRECTORY
 
 from parameterized import parameterized
 import pytest
