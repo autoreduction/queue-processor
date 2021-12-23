@@ -49,7 +49,7 @@ class TestReductionProcessManager(unittest.TestCase):
                 }
             })
 
-    @patch('queue_processor.reduction.process_manager.docker.models.containers.Container.exec_run')
+    @patch('queue_processor.reduction.process_manager.docker.models.containers.ContainerCollection.run')
     def test_run_subprocess_error(self, docker_run: Mock):
         """Test proper handling of container encountering an error"""
         def side_effect(args, **_kwargs):
