@@ -86,16 +86,13 @@ class ReductionProcessManager:
                             'mode': 'rw'
                         },
                     },
-                    tty=True,
                     stdin_open=True,
                     environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
                     stdout=True,
-                    detach=True,
+                    stderr=True,
                 )
 
-                logs = container.logs()
-
-                logger.info("Container logs %s", logs.decode("utf-8"))
+                logger.info("Container logs %s", container.decode("utf-8"))
 
                 with open(f'{temp_dir}/output.txt', encoding="utf-8", mode='r') as out_file:
                     result_message_raw = out_file.read()
