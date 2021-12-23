@@ -12,7 +12,7 @@ import tempfile
 import traceback
 import docker
 
-from autoreduce_utils.settings import ARCHIVE_ROOT, PROJECT_DEV_ROOT
+from autoreduce_utils.settings import ARCHIVE_ROOT, AUTOREDUCE_HOME_ROOT, PROJECT_DEV_ROOT
 from autoreduce_utils.message.message import Message
 
 logger = logging.getLogger(__file__)
@@ -69,8 +69,8 @@ class ReductionProcessManager:
                     image=images[0],
                     command=args,
                     volumes={
-                        f'{os.path.expanduser("~")}/.autoreduce/': {
-                            'bind': f'{os.path.expanduser("~")}/.autoreduce/',
+                        AUTOREDUCE_HOME_ROOT: {
+                            'bind': '/home/isisautoreduce/.autoreduce/',
                             'mode': 'rw'
                         },
                         ARCHIVE_ROOT: {
