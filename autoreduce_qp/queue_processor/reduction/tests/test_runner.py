@@ -61,11 +61,11 @@ class TestReductionRunner(unittest.TestCase):
         When: called with expected arguments
         """
         # Patch write_reduction_message
-        with patch('builtins.open', mock_open()) as m:
+        with patch('builtins.open', mock_open()) as m_open:
             with patch('os.chmod') as m_chmod:
                 runner = ReductionRunner(self.message, self.run_name)
                 write_reduction_message(runner)
-        m.assert_called_with("/output/output.txt", "w")
+        m_open.assert_called_with("/output/output.txt", "w")
         m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
@@ -74,12 +74,12 @@ class TestReductionRunner(unittest.TestCase):
         Test: the reduction is run and on success finishes as expected
         When: The main method is called
         """
-        with patch('builtins.open', mock_open()) as m:
+        with patch('builtins.open', mock_open()) as m_open:
             with patch('os.chmod') as m_chmod:
                 sys.argv = ['', json.dumps(self.data), self.run_name]
                 main()
         mock_reduce.assert_called_once()
-        m.assert_called_with("/output/output.txt", "w")
+        m_open.assert_called_with("/output/output.txt", "w")
         m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce', side_effect=Exception)
