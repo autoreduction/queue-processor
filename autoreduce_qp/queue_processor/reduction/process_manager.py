@@ -65,7 +65,7 @@ class ReductionProcessManager:
                 reduced_data.chmod(0o777)
                 Path(ARCHIVE_ROOT).chmod(0o777)
 
-                logs = client.containers.run(
+                container = client.containers.run(
                     image=images[0],
                     command=args,
                     volumes={
@@ -90,7 +90,10 @@ class ReductionProcessManager:
                     stdin_open=True,
                     environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
                     stdout=True,
+                    detach=True,
                 )
+
+                logs = container.logs()
 
                 logger.info("Container logs %s", logs.decode("utf-8"))
 
