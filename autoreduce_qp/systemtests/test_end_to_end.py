@@ -17,6 +17,8 @@ from parameterized.parameterized import parameterized
 from autoreduce_qp.systemtests.base_systemtest import (BaseAutoreduceSystemTest, REDUCE_SCRIPT,
                                                        SYNTAX_ERROR_REDUCE_SCRIPT, VARS_SCRIPT)
 
+EXPECTED_FILE_LOCATION = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
+
 
 class TestEndToEnd(BaseAutoreduceSystemTest):
     """Class to test pipelines in autoreduction."""
@@ -44,9 +46,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
     def test_end_to_end_wish_completed(self):
         """Test that runs gets completed when everything is OK."""
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
-        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
-        self.data_ready_message.data = file_location
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         results = self.send_and_wait_for_result(self.data_ready_message)
 
         assert results
@@ -71,8 +72,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
-        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
-        self.data_ready_message.data = file_location
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         self.instrument_obj.is_flat_output = True
         self.instrument_obj.save()
         results = self.send_and_wait_for_result(self.data_ready_message)
@@ -94,8 +94,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
-        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
-        self.data_ready_message.data = file_location
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         results = self.send_and_wait_for_result(self.data_ready_message)
         assert len(results) == 1
 
@@ -110,8 +109,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
         self._setup_data_structures(reduce_script=SYNTAX_ERROR_REDUCE_SCRIPT, vars_script='')
-        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
-        self.data_ready_message.data = file_location
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         results = self.send_and_wait_for_result(self.data_ready_message)
 
         # Validate
@@ -128,8 +126,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         """Test that WISH data goes through the system without issue."""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         self._setup_data_structures(reduce_script="raise ValueError('hello from the other side')", vars_script='')
-        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
-        self.data_ready_message.data = file_location
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         results = self.send_and_wait_for_result(self.data_ready_message)
 
         # Validate
