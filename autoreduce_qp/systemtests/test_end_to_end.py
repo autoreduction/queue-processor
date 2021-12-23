@@ -45,6 +45,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         """Test that runs gets completed when everything is OK."""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
         self.data_ready_message.data = file_location
         results = self.send_and_wait_for_result(self.data_ready_message)
 
