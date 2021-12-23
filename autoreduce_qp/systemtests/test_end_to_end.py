@@ -70,7 +70,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         and then set on the reduction_run object when the reduction is finished.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
         self.data_ready_message.data = file_location
         self.instrument_obj.is_flat_output = True
         self.instrument_obj.save()
@@ -92,7 +93,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         and then set on the reduction_run object when the reduction is finished.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
         self.data_ready_message.data = file_location
         results = self.send_and_wait_for_result(self.data_ready_message)
         assert len(results) == 1
@@ -107,7 +109,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         Test that run gets marked as error when the script has a syntax error.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=SYNTAX_ERROR_REDUCE_SCRIPT, vars_script='')
+        self._setup_data_structures(reduce_script=SYNTAX_ERROR_REDUCE_SCRIPT, vars_script='')
+        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
         self.data_ready_message.data = file_location
         results = self.send_and_wait_for_result(self.data_ready_message)
 
@@ -124,8 +127,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
     def test_end_to_end_wish_bad_script_raises_exception(self):
         """Test that WISH data goes through the system without issue."""
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script="raise ValueError('hello from the other side')",
-                                                    vars_script='')
+        self._setup_data_structures(reduce_script="raise ValueError('hello from the other side')", vars_script='')
+        file_location = "/isis/NDXARMI/Instrument/data/cycle_19_1/ARMI101.nxs"
         self.data_ready_message.data = file_location
         results = self.send_and_wait_for_result(self.data_ready_message)
 
