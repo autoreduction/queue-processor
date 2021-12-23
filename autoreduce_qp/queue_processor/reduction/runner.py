@@ -115,19 +115,13 @@ class ReductionRunner:
         return None
 
 
-def write_reduction_message(reduction, temp_output_file=None):
+def write_reduction_message(reduction):
     """
     Write the reduction message to the reduction directory
     """
-    if temp_output_file is None:
-        with open("/output/output.txt", "w") as out_file:
-            out_file.write(reduction.message.serialize())
+    with open("/output/output.txt", "w") as out_file:
+        out_file.write(reduction.message.serialize())
         os.chmod("/output/output.txt", 0o777)
-
-    else:
-        with open(temp_output_file, "w") as out_file:
-            out_file.write(reduction.message.serialize())
-        os.chmod(temp_output_file, 0o777)
 
 
 def main():
@@ -140,10 +134,7 @@ def main():
     parent process reads back to mark the result of the reduction run in the DB.
     """
     data, run_name = sys.argv[1], sys.argv[2]
-    if len(sys.argv) > 3:
-        temp_output_file = sys.argv[3]
-    else:
-        temp_output_file = None
+
     try:
         message = Message()
         message.populate(data)
@@ -163,11 +154,7 @@ def main():
     try:
         reduction.reduce()
 
-        if temp_output_file is not None:
-            write_reduction_message(reduction, temp_output_file)
-
-        else:
-            write_reduction_message(reduction)
+        write_reduction_message(reduction)
 
     except Exception as exp:
         logger.info("ReductionRunner error: %s", str(exp))

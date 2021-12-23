@@ -9,7 +9,7 @@ import json
 import sys
 import unittest
 import tempfile
-from unittest.mock import patch, call, Mock
+from unittest.mock import mock_open, patch, call, Mock
 
 from parameterized import parameterized
 import pytest
@@ -55,23 +55,18 @@ class TestReductionRunner(unittest.TestCase):
                 }
             })
 
-    # Create test for write_reduction_message
     def test_main_write_reduction_message(self):
         """
         Test: write_reduction_message is called
         When: called with expected arguments
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            runner = ReductionRunner(self.message, self.run_name)
-            write_reduction_message(runner, tmp_file.name)
-            data = json.load(tmp_file)
-            assert self.data["facility"] == data["facility"]
-            assert self.data["run_number"] == data["run_number"]
-            assert self.data["instrument"] == data["instrument"]
-            assert self.data["rb_number"] == data["rb_number"]
-            assert self.data["data"] == data["data"]
-            assert self.data["reduction_script"] == data["reduction_script"]
-            assert self.data["reduction_arguments"] == data["reduction_arguments"]
+        # Patch write_reduction_message
+        with patch('builtins.open', mock_open()) as m:
+            with patch('os.chmod') as m_chmod:
+                runner = ReductionRunner(self.message, self.run_name)
+                write_reduction_message(runner)
+        m.assert_called_with("/output/output.txt", "w")
+        m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce):
@@ -79,18 +74,13 @@ class TestReductionRunner(unittest.TestCase):
         Test: the reduction is run and on success finishes as expected
         When: The main method is called
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), self.run_name, tmp_file.name]
-            main()
-            out_data = json.loads(tmp_file.read())
+        with patch('builtins.open', mock_open()) as m:
+            with patch('os.chmod') as m_chmod:
+                sys.argv = ['', json.dumps(self.data), self.run_name]
+                main()
         mock_reduce.assert_called_once()
-        assert self.data["facility"] == out_data["facility"]
-        assert self.data["run_number"] == out_data["run_number"]
-        assert self.data["instrument"] == out_data["instrument"]
-        assert self.data["rb_number"] == out_data["rb_number"]
-        assert self.data["data"] == out_data["data"]
-        assert self.data["reduction_script"] == out_data["reduction_script"]
-        assert self.data["reduction_arguments"] == out_data["reduction_arguments"]
+        m.assert_called_with("/output/output.txt", "w")
+        m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce', side_effect=Exception)
     def test_main_reduce_raises(self, mock_reduce):
@@ -98,18 +88,16 @@ class TestReductionRunner(unittest.TestCase):
         Test: the reduction is called but the reduce function raises an Exception
         When: The main method is called
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), self.run_name, tmp_file.name]
-            self.assertRaises(Exception, main)
+        sys.argv = ['', json.dumps(self.data), self.run_name]
+        self.assertRaises(Exception, main)
         mock_reduce.assert_called_once()
 
     def test_main_bad_data_for_populate(self):
         """
         Test: Providing bad data for the `main` function, i.e. not enough arguments
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps({"apples": 13}), self.run_name, tmp_file.name]
-            self.assertRaises(ValueError, main)
+        sys.argv = ['', json.dumps({"apples": 13}), self.run_name]
+        self.assertRaises(ValueError, main)
 
     @patch(f'{DIR}.runner.logger.info')
     @patch(f'{DIR}.runner.ReductionRunner.__init__')
@@ -127,9 +115,8 @@ class TestReductionRunner(unittest.TestCase):
             raise Exception(expected_error_msg)
 
         mock_runner_init.side_effect = raise_value_error
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), self.run_name, tmp_file.name]
-            self.assertRaises(Exception, main)
+        sys.argv = ['', json.dumps(self.data), self.run_name]
+        self.assertRaises(Exception, main)
 
         self.message.message = expected_error_msg
         mock_logger_info.assert_has_calls(
