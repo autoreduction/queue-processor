@@ -9,14 +9,14 @@ import json
 import sys
 import unittest
 import tempfile
-from unittest.mock import patch, call, Mock
+from unittest.mock import mock_open, patch, call, Mock
 
 from parameterized import parameterized
 import pytest
 
 from autoreduce_qp.queue_processor.reduction.exceptions import ReductionScriptError
-from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main
-from autoreduce_qp.queue_processor.reduction.tests.common import add_data_and_message
+from autoreduce_qp.queue_processor.reduction.runner import ReductionRunner, main, write_reduction_message
+from autoreduce_qp.queue_processor.reduction.tests.common import add_data_and_message, add_bad_data_and_message
 
 
 class TestReductionRunner(unittest.TestCase):
@@ -24,6 +24,7 @@ class TestReductionRunner(unittest.TestCase):
 
     def setUp(self) -> None:
         self.data, self.message = add_data_and_message()
+        self.bad_data, self.bad_message = add_bad_data_and_message()
         self.run_name = "Test run name"
 
     def test_init(self):
@@ -34,12 +35,38 @@ class TestReductionRunner(unittest.TestCase):
         runner = ReductionRunner(self.message, self.run_name)
         self.assertEqual(runner.message, self.message)
         self.assertIsNotNone(runner.admin_log_stream)
-        self.assertEqual(runner.data_file, '/isis/data.nxs')
+        self.assertEqual(
+            runner.data_file,
+            '/isis/NDXTESTINSTRUMENT/Instrument/data/cycle_21_1/data.nxs',
+        )
         self.assertEqual(runner.facility, 'ISIS')
-        self.assertEqual(runner.instrument, 'GEM')
+        self.assertEqual(runner.instrument, 'TESTINSTRUMENT')
         self.assertEqual(runner.proposal, '1234')
         self.assertEqual(runner.run_number, '4321')
-        self.assertEqual(runner.reduction_arguments, 'None')
+        self.assertEqual(
+            runner.reduction_arguments, {
+                "standard_vars": {
+                    "arg1": "differentvalue",
+                    "arg2": 321
+                },
+                "advanced_vars": {
+                    "adv_arg1": "advancedvalue2",
+                    "adv_arg2": ""
+                }
+            })
+
+    def test_main_write_reduction_message(self):
+        """
+        Test: write_reduction_message is called
+        When: called with expected arguments
+        """
+        # Patch write_reduction_message
+        with patch('builtins.open', mock_open()) as m_open:
+            with patch('os.chmod') as m_chmod:
+                runner = ReductionRunner(self.message, self.run_name)
+                write_reduction_message(runner)
+        m_open.assert_called_with("/output/output.txt", "w")
+        m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce):
@@ -47,18 +74,13 @@ class TestReductionRunner(unittest.TestCase):
         Test: the reduction is run and on success finishes as expected
         When: The main method is called
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
-            main()
-            out_data = json.loads(tmp_file.read())
+        with patch('builtins.open', mock_open()) as m_open:
+            with patch('os.chmod') as m_chmod:
+                sys.argv = ['', json.dumps(self.data), self.run_name]
+                main()
         mock_reduce.assert_called_once()
-        assert self.data["facility"] == out_data["facility"]
-        assert self.data["run_number"] == out_data["run_number"]
-        assert self.data["instrument"] == out_data["instrument"]
-        assert self.data["rb_number"] == out_data["rb_number"]
-        assert self.data["data"] == out_data["data"]
-        assert self.data["reduction_script"] == out_data["reduction_script"]
-        assert self.data["reduction_arguments"] == out_data["reduction_arguments"]
+        m_open.assert_called_with("/output/output.txt", "w")
+        m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce', side_effect=Exception)
     def test_main_reduce_raises(self, mock_reduce):
@@ -66,18 +88,16 @@ class TestReductionRunner(unittest.TestCase):
         Test: the reduction is called but the reduce function raises an Exception
         When: The main method is called
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
-            self.assertRaises(Exception, main)
+        sys.argv = ['', json.dumps(self.data), self.run_name]
+        self.assertRaises(Exception, main)
         mock_reduce.assert_called_once()
 
     def test_main_bad_data_for_populate(self):
         """
         Test: Providing bad data for the `main` function, i.e. not enough arguments
         """
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps({"apples": 13}), tmp_file.name, self.run_name]
-            self.assertRaises(ValueError, main)
+        sys.argv = ['', json.dumps({"apples": 13}), self.run_name]
+        self.assertRaises(ValueError, main)
 
     @patch(f'{DIR}.runner.logger.info')
     @patch(f'{DIR}.runner.ReductionRunner.__init__')
@@ -95,9 +115,8 @@ class TestReductionRunner(unittest.TestCase):
             raise Exception(expected_error_msg)
 
         mock_runner_init.side_effect = raise_value_error
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name, self.run_name]
-            self.assertRaises(Exception, main)
+        sys.argv = ['', json.dumps(self.data), self.run_name]
+        self.assertRaises(Exception, main)
 
         self.message.message = expected_error_msg
         mock_logger_info.assert_has_calls(
@@ -109,13 +128,14 @@ class TestReductionRunner(unittest.TestCase):
         """
         Test: Bad datafile is provided
         """
-        self.message.description = "testdescription"
-        runner = ReductionRunner(self.message, self.run_name)
+        self.bad_message.description = "testdescription"
+        runner = ReductionRunner(self.bad_message, self.run_name)
         runner.reduce()
         mock_logger_info.assert_called_once()
         assert mock_logger_info.call_args[0][1] == "testdescription"
         _get_mantid_version.assert_called_once()
-        assert runner.message.message == 'Error encountered when trying to access the datafile /isis/data.nxs'
+        assert runner.message.message, ('Error encountered when trying to access the datafile'
+                                        ' /isis/NDXTESTINSTRUMENT/Instrument/data/cycle_21_1/data.nxs')
 
     @patch(f'{DIR}.runner.ReductionScript', side_effect=PermissionError("error message"))
     def test_reduce_reductionscript_any_raise(self, _: Mock):
@@ -212,14 +232,12 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.software == "5.1.0"
 
     @staticmethod
-    @patch(f'{DIR}.runner.logger')
-    def test_get_mantid_version(logger: Mock):
+    def test_get_mantid_version():
         """
         Test: Getting the mantid version
         """
-        pytest.importorskip("mantid", reason="Mantid not installed")
-        assert ReductionRunner._get_mantid_version() is None
-        assert logger.error.call_count == 2
+        pytest.importorskip(modname="mantid", minversion="6.2.0", reason="Mantid not installed")
+        assert ReductionRunner._get_mantid_version() is not None
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')

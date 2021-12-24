@@ -1,58 +1,76 @@
 # ############################################################################### #
-# Autoreduction Repository : https://github.com/autoreduction/autoreduce
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
-import os
 import unittest
-from subprocess import CalledProcessError
-
 from unittest.mock import Mock, patch
+from docker.errors import APIError, ImageNotFound
+
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
-from autoreduce_qp.queue_processor.reduction.tests.common import add_data_and_message
+from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_and_message, add_data_and_message,
+                                                                  expected_return_data_and_message)
 
 
 class TestReductionProcessManager(unittest.TestCase):
     def setUp(self) -> None:
         self.data, self.message = add_data_and_message()
+        self.expected_data, self.expected_message = expected_return_data_and_message()
+        self.bad_data, self.bad_message = add_bad_data_and_message()
         self.run_name = "Test run name"
 
     def test_init(self):
-        "Test that the constructor is doing what's expected"
+        """Test that the constructor is doing what's expected"""
+        self.data, self.message = add_data_and_message()
+
         rpm = ReductionProcessManager(self.message, self.run_name)
 
         assert rpm.message == self.message
 
-    @patch('queue_processor.reduction.process_manager.subprocess.run')
-    def test_run_subprocess_error(self, subprocess_run: Mock):
-        """Test proper handling of a subprocess encountering an error"""
-        def side_effect(args, **_kwargs):
-            raise CalledProcessError(1, args)
-
-        subprocess_run.side_effect = side_effect
-        rpm = ReductionProcessManager(self.message, self.run_name)
-        rpm.run()
-
-        subprocess_run.assert_called_once()
-        assert "Processing encountered an error" in rpm.message.message
-
-    @patch('queue_processor.reduction.process_manager.subprocess.run')
-    def test_run(self, subprocess_run: Mock):
-        """Tests success path - it uses side effect to set the expected output file rather than raise an exception"""
-        def side_effect(args, **_kwargs):
-            # NOTE: this may change if new args are passed to the reduction subprocess
-            # we are looking for the temporary file name
-            expected_tmp_file = args[3]
-            if not os.path.isfile(expected_tmp_file):
-                raise RuntimeError(
-                    "Bad arguments are passed to the subprocess, or the order of parameters has been changed!")
-            with open(expected_tmp_file, 'w') as tmpfile:
-                tmpfile.write(self.message.serialize())
-
-        subprocess_run.side_effect = side_effect
-        rpm = ReductionProcessManager(self.message, self.run_name)
+    def test_run(self):
+        """Tests success path"""
+        run_name = "Test run name"
+        rpm = ReductionProcessManager(self.message, run_name)
         result_message = rpm.run()
 
-        assert result_message == self.message
+        self.assertEqual(result_message.facility, 'ISIS')
+        self.assertEqual(result_message.instrument, 'TESTINSTRUMENT')
+        self.assertEqual(result_message.run_number, '4321')
+        self.assertEqual(
+            result_message.reduction_arguments, {
+                "standard_vars": {
+                    "arg1": "differentvalue",
+                    "arg2": 321
+                },
+                "advanced_vars": {
+                    "adv_arg1": "advancedvalue2",
+                    "adv_arg2": ""
+                }
+            })
+
+    @patch('queue_processor.reduction.process_manager.docker.models.containers.ContainerCollection.run')
+    def test_run_subprocess_error(self, docker_run: Mock):
+        """Test proper handling of container encountering an error"""
+        docker_run.side_effect = Exception()
+        rpm = ReductionProcessManager(self.message, self.run_name)
+        rpm.run()
+        docker_run.assert_called_once()
+        assert "Processing encountered an error" in rpm.message.message
+
+    @patch('queue_processor.reduction.process_manager.docker.models.containers.ContainerCollection.run')
+    def test_missing_image(self, docker_run: Mock):
+        """Test proper handling of container encountering an error"""
+        docker_run.side_effect = ImageNotFound("test error")
+        rpm = ReductionProcessManager(self.message, self.run_name)
+        self.assertRaises(ImageNotFound, rpm.run)
+        docker_run.assert_called_once()
+
+    @patch('queue_processor.reduction.process_manager.docker.models.containers.ContainerCollection.run')
+    def test_api_error(self, docker_run: Mock):
+        """Test proper handling of container encountering an error"""
+        docker_run.side_effect = APIError("test error")
+        rpm = ReductionProcessManager(self.message, self.run_name)
+        self.assertRaises(APIError, rpm.run)
+        docker_run.assert_called_once()

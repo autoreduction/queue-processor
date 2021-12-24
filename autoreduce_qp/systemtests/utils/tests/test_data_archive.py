@@ -70,7 +70,7 @@ class TestDataArchive(TestCase):
         self.data_archive.create()
         self.data_archive.add_reduction_script(self.instrument, expected_script_text)
         self.assertTrue(expected_script_file.exists())
-        with open(expected_script_file) as fle:
+        with open(expected_script_file, encoding="utf-8") as fle:
             actual_text = fle.read()
         self.assertEqual(expected_script_text, actual_text)
 
@@ -83,6 +83,6 @@ class TestDataArchive(TestCase):
         self.data_archive.create()
         self.data_archive.add_reduce_vars_script(self.instrument, expected_var_text)
         self.assertTrue(expected_var_file.exists())
-        with open(expected_var_file) as fle:
+        with open(expected_var_file, encoding="utf-8") as fle:
             actual_text = fle.read()
         self.assertEqual(expected_var_text, actual_text)

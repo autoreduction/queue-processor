@@ -53,7 +53,7 @@ def channels_redirected(out_file, error_file, out_stream):
         sys.stdout.flush(), sys.stderr.flush()  # pylint: disable=expression-not-assigned
         sys.stdout, sys.stderr = output_file, err_file
 
-    with open(out_file, 'w') as out, open(error_file, 'w') as err:
+    with open(out_file, encoding="utf-8", mode='w') as out, open(error_file, encoding="utf-8", mode='w') as err:
         _redirect_channels(MultipleChannels(out, out_stream), MultipleChannels(err, out_stream))
         try:
             # allow code to be run with the redirected channels

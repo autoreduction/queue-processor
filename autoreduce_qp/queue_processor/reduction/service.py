@@ -50,7 +50,8 @@ class ReductionDirectory:
         Creates the reduction directory including the log path, Script.out and Mantid.log files
         """
         logger.info("Creating reduction directory: %s", self.path)
-        self.path.mkdir(parents=True, exist_ok=True)
+        os.umask(0)
+        os.makedirs(self.path, mode=0o777, exist_ok=False)
         self.log_path.mkdir(exist_ok=True)
         self.script_log.touch(exist_ok=True)
         self.mantid_log.touch(exist_ok=True)
@@ -155,7 +156,7 @@ class ReductionScript:
         """Returns the text of the script file. Does not load it as a module"""
         # Read raw bytes and determine encoding
         try:
-            with io.open(self.script_path, 'r') as open_file:
+            with io.open(self.script_path, encoding='utf-8', mode='r+') as open_file:
                 return open_file.read()
         except IOError:
             return ""
@@ -217,6 +218,7 @@ def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction
     :return (StringIO): The log stream of the reduction script
     """
     reduction_dir.create()
+
     logger.info("-------------------------------------------------------")
     logger.info("Temporary result directory: %s", temp_dir.path)
     logger.info("Final Result directory: %s", reduction_dir.path)
@@ -240,7 +242,7 @@ def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction
     except Exception as ex:
         logger.error("Exception caught in reduction script. Traceback is logged below:")
         logger.error(traceback.format_exc())
-        with open(temp_dir.script_log, "a") as target:
+        with open(temp_dir.script_log, encoding="utf-8", mode="a") as target:
             target.writelines(str(ex) + "\n")
             target.write(traceback.format_exc())
         raise ReductionScriptError("Exception in reduction script", ex) from ex

@@ -9,6 +9,7 @@
 
 import io
 import logging
+import os
 import sys
 import traceback
 
@@ -55,8 +56,8 @@ class ReductionRunner:
                 datafiles = [Datafile(df) for df in self.data_file]
         except DatafileError as err:
             logger.error("Problem reading datafile: %s", traceback.format_exc())
-            self.message.message = "Error encountered when trying to access the datafile %s" % self.data_file
-            self.message.reduction_log = "Exception:\n%s" % (err)
+            self.message.message = f"Error encountered when trying to access the datafile {self.data_file}"
+            self.message.reduction_log = f"Exception: {err}"
             return  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to read the reduction script. This does not currently respect
@@ -66,7 +67,7 @@ class ReductionRunner:
             reduction_script_path = reduction_script.script_path
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction script"
-            self.message.reduction_log = "Exception:\n%s" % (err)
+            self.message.reduction_log = f"Exception: {err}"
             return  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to open the reduction directory
@@ -79,7 +80,7 @@ class ReductionRunner:
             temp_dir = TemporaryReductionDirectory(self.proposal, self.run_name)
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction directory"
-            self.message.reduction_log = "Exception:\n%s" % (err)
+            self.message.reduction_log = f"Exception: {err}"
             return  # stops the reduction and allows the parent to read the outcome in the message
 
         reduction_log_stream = io.StringIO()
@@ -90,11 +91,11 @@ class ReductionRunner:
         except ReductionScriptError as err:
             logger.error("Reduction script path: %s", reduction_script_path)
             self.message.message = "Error encountered when running the reduction script"
-            self.message.reduction_log = "Exception:\n%s\n\n%s\n\n## Script output ##\n%s" % (
-                reduction_script_path, err, reduction_log_stream.getvalue())
+            self.message.reduction_log = f"""Exception: {reduction_script_path} {err} ## Script output ## 
+{reduction_log_stream.getvalue()}""" # pylint:disable=trailing-whitespace
         except Exception as err:
             logger.error(traceback.format_exc())
-            self.message.message = "REDUCTION Error: %s" % err
+            self.message.message = f"REDUCTION Error: {err}"
 
     @staticmethod
     def _get_mantid_version():
@@ -114,6 +115,15 @@ class ReductionRunner:
         return None
 
 
+def write_reduction_message(reduction):
+    """
+    Write the reduction message to the reduction directory
+    """
+    with open("/output/output.txt", "w") as out_file:
+        out_file.write(reduction.message.serialize())
+        os.chmod("/output/output.txt", 0o777)
+
+
 def main():
     """
     This is the entrypoint when a reduction is started. This is run in a subprocess from
@@ -123,7 +133,8 @@ def main():
     Additionally, the resulting Message is written to a temporary file which the
     parent process reads back to mark the result of the reduction run in the DB.
     """
-    data, temp_output_file, run_name = sys.argv[1], sys.argv[2], sys.argv[3]
+    data, run_name = sys.argv[1], sys.argv[2]
+
     try:
         message = Message()
         message.populate(data)
@@ -142,9 +153,8 @@ def main():
     logger.addHandler(log_stream_handler)
     try:
         reduction.reduce()
-        # write out the reduction message
-        with open(temp_output_file, "w") as out_file:
-            out_file.write(reduction.message.serialize())
+
+        write_reduction_message(reduction)
 
     except Exception as exp:
         logger.info("ReductionRunner error: %s", str(exp))

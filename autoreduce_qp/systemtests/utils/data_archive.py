@@ -5,6 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 import logging
+import os
 from pathlib import Path
 from shutil import rmtree
 from contextlib import ContextDecorator
@@ -64,25 +65,29 @@ class DataArchive:
         :return: (str) The string path of the datafile created.
         """
         location = Path(CYCLE_DIRECTORY % (instrument, f"{year}_{cycle_num}"))
-        location.mkdir(parents=True, exist_ok=True)
+        os.makedirs(location, mode=0o777, exist_ok=True)
         datafile = Path(location, datafile_name)
         datafile.touch()
+        os.chmod(datafile, 0o777)
         return str(datafile)
 
     def _create_cycle_path(self, instrument: str) -> None:
         for year in range(self.start_year, self.end_year):
             for cycle_number in range(1, 6):
-                Path(CYCLE_DIRECTORY % (instrument, f"{year}_{cycle_number}")).mkdir(parents=True, exist_ok=True)
+                path = Path(CYCLE_DIRECTORY % (instrument, f"{year}_{cycle_number}"))
+                os.makedirs(path, mode=0o777, exist_ok=True)
 
     @staticmethod
     def _create_script_directory(instrument: str) -> None:
         Path(SCRIPTS_DIRECTORY % instrument).mkdir(parents=True, exist_ok=True)
+        os.chmod(Path(SCRIPTS_DIRECTORY % instrument), 0o777)
 
     @staticmethod
     def _create_file_at_location(location: Path, file_text: str) -> None:
         logger.info("Creating file at location %s", location)
-        with open(location, "w+") as fle:
+        with open(location, encoding="utf-8", mode="w+") as fle:
             fle.write(file_text)
+        os.chmod(location, 0o777)
 
     @staticmethod
     def delete() -> None:
