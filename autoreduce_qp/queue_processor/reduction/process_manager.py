@@ -11,6 +11,7 @@ from pathlib import Path
 import tempfile
 import traceback
 import docker
+from docker.errors import APIError, ImageNotFound, ContainerError
 
 from autoreduce_utils.settings import ARCHIVE_ROOT, AUTOREDUCE_HOME_ROOT, PROJECT_DEV_ROOT
 from autoreduce_utils.message.message import Message
@@ -99,13 +100,13 @@ class ReductionProcessManager:
                 result_message.populate(result_message_raw)
 
         # If the specified image does not exist.
-        except docker.errors.ImageNotFound as exc:
+        except ImageNotFound as exc:
             raise exc
         # If the server returns an error.
-        except docker.errors.APIError as exc:
+        except APIError as exc:
             raise exc
         # If the container exits with a non-zero exit code and detach is False.
-        except docker.errors.ContainerError as exc:
+        except ContainerError as exc:
             raise exc
         except Exception:  # pylint:disable=broad-except
             logger.error("Processing encountered an error: %s", traceback.format_exc())
