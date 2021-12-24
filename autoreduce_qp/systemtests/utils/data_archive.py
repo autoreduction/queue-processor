@@ -66,8 +66,6 @@ class DataArchive:
         """
         location = Path(CYCLE_DIRECTORY % (instrument, f"{year}_{cycle_num}"))
         os.makedirs(location, mode=0o777, exist_ok=True)
-        #os.chmod(location, 0o777)
-        #location.mkdir(parents=True, exist_ok=True)
         datafile = Path(location, datafile_name)
         datafile.touch()
         os.chmod(datafile, 0o777)

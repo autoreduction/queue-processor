@@ -44,10 +44,6 @@ class ReductionProcessManager:
                 # https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
                 client = docker.from_env()
 
-                # Create a container and run it. Equivalent to docker run.
-                # To build runner-mantid image, in same directory as Dockerfile run:
-                # docker build -t runner-mantid .
-
                 # Pull all tags of runner-mantid as a list
                 # Could be used to populate a dropdown menu of images
                 images = client.images.pull('ghcr.io/autoreduction/runner-mantid', all_tags=True)
@@ -61,10 +57,10 @@ class ReductionProcessManager:
                     if not os.path.exists(reduced_data):
                         reduced_data.mkdir(parents=True, exist_ok=True)
 
-                # Chmod
-                reduced_data.chmod(0o777)
-                Path(ARCHIVE_ROOT).chmod(0o777)
-                Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
+                    # Run chmod's to make sure the directories are writable
+                    reduced_data.chmod(0o777)
+                    Path(ARCHIVE_ROOT).chmod(0o777)
+                    Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
 
                 container = client.containers.run(
                     image=images[0],
