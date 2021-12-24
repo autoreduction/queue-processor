@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="autoreduce_qp",
-    version="22.0.0.dev21",  # when updating the version here make sure to also update qp_mantid_python36.D
+    version="22.0.0.dev20",  # when updating the version here make sure to also update qp_mantid_python36.D
     description="ISIS Autoreduction queue processor",
     author="ISIS Autoreduction Team",
     url="https://github.com/autoreduction/autoreduce/",
@@ -16,7 +16,12 @@ setup(
         "docker==5.0.3"
     ],
     packages=find_packages(),
-    entry_points={"console_scripts": ["autoreduce-qp-start = autoreduce_qp.queue_processor.queue_listener:main"]},
+    entry_points={
+        "console_scripts": [
+            "autoreduce-qp-start = autoreduce_qp.queue_processor.queue_listener:main",
+            "autoreduce-runner-start = autoreduce_qp.queue_processor.reduction.runner:main"
+        ],
+    },
     classifiers=[
         "Programming Language :: Python :: 3 :: Only",
     ])

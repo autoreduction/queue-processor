@@ -36,7 +36,7 @@ class ReductionProcessManager:
                 # e.g. a GUI main loop, for matplotlib or Mantid
                 serialized_vars = self.message.serialize()
                 serialized_vars_truncated = self.message.serialize(limit_reduction_script=True)
-                args = ["python3", "runner.py", serialized_vars, self.run_name]
+                args = ["autoreduce-runner-start", serialized_vars, self.run_name]
                 logger.info("Calling: %s %s %s %s ", "python3", "runner.py", serialized_vars_truncated, self.run_name)
 
                 # Return a client configured from environment variables
@@ -46,7 +46,7 @@ class ReductionProcessManager:
 
                 # Pull all tags of runner-mantid as a list
                 # Could be used to populate a dropdown menu of images
-                images = client.images.pull('ghcr.io/autoreduction/runner-mantid', all_tags=True)
+                runner_mantid = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
 
                 if "AUTOREDUCTION_PRODUCTION" in os.environ:
                     reduced_data = Path('/instrument')
@@ -63,7 +63,7 @@ class ReductionProcessManager:
                     Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
 
                 container = client.containers.run(
-                    image=images[0],
+                    image=runner_mantid,
                     command=args,
                     volumes={
                         AUTOREDUCE_HOME_ROOT: {
