@@ -1,6 +1,6 @@
 # ############################################################################ #
 # Autoreduction Repository :
-# https://github.com/ISISScientificComputing/autoreduce
+# https://github.com/autoreduction/autoreduce
 #
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
@@ -37,10 +37,12 @@ class ReductionProcessManager:
                             self.message.serialize(limit_reduction_script=True), temp_output_file.name, self.run_name)
 
                 # Copy and update the subprocess environment to inherit the
-                # parent one, and append the PYTHONPATH of the queue_processor
-                # module
+                # parent one, and append the PYTHONPATH of the queue_processor module
                 environment = os.environ.copy()
-                environment["PYTHONPATH"] = RUNNER_PATH.split("autoreduce_qp")[0]
+
+                pythonpath = environment.get("PYTHONPATH", "")
+                pythonpath += f':{RUNNER_PATH.split("autoreduce_qp")[0]}'
+                pythonpath = environment["PYTHONPATH"] = pythonpath
 
                 # Run process until finished and check the exit code for success
                 subprocess.run(args, check=True, env=environment)

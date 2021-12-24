@@ -1,0 +1,11 @@
+---
+
+galaxy_info:
+  author: dtasev
+  description: Stops any running instances of the queue processor docker image
+  license: MIT
+  min_ansible_version: 5.0
+  platforms:
+    - name: CentOS7
+
+dependencies: []

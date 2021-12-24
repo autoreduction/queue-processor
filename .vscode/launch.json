@@ -83,7 +83,10 @@
                 "group": "autoreduce-run",
                 "order": 1
             },
-            "justMyCode": false
+            "justMyCode": false,
+            "env": {
+                // "AUTOREDUCTION_PRODUCTION": "true",
+            }
         },
         {
             "name": "Attach",

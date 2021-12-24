@@ -1,12 +1,19 @@
 ---
 
-- name: Set run_command depending on deployment stage
-  include_vars: "{{ deployment_stage }}.yml"
-
-- name: Pull the docker container to get any updates
-  become: yes
-  command: docker pull ghcr.io/isisscientificcomputing/autoreduce:latest
-
-- name: Start the detached Docker container
-  become: yes
-  command: docker run {{ run_command }} ghcr.io/isisscientificcomputing/autoreduce:latest
+- name: Start the container
+  community.docker.docker_container:
+    name: queue-processor
+    image: ghcr.io/autoreduction/autoreduce:latest
+    state: started
+    pull: true
+    env:
+      AUTOREDUCTION_PRODUCTION: "true"
+    volumes:
+      - /home/{{ autoreduction_user }}/.autoreduce:/home/{{ autoreduction_user }}/.autoreduce:rw
+      - /instrument:/instrument:rw
+      - /isis:/isis
+      - /shared-config:/shared-config
+    network_mode: host
+    detach: yes
+    comparisons:
+      image: strict

@@ -1,5 +1,5 @@
 # ############################################################################### #
-# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+# Autoreduction Repository : https://github.com/autoreduction/autoreduce
 #
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
@@ -181,8 +181,7 @@ class ReductionScript:
                 old_dict.update(source_dict)
                 setattr(self.module.web_var, dict_name, old_dict)
 
-            encoded_dict = dict(reduction_arguments[dict_name].items())
-            merge_dict_to_name(encoded_dict)
+            merge_dict_to_name(reduction_arguments[dict_name])
 
         if not self.module:
             raise RuntimeError("The script has not been loaded yet")
@@ -225,6 +224,7 @@ def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction
     logger.info("Final log dir: %s", reduction_dir.log_path)
     logger.info("Datafile: %s", [datafile.path for datafile in datafiles])
     logger.info("Reduction script: %s", script.script_path)
+    logger.info("Env: %s", ",".join(f"{k}={v}" for k, v in os.environ.items()))
     logger.info("-------------------------------------------------------")
     logger.info("Starting reduction...")
 

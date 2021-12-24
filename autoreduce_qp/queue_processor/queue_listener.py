@@ -1,6 +1,6 @@
 # ############################################################################ #
 # Autoreduction Repository :
-# https://github.com/ISISScientificComputing/autoreduce
+# https://github.com/autoreduction/autoreduce
 #
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
@@ -118,16 +118,17 @@ def setup_connection() -> Tuple[QueueClient, QueueListener]:
 
 def main():
     """Entry point for the module."""
+    logger = logging.getLogger(__package__)
     try:
         setup_connection()
     except ConnectionException as exp:
-        logging.getLogger(__package__).error("Exception occurred while connecting: %s %s\n\n%s",
-                                             type(exp).__name__, exp, traceback.format_exc())
+        logger.error("Exception occurred while connecting: %s %s\n\n%s",
+                     type(exp).__name__, exp, traceback.format_exc())
         raise
 
     # Print a success message to the terminal in case it's not being run through
     # the daemon
-    print("QueueClient connected and QueueListener active.")
+    logger.info("QueueClient connected and QueueListener active.")
 
     # If running this script as main (e.g. when debugging the queue listener)
     # the activemq connection runs async and without this sleep the process will
