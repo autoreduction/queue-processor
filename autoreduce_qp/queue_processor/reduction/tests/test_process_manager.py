@@ -7,7 +7,7 @@
 
 import unittest
 from unittest.mock import Mock, patch
-from docker.errors import ImageNotFound
+from docker.errors import APIError, ContainerError, ImageNotFound
 
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
 from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_and_message, add_data_and_message,
@@ -65,4 +65,12 @@ class TestReductionProcessManager(unittest.TestCase):
         docker_run.side_effect = ImageNotFound("test error")
         rpm = ReductionProcessManager(self.message, self.run_name)
         self.assertRaises(ImageNotFound, rpm.run)
+        docker_run.assert_called_once()
+
+    @patch('queue_processor.reduction.process_manager.docker.models.containers.ContainerCollection.run')
+    def test_api_error(self, docker_run: Mock):
+        """Test proper handling of container encountering an error"""
+        docker_run.side_effect = APIError("test error")
+        rpm = ReductionProcessManager(self.message, self.run_name)
+        self.assertRaises(APIError, rpm.run)
         docker_run.assert_called_once()
