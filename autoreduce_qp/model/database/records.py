@@ -95,7 +95,7 @@ def fetch_from_remote_source(arguments: dict) -> Optional[str]:
         for heading, heading_value in headings.items():
 
             # Check if current heading is a file and if it points to a dict
-            if "file" in heading and isinstance(heading_value, dict):
+            if "file" in heading.lower() and isinstance(heading_value, dict):
                 errored = False
 
                 # Check if the nested dict contains keys for "url" and "default"
