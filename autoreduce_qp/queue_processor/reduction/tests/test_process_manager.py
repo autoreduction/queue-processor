@@ -7,7 +7,7 @@
 
 import unittest
 from unittest.mock import Mock, patch
-from docker.errors import APIError, ContainerError, ImageNotFound
+from docker.errors import APIError, ImageNotFound
 
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
 from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_and_message, add_data_and_message,
