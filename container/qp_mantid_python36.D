@@ -9,7 +9,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-add-repository "deb [arch=amd64
   cp /opt/Mantid/bin/Mantid.properties /opt/Mantid/lib/Mantid.properties
 
 USER isisautoreduce
-RUN python3 -m pip install --user autoreduce_qp==22.0.0.dev23
+RUN python3 -m pip install --user autoreduce_qp==22.0.0.dev24
 USER root
 RUN python3 -m pip uninstall -y h5py && apt install --reinstall -y python3-h5py
 
