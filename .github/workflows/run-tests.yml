@@ -58,7 +58,6 @@ jobs:
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-latest
-    container: centos/python-38-centos7
     strategy:
       fail-fast: false
       matrix:
