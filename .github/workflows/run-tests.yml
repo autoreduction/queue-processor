@@ -7,14 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        python-version: ['3.6', '3.8']
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.6 and 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
 
       - uses: actions/cache@v2
         with:
@@ -56,12 +58,18 @@ jobs:
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-latest
-    container: centos/python-38-centos7
     strategy:
       fail-fast: false
+      matrix:
+        python-version: ['3.6', '3.8']
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python 3.6 and 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - uses: actions/cache@v2
         with:
@@ -81,14 +89,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        python-version: ['3.6', '3.8']
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.6 and 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
 
       - uses: actions/cache@v2
         with:
