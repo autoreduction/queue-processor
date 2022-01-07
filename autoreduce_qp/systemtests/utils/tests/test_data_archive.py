@@ -14,6 +14,7 @@ from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 
 
 class TestDataArchive(TestCase):
+
     def setUp(self) -> None:
         if Path(ARCHIVE_ROOT).exists():
             rmtree(ARCHIVE_ROOT)

@@ -26,6 +26,7 @@ from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 class QueueListener(ConnectionListener):
     """Listener class that is used to consume messages from ActiveMQ."""
+
     def __init__(self, client: QueueClient):
         """Initialise listener."""
         self.client: QueueClient = client

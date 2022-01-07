@@ -25,6 +25,7 @@ logger = logging.getLogger(__package__)
 
 class ReductionRunner:
     """ Main class for the ReductionRunner """
+
     def __init__(self, message: Message, run_name: str):
         self.message = message
         self.admin_log_stream = io.StringIO()
@@ -119,7 +120,7 @@ def write_reduction_message(reduction):
     """
     Write the reduction message to the reduction directory
     """
-    with open("/output/output.txt", "w") as out_file:
+    with open("/output/output.txt", mode="w", encoding="utf-8") as out_file:
         out_file.write(reduction.message.serialize())
         os.chmod("/output/output.txt", 0o777)
 

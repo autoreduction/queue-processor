@@ -15,6 +15,7 @@ from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_a
 
 
 class TestReductionProcessManager(unittest.TestCase):
+
     def setUp(self) -> None:
         self.data, self.message = add_data_and_message()
         self.expected_data, self.expected_message = expected_return_data_and_message()

@@ -18,6 +18,7 @@ from autoreduce_qp.queue_processor.reduction.utilities import windows_to_linux_p
 
 
 class TestReductionRunnerHelpers(unittest.TestCase):
+
     @parameterized.expand([
         ["\\\\isis\\inst$\\some\\more\\path.nxs", '/isis/some/more/path.nxs', ''],
         ["\\\\autoreduce\\data\\some\\more\\path.nxs", '/autoreduce/data/some/more/path.nxs', '/autoreduce'],

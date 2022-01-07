@@ -15,6 +15,7 @@ logger = logging.getLogger(__file__)
 
 
 class VariableUtils:
+
     @staticmethod
     def get_default_variables(instrument_name, raise_exc=False) -> dict:
         """
