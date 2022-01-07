@@ -22,6 +22,7 @@ class TestAccess(TestCase):
     """
     Test the access functionality for the database
     """
+
     def test_get_instrument_valid(self):
         """
         Test: The correct instrument object is returned

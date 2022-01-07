@@ -29,6 +29,7 @@ def channels_redirected(out_file, error_file, out_stream):
     class MultipleChannels:
         # pylint: disable=expression-not-assigned
         """ Behaves like a stream object, but outputs to multiple streams."""
+
         def __init__(self, *streams):
             """
             :param streams: (tuple) (N-path, io.StringIO)

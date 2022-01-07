@@ -20,6 +20,7 @@ from autoreduce_qp.queue_processor.variable_utils import VariableUtils as vu
 
 
 class FakeModule:
+
     def __init__(self, standard_vars=None, advanced_vars=None, variable_help=None) -> None:
         """
         Allows overwriting the advanced vars
@@ -70,6 +71,7 @@ class TestVariableUtils(TestCase):
         """
         Test: Getting the default variables returns the expected keys
         """
+
         class ReduceVars:
             standard_vars = {
                 "var1": 123,

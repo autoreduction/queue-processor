@@ -26,6 +26,7 @@ class TestQueueProcessor(TestCase):
     """
     Exercises the functions within listener.py
     """
+
     @patch("autoreduce_qp.queue_processor.queue_listener.QueueClient.__init__", return_value=None)
     @patch("autoreduce_qp.queue_processor.queue_listener.QueueClient.connect")
     @patch("autoreduce_qp.queue_processor.queue_listener.QueueClient.subscribe")
@@ -45,6 +46,7 @@ class TestQueueListener(TestCase):
     """
     Exercises the Listener
     """
+
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueClient)
         self.mocked_handler = mock.MagicMock(spec=HandleMessage)
@@ -58,7 +60,9 @@ class TestQueueListener(TestCase):
 
     @staticmethod
     def _get_frame():
+
         class StompFrameMock():
+
             def __init__(self, headers, body):
                 self.headers = headers
                 self.body = body
@@ -97,6 +101,7 @@ class TestQueueListener(TestCase):
 
     def test_on_message_handler_catches_exceptions(self):
         """Test on_message correctly handles an exception being raised"""
+
         def raise_expected_exception(msg):
             raise Exception(msg)
 

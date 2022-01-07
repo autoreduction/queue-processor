@@ -86,7 +86,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         expected_mantid_py = f"{MANTID_PATH}/mantid.py"
         if not os.path.exists(expected_mantid_py):
             os.makedirs(MANTID_PATH)
-            with open(expected_mantid_py, "w") as self.test_mantid_py:
+            with open(expected_mantid_py, mode="w", encoding="utf-8") as self.test_mantid_py:
                 self.test_mantid_py.write(FAKE_MANTID)
         else:
             # Mantid is installed, don't create or delete (in tearDown) anything
@@ -128,7 +128,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         :param vars_script:  The content to use in the reduce_vars.py file
         :return: file_path to the reduced data
         """
-        raw_file = '{}{}.nxs'.format(self.instrument, self.run_number)
+        raw_file = f'{self.instrument}{self.run_number}.nxs'
         self.data_archive.add_reduction_script(self.instrument, reduce_script)
         self.data_archive.add_reduce_vars_script(self.instrument, vars_script)
         raw_file = self.data_archive.add_data_file(self.instrument, raw_file, 19, 1)

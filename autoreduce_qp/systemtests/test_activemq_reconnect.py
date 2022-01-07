@@ -19,6 +19,7 @@ from autoreduce_qp.systemtests.base_systemtest import BaseAutoreduceSystemTest, 
 
 class TestActiveMQReconnect(BaseAutoreduceSystemTest):
     """Tests that the Queue Listener reconnects after ActiveMQ goes down"""
+
     @classmethod
     def setUpClass(cls):
         """ Start all external services """

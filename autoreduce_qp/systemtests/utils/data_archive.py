@@ -20,6 +20,7 @@ class DataArchive:
     """
     Class for the local data-archive used in the end to end tests.
     """
+
     def __init__(self, instruments: List[str], start_year: int, end_year: int):
         self.instruments = instruments
         self.start_year = start_year
@@ -101,6 +102,7 @@ class DefaultDataArchive(ContextDecorator):
     """
     Provides a context managed data archive that creates and deletes itself with some sample values.
     """
+
     def __init__(self, instrument_name) -> None:
         self.instrument_name = instrument_name
         self.data_archive = DataArchive([self.instrument_name], 21, 21)

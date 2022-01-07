@@ -30,6 +30,7 @@ class HandleMessage:
     Handle messages from the queue client and forward through the various stages
     depending on the message contents.
     """
+
     def __init__(self):
         self._logger = logging.getLogger(__package__)
 

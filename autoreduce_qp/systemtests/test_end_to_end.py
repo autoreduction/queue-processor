@@ -59,7 +59,7 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         self.assertEqual(self.run_number, run.run_number)
         self.assertEqual("This is a system test", run.run_description)
         self.assertEqual('Completed', run.status.value_verbose(),
-                         "Reduction log: %s\nAdmin log: %s" % (run.reduction_log, run.admin_log))
+                         f"Reduction log: {run.reduction_log}\nAdmin log: {run.admin_log}")
 
     def test_end_to_end_flat_output_respected(self):
         """

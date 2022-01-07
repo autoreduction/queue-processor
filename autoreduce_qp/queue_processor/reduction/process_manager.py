@@ -20,6 +20,7 @@ logger = logging.getLogger(__file__)
 
 
 class ReductionProcessManager:
+
     def __init__(self, message: Message, run_name: str) -> None:
         self.message: Message = message
         self.run_name = run_name

@@ -32,6 +32,7 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
+
     def __init__(self, instrument, rb_number, run_name, run_version, flat_output=False):
         self._is_flat_directory = flat_output
         self.run_version = run_version
@@ -61,6 +62,7 @@ class TemporaryReductionDirectory:
     """
     Encapsulates the use of the temporary reduction directory
     """
+
     def __init__(self, rb_number, run_name):
         self._temp_dir = TemporaryDirectory()  # pylint:disable=consider-using-with
         self._path = Path(self._temp_dir.name)
@@ -107,6 +109,7 @@ class Datafile:
     """
     Encapsulates datafile path and verification
     """
+
     def __init__(self, path):
         self.path = Path(path)
         try:
@@ -119,6 +122,7 @@ class ReductionScript:
     """
     Encapsulates the loading and running of a reduction script
     """
+
     def __init__(self, instrument, module="reduce.py"):
         self.script_path: Path = Path(SCRIPTS_DIRECTORY % instrument) / module
         self.skipped_runs = []
@@ -167,11 +171,13 @@ class ReductionScript:
         and advanced_vars, e.g.
         https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py
         """
+
         def merge_dicts(dict_name):
             """
             Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
             overwriting any key that exists in both with the value from sourceDict.
             """
+
             def merge_dict_to_name(source_dict):
                 """ Merge the two dictionaries. """
                 old_dict = {}

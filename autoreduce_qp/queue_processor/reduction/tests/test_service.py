@@ -29,6 +29,7 @@ class TestReductionService(unittest.TestCase):
     """
     Test cases for classes and functions of reduction_service
     """
+
     def setUp(self) -> None:
         patch(f"{REDUCTION_SERVICE_DIR}.LOGGER")
         self.instrument = "testinstrument"
