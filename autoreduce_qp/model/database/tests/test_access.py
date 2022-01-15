@@ -11,7 +11,7 @@ Unit tests to exercise the code responsible for common database access methods
 from unittest.mock import Mock
 from django.test import TestCase
 
-from autoreduce_db.reduction_viewer.models import Experiment, Instrument
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Software
 from autoreduce_qp.model.database import access
 from autoreduce_qp.model.database.access import get_all_instrument_names, is_instrument_flat_output
 from autoreduce_qp.model.database.records import create_reduction_run_record
@@ -108,11 +108,12 @@ class TestAccess(TestCase):
 
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
         status = access.get_status("q")
         msg = make_test_message(instrument.name)
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, msg, i, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status, software)
 
         assert access.find_highest_run_version(experiment, msg.run_number) == 3
 
@@ -125,13 +126,14 @@ class TestAccess(TestCase):
 
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
         msg = make_test_message(instrument.name)
 
         msg.run_number = [1234567, 1234568, 1234569]
         status = access.get_status("q")
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, msg, i, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status, software)
 
         assert access.find_highest_run_version(experiment, msg.run_number) == 3
 
@@ -148,13 +150,14 @@ class TestAccess(TestCase):
 
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
         msg = make_test_message(instrument.name)
 
         msg.run_number = [1234567, 1234570, 1234572]
         status = access.get_status("q")
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, msg, i, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status, software)
 
         assert access.find_highest_run_version(experiment, msg.run_number) == 3
 

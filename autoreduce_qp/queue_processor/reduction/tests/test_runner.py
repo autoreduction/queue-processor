@@ -133,7 +133,6 @@ class TestReductionRunner(unittest.TestCase):
         runner.reduce()
         mock_logger_info.assert_called_once()
         assert mock_logger_info.call_args[0][1] == "testdescription"
-        _get_mantid_version.assert_called_once()
         assert runner.message.message, ('Error encountered when trying to access the datafile'
                                         ' /isis/NDXTESTINSTRUMENT/Instrument/data/cycle_21_1/data.nxs')
 
@@ -181,7 +180,6 @@ class TestReductionRunner(unittest.TestCase):
             runner.reduce()
 
         reduce.assert_called_once()
-        _get_mantid_version.assert_called_once()
         assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is None
         assert runner.message.software == "5.1.0"
@@ -201,7 +199,6 @@ class TestReductionRunner(unittest.TestCase):
             runner.reduce()
 
         reduce.assert_called_once()
-        _get_mantid_version.assert_called_once()
         assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is None
         assert runner.message.software == "5.1.0"
@@ -224,7 +221,6 @@ class TestReductionRunner(unittest.TestCase):
             runner.reduce()
 
         reduce.assert_called_once()
-        _get_mantid_version.assert_called_once()
         assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is not None
         assert runner.message.reduction_log is not None
@@ -254,6 +250,5 @@ class TestReductionRunner(unittest.TestCase):
             runner.reduce()
 
         reduce.assert_called_once()
-        _get_mantid_version.assert_called_once()
         assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.flat_output is True
