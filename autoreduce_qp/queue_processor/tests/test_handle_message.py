@@ -166,7 +166,7 @@ class TestHandleMessage(TestCase):
         self.reduction_run.run_numbers.create(run_number=7654322)
 
         self.handler.do_reduction(self.reduction_run, self.msg, self.software)
-        rpm.assert_called_once_with(self.msg, "batch-7654321-7654322")
+        rpm.assert_called_once_with(self.msg, "batch-7654321-7654322", self.software)
         assert self.reduction_run.status == Status.get_completed()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None

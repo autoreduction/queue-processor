@@ -75,6 +75,7 @@ class TestDatabaseRecords(TestCase):
             status_id=mock_status.id,
             started_by=mock_msg.started_by,
             run_title=mock_msg.run_title,
+            software=mock_software,
             # Hardcoded below
             run_description=mock.ANY,
             hidden_in_failviewer=mock.ANY,
