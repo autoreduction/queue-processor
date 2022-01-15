@@ -93,9 +93,9 @@ def get_correct_image(client, software: Software):
     """
 
     try:
-        # All 'runner' containers are named 'runner-<software_name>-<version>'
-        # e.g. 'runner-Mantid-6.2.0'
-        return client.containers.get(f"runner-{str(software)}")
+        # All 'runner' images are named 'runner-<software_name>-<version>'
+        # e.g. 'runner-Mantid:6.2.0'
+        return client.images.pull(f"ghcr.io/autoreduction/runner-{software.name}:{software.version}")
     # If the matching version isn't in the list of versions, then it is unsupported
     except ValueError:
         raise ValueError(f"Unsupported software: {software.name}")

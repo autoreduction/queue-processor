@@ -22,7 +22,7 @@ class TestReductionProcessManager(unittest.TestCase):
         self.expected_data, self.expected_message = expected_return_data_and_message()
         self.bad_data, self.bad_message = add_bad_data_and_message()
         self.run_name = "Test run name"
-        self.software = Software.objects.get_or_create(name="Mantid", version="6.2.0")
+        self.software = Software(name="Mantid", version="3.0.0")
 
     def test_init(self):
         """Test that the constructor is doing what's expected"""

@@ -182,7 +182,10 @@ class TestReductionRunner(unittest.TestCase):
         reduce.assert_called_once()
         assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is None
-        assert runner.message.software == "5.1.0"
+        assert runner.message.software == {
+            "name": "Mantid",
+            "version": "6.2.0",
+        }
         assert "Error encountered when running the reduction script" in runner.message.message
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
@@ -201,7 +204,10 @@ class TestReductionRunner(unittest.TestCase):
         reduce.assert_called_once()
         assert str(reduce.call_args[0][2][0].path) == tmpfile.name
         assert runner.message.reduction_data is None
-        assert runner.message.software == "5.1.0"
+        assert runner.message.software == {
+            "name": "Mantid",
+            "version": "6.2.0",
+        }
         assert "REDUCTION Error:" in runner.message.message
 
     @parameterized.expand([["str"], ["list"]])
@@ -225,7 +231,10 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.reduction_data is not None
         assert runner.message.reduction_log is not None
         assert runner.message.message is None
-        assert runner.message.software == "5.1.0"
+        assert runner.message.software == {
+            "name": "Mantid",
+            "version": "6.2.0",
+        }
 
     @staticmethod
     def test_get_mantid_version():
