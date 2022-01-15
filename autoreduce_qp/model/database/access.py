@@ -95,6 +95,7 @@ def get_software(name: str, version: str) -> Software:
     Return:
         The Software object from the database
     """
+    #TODO: Hardcoded software
     if not version:
         # Hard-code a version if not provided until
         # https://autoreduce.atlassian.net/browse/AR-1230 is addressed

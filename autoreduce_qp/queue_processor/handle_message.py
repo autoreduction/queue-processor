@@ -18,7 +18,7 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
-from autoreduce_db.reduction_viewer.models import Experiment, Instrument, ReductionLocation, ReductionRun, Status
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, ReductionLocation, ReductionRun, Status, Software
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database import access as db_access
 from autoreduce_qp.model.database import records
@@ -44,10 +44,11 @@ class HandleMessage:
         - Instrument is paused.
         - There is no reduce.py.
         """
-        self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
+        self._logger.info("Data ready for processing run %s on %s. Software: %s. Version %s ", message.run_number,
+                          message.instrument, message.software["name"], message.software["version"])
 
         try:
-            reduction_run, message, instrument = self.create_run_records(message)
+            reduction_run, message, instrument, software = self.create_run_records(message)
         except Exception as err:
             # Failed to create the reduction run object - unrecoverable
             self._logger.error("Encountered error in transaction to create ReductionRun and related records, error: %s",
@@ -55,7 +56,7 @@ class HandleMessage:
             raise
 
         try:
-            self.send_message_onwards(reduction_run, message, instrument)
+            self.send_message_onwards(reduction_run, message, instrument, software)
         except Exception as err:
             self._handle_error(reduction_run, message, err)
             raise
@@ -83,22 +84,26 @@ class HandleMessage:
         experiment = db_access.get_experiment(rb_number)
         run_version = db_access.find_highest_run_version(experiment, run_number=message.run_number)
         instrument = db_access.get_instrument(str(message.instrument))
-        return self.do_create_reduction_record(message, experiment, instrument, run_version)
+        software = db_access.get_software(message.software.get("name"), message.software.get("version"))
+        return self.do_create_reduction_record(message, experiment, instrument, run_version, software)
 
     @staticmethod
     @transaction.atomic
-    def do_create_reduction_record(message: Message, experiment: Experiment, instrument: Instrument, run_version: int):
+    def do_create_reduction_record(message: Message, experiment: Experiment, instrument: Instrument, run_version: int,
+                                   software: Software):
         """Create the reduction record."""
         # Make the new reduction run with the information collected so far
         reduction_run, message = records.create_reduction_run_record(experiment=experiment,
                                                                      instrument=instrument,
                                                                      message=message,
                                                                      run_version=run_version,
+                                                                     software=software,
                                                                      status=Status.get_queued())
 
-        return reduction_run, message, instrument
+        return reduction_run, message, instrument, software
 
-    def send_message_onwards(self, reduction_run: ReductionRun, message: Message, instrument: Instrument):
+    def send_message_onwards(self, reduction_run: ReductionRun, message: Message, instrument: Instrument,
+                             software: Software):
         """
         Send the message onwards, either for processing, if validation is OK
         and instrument isn't paused, otherwiese skips if either of those is
@@ -114,7 +119,7 @@ class HandleMessage:
             self.reduction_error(reduction_run, message)
         else:
             self.activate_db_inst(instrument)
-            self.do_reduction(reduction_run, message)
+            self.do_reduction(reduction_run, message, software)
 
     @staticmethod
     def find_reason_to_skip_run(reduction_run: ReductionRun, message: Message, instrument) -> Optional[str]:
@@ -137,7 +142,7 @@ class HandleMessage:
 
         return None
 
-    def do_reduction(self, reduction_run: ReductionRun, message: Message):
+    def do_reduction(self, reduction_run: ReductionRun, message: Message, software: Software):
         """
         Handover to the ReductionProcessManager to actually run the reduction
         process and handle the outcome from the run.
@@ -147,7 +152,7 @@ class HandleMessage:
         else:
             run_name = f"{reduction_run.run_number}"
 
-        reduction_process_manager = ReductionProcessManager(message, run_name)
+        reduction_process_manager = ReductionProcessManager(message, run_name, software)
         self.reduction_started(reduction_run, message)
 
         output_message = reduction_process_manager.run()
@@ -187,7 +192,6 @@ class HandleMessage:
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
         self._common_reduction_run_update(reduction_run, Status.get_completed(), message)
-        reduction_run.software = db_access.get_software("Mantid", message.software)
         reduction_run.save()
 
         if message.reduction_data is not None:

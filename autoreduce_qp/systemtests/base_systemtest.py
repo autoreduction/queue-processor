@@ -78,7 +78,10 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
                                           run_title=self.run_title,
                                           description="This is a system test",
                                           facility="ISIS",
-                                          software="6.0.0",
+                                          software={
+                                              "name": "Mantid",
+                                              "version": "6.2.0",
+                                          },
                                           started_by=0,
                                           reduction_script=None,
                                           reduction_arguments=None)

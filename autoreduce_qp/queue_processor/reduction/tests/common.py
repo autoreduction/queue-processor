@@ -25,6 +25,10 @@ def add_data_and_message():
             }
         },
         'description': 'This is a test',
+        'software': {
+            "name": "Mantid",
+            "version": "6.2.0",
+        },
     }
 
     message = Message()
