@@ -336,13 +336,13 @@ class TestHandleMessage(TestCase):
         """Test creating a run record when the rb number is invalid."""
         with DefaultDataArchive(self.instrument_name):
             self.msg.rb_number = "INVALID RB NUMBER CALIBRATION RUN PERHAPS"
-            reduction_run, _, _ = self.handler.create_run_records(self.msg)
+            reduction_run, _, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == 0
 
     def test_create_run_records_valid_rb_number(self):
         """Test creating a run record when the rb number is invalid."""
         with DefaultDataArchive(self.instrument_name):
-            reduction_run, _, _ = self.handler.create_run_records(self.msg)
+            reduction_run, _, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == self.msg.rb_number
 
     @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")
