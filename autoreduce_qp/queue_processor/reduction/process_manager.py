@@ -52,10 +52,6 @@ class ReductionProcessManager:
 
                 image = get_correct_image(client, self.software)
 
-                # Pull all tags of runner-mantid as a list
-                # Could be used to populate a dropdown menu of images
-                runner_mantid = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
-
                 if "AUTOREDUCTION_PRODUCTION" in os.environ:
                     reduced_data = Path('/instrument')
                 else:

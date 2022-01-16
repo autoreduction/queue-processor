@@ -12,7 +12,7 @@ import sys
 from contextlib import contextmanager
 from typing import List, Union
 from autoreduce_db.reduction_viewer.models import Software
-from docker.errors import ImageNotFound
+from docker.errors import ImageNotFound, APIError
 
 IMAGES_SOFTWARE = [{'name': 'Mantid', 'versions': ['6', '6.1.0', '6.2.0']}]
 
@@ -98,8 +98,5 @@ def get_correct_image(client, software: Software):
         image_name = f"ghcr.io/autoreduction/runner-{software.name}:{software.version}"
         return client.images.pull(image_name.lower())
     # If the matching version isn't in the list of versions, then it is unsupported
-    except ValueError:
-        raise ValueError(f"Unsupported software: {software.name}")
-    # If the specified image does not exist.
-    except ImageNotFound as exc:
-        raise exc
+    except APIError as exc:
+        raise exc(f"Unsupported software: {software.name}")
