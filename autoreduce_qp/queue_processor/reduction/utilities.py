@@ -97,4 +97,4 @@ def get_correct_image(client, software: Software):
         return client.images.pull(image_name.lower())
     # If the matching version isn't in the list of versions, then it is unsupported
     except APIError as exc:
-        raise exc(f"Unsupported software: {software.name}")
+        raise exc
