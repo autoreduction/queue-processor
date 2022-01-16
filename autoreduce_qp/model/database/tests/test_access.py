@@ -8,7 +8,8 @@
 """
 Unit tests to exercise the code responsible for common database access methods
 """
-from unittest.mock import Mock
+import os
+from unittest.mock import Mock, patch
 from django.test import TestCase
 
 from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Software
@@ -99,6 +100,14 @@ class TestAccess(TestCase):
         self.assertEqual('Mantid', actual.name)
         self.assertEqual('4.0', actual.version)
         actual.delete()
+
+    @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
+    def test_get_unsupported_software(self):
+        """
+        Test: The correct Software record is returned
+        When: get_software is called with values that match a database record
+        """
+        self.assertRaises(ValueError, access.get_software, 'Mantid', '4.0')
 
     def test_find_highest_run_version_single_run_number(self):
         """

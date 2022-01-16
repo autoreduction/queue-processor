@@ -6,6 +6,7 @@
 # ############################################################################### #
 """Common functions for accessing and creating records in the database."""
 # pylint:disable=no-member
+import os
 from typing import List, Union
 from django.db import transaction
 
@@ -95,7 +96,14 @@ def get_software(name: str, version: str) -> Software:
     Return:
         The Software object from the database
     """
-    return Software.objects.get_or_create(name=name, version=version)[0]
+    # If running in production environment, then we don't want to create a new software record
+    if not "AUTOREDUCTION_PRODUCTION" in os.environ:
+        return Software.objects.get_or_create(name=name, version=version)[0]
+    else:
+        # If the matching version isn't in the list of versions, then it is unsupported
+        if version not in Software.objects.filter(name=name).values_list('version', flat=True):
+            raise ValueError("Unsupported software version")
+        return Software.objects.get(name=name, version=version)
 
 
 def find_highest_run_version(experiment: str, run_number: Union[int, List[int]]) -> int:
