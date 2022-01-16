@@ -323,7 +323,8 @@ class TestHandleMessage(TestCase):
         Test that an integrity error inside data_ready marks the reduction as
         errored.
         """
-        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument,
+                                                             self.software))
         self.handler.send_message_onwards = Mock(side_effect=IntegrityError)
         with self.assertRaises(IntegrityError):
             self.handler.data_ready(self.msg)
