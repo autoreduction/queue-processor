@@ -12,9 +12,7 @@ import sys
 from contextlib import contextmanager
 from typing import List, Union
 from autoreduce_db.reduction_viewer.models import Software
-from docker.errors import ImageNotFound, APIError
-
-IMAGES_SOFTWARE = [{'name': 'Mantid', 'versions': ['6', '6.1.0', '6.2.0']}]
+from docker.errors import APIError
 
 
 @contextmanager
