@@ -10,14 +10,13 @@ import contextlib
 import io
 import unittest
 from pathlib import Path
-import docker
 
 from unittest.mock import MagicMock, patch
 from parameterized import parameterized
+import docker
 
-from autoreduce_db.reduction_viewer.models import Software
-
-from autoreduce_qp.queue_processor.reduction.utilities import get_correct_image, windows_to_linux_path, channels_redirected
+from autoreduce_qp.queue_processor.reduction.utilities import (get_correct_image, windows_to_linux_path,
+                                                               channels_redirected)
 
 
 class TestReductionRunnerHelpers(unittest.TestCase):

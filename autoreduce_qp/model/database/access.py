@@ -100,9 +100,7 @@ def get_software(name: str, version: str) -> Software:
     if not "AUTOREDUCTION_PRODUCTION" in os.environ:
         return Software.objects.get_or_create(name=name, version=version)[0]
     else:
-        if Software.objects.filter(name=name).count() == 0:
-            raise ValueError(f"Software {name} is not supported.")
-        elif Software.objects.filter(name=name, version=version).count() == 0:
+        if Software.objects.filter(name=name, version=version).count() == 0:
             raise ValueError(f"Software {name} version {version} is not supported.")
         return Software.objects.get(name=name, version=version)
 
