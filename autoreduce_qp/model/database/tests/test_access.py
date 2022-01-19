@@ -9,7 +9,7 @@
 Unit tests to exercise the code responsible for common database access methods
 """
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 from django.test import TestCase
 
 from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Software
@@ -90,19 +90,41 @@ class TestAccess(TestCase):
         self.assertIsInstance(actual, Experiment)
         actual.delete()
 
-    def test_get_software(self):
+    def test_get_supported_software(self):
         """
         Test: The correct Software record is returned
         When: get_software is called with values that match a database record
         """
-        actual = access.get_software('Mantid', '4.0')
+        actual = access.get_software('Mantid', '6.2.0')
         self.assertIsNotNone(actual)
         self.assertEqual('Mantid', actual.name)
-        self.assertEqual('4.0', actual.version)
+        self.assertEqual('6.2.0', actual.version)
         actual.delete()
 
     @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
-    def test_get_unsupported_software(self):
+    def test_get_supported_software_prod(self):
+        """
+        Test: The correct Software record is returned
+        When: get_software is called with values that match a database record
+        """
+        software = Software.objects.create(name="Mantid", version="6.2.0")
+        actual = access.get_software('Mantid', '6.2.0')
+        self.assertIsNotNone(actual)
+        self.assertEqual('Mantid', actual.name)
+        self.assertEqual('6.2.0', actual.version)
+        actual.delete()
+        software.delete()
+
+    @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
+    def test_get_unsupported_software_prod(self):
+        """
+        Test: The correct Software record is returned
+        When: get_software is called with values that match a database record
+        """
+        self.assertRaises(ValueError, access.get_software, 'test software', '6.2.0')
+
+    @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
+    def test_get_unsupported_software_version_prod(self):
         """
         Test: The correct Software record is returned
         When: get_software is called with values that match a database record

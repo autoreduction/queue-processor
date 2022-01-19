@@ -10,11 +10,14 @@ import contextlib
 import io
 import unittest
 from pathlib import Path
+import docker
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from parameterized import parameterized
 
-from autoreduce_qp.queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
+from autoreduce_db.reduction_viewer.models import Software
+
+from autoreduce_qp.queue_processor.reduction.utilities import get_correct_image, windows_to_linux_path, channels_redirected
 
 
 class TestReductionRunnerHelpers(unittest.TestCase):
@@ -50,3 +53,20 @@ class TestReductionRunnerHelpers(unittest.TestCase):
 
         actual = channels_redirected(out_file=script_out, error_file=mantid_out, out_stream=out_stream)
         self.assertIsInstance(actual, contextlib._GeneratorContextManager)  # pylint:disable=protected-access
+
+    def test_get_correct_image(self):
+        """
+        Test: The correct image is returned
+        When: Called
+        """
+        client = docker.from_env()
+        test_software = MagicMock()
+        test_software.name = "Mantid"
+        test_software.version = "6.2.0"
+        image = get_correct_image(client, test_software)
+        self.assertIsNotNone(image)
+
+        fake_software = MagicMock()
+        test_software.name = "Fake"
+        test_software.version = "6.2.0"
+        self.assertRaises(docker.errors.APIError, get_correct_image, client, fake_software)
