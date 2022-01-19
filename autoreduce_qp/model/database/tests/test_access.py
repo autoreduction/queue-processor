@@ -9,7 +9,7 @@
 Unit tests to exercise the code responsible for common database access methods
 """
 import os
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 from django.test import TestCase
 
 from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Software
