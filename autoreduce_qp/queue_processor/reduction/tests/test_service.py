@@ -180,6 +180,9 @@ class TestReductionService(unittest.TestCase):
         self.assertEqual([], script.skipped_runs)
         self.assertIsNone(script.module)
 
+        script = ReductionScript(self.instrument, "test_script.py")
+        self.assertEqual(Path("test_script.py"), script.script_path)
+
     def test_reduction_script_run(self):
         """
         Tests: Correct fields set up
