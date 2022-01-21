@@ -148,8 +148,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
                   no longer matches the value of the first run.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
-        self.data_ready_message.data = file_location
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         result_one = self.send_and_wait_for_result(self.data_ready_message)
 
         assert len(result_one) == 1
@@ -173,8 +173,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
                   no longer matches the value of the first run.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
-        self.data_ready_message.data = file_location
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         result_one = self.send_and_wait_for_result(self.data_ready_message)
 
         assert len(result_one) == 1
@@ -197,8 +197,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
                   no longer matches the value of the first run.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
-        self.data_ready_message.data = file_location
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         result_one = self.send_and_wait_for_result(self.data_ready_message)
 
         assert len(result_one) == 1
@@ -221,8 +221,8 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         has not changed.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
-        self.data_ready_message.data = file_location
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         result_one = self.send_and_wait_for_result(self.data_ready_message)
 
         run_with_initial_var = result_one[0]
@@ -239,10 +239,10 @@ class TestEndToEnd(BaseAutoreduceSystemTest):
         changed.
         """
         # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+        self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
         self.run_number = 101
-        self.data_ready_message.data = file_location
+        self.data_ready_message.data = EXPECTED_FILE_LOCATION
         result_one = self.send_and_wait_for_result(self.data_ready_message)
 
         assert len(result_one) == 1
