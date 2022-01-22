@@ -65,10 +65,10 @@ class ReductionRunner:
 
         # Attempt to read the reduction script
         try:
-            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8') as fp:
-                fp.write(self.reduction_script)
-                fp.seek(0)
-                reduction_script = ReductionScript(self.instrument, fp.name)
+            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8') as temp_script:
+                temp_script.write(self.reduction_script)
+                temp_script.seek(0)
+                reduction_script = ReductionScript(self.instrument, temp_script.name)
                 reduction_script_path = reduction_script.script_path
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction script"
