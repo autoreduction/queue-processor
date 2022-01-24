@@ -56,8 +56,8 @@ class TestReductionService(unittest.TestCase):
         with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix=".py") as script_file:
             script_file.write(test_string)
             script_file.flush()
-            red_script = ReductionScript(self.instrument)
-            red_script.script_path = Path(script_file.name)
+            script_path = Path(script_file.name)
+            red_script = ReductionScript(self.instrument, script_path=script_path)
             red_script.load()
             yield red_script
 
@@ -180,7 +180,7 @@ class TestReductionService(unittest.TestCase):
         self.assertEqual([], script.skipped_runs)
         self.assertIsNone(script.module)
 
-        script = ReductionScript(self.instrument, "test_script.py")
+        script = ReductionScript(self.instrument, script_path="test_script.py")
         self.assertEqual(Path("test_script.py"), script.script_path)
 
     def test_reduction_script_run(self):
@@ -199,8 +199,8 @@ class TestReductionService(unittest.TestCase):
         """
         Test importing a module that is all OK
         """
-        red_script = ReductionScript(self.instrument)
-        red_script.script_path = Path(os.path.join(os.path.dirname(__file__), "module_to_import.py"))
+        script_path = Path(os.path.join(os.path.dirname(__file__), "module_to_import.py"))
+        red_script = ReductionScript(self.instrument, script_path=script_path)
         module = red_script.load()
 
         assert red_script.exists()
@@ -211,8 +211,8 @@ class TestReductionService(unittest.TestCase):
         """
         Test importing a module that does not exist
         """
-        red_script = ReductionScript(self.instrument)
-        red_script.script_path = Path("some.module.that.does.not.exist")
+        script_path = Path("some.module.that.does.not.exist")
+        red_script = ReductionScript(self.instrument, script_path=script_path)
         with self.assertRaises(ImportError):
             red_script.load()
 
@@ -249,8 +249,8 @@ class TestReductionService(unittest.TestCase):
         """
         Test that replace variables raises if called before the module is loaded
         """
-        red_script = ReductionScript(self.instrument)
-        red_script.script_path = Path("/tmp/file")
+        script_path = Path("/tmp/file")
+        red_script = ReductionScript(self.instrument, script_path=script_path)
         self.assertRaises(RuntimeError, red_script.replace_variables, self.reduction_arguments)
 
     def test_reduction_script_replace_variables(self):
