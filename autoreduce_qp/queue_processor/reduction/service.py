@@ -123,8 +123,11 @@ class ReductionScript:
     Encapsulates the loading and running of a reduction script
     """
 
-    def __init__(self, instrument, module="reduce.py"):
-        self.script_path: Path = Path(SCRIPTS_DIRECTORY % instrument) / module
+    def __init__(self, instrument, script_path=None, module="reduce.py"):
+        if script_path is None:
+            self.script_path: Path = Path(SCRIPTS_DIRECTORY % instrument) / module
+        else:
+            self.script_path = Path(script_path)
         self.skipped_runs = []
         self.module = None
 

@@ -11,6 +11,7 @@ import io
 import logging
 import os
 import sys
+import tempfile
 import traceback
 
 from autoreduce_utils.message.message import Message
@@ -37,6 +38,7 @@ class ReductionRunner:
         self.run_number = message.run_number
         self.run_version = message.run_version
         self.reduction_arguments = message.reduction_arguments
+        self.reduction_script = message.reduction_script
 
     def reduce(self):
         """Start the reduction job."""
@@ -61,11 +63,13 @@ class ReductionRunner:
             self.message.reduction_log = f"Exception: {err}"
             return  # stops the reduction and allows the parent to read the outcome in the message
 
-        # Attempt to read the reduction script. This does not currently respect
-        # any script passed in the message https://autoreduce.atlassian.net/browse/AR-1056
+        # Attempt to read the reduction script
         try:
-            reduction_script = ReductionScript(self.instrument)
-            reduction_script_path = reduction_script.script_path
+            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8') as temp_script:
+                temp_script.write(self.reduction_script)
+                temp_script.seek(0)
+                reduction_script = ReductionScript(self.instrument, temp_script.name)
+                reduction_script_path = reduction_script.script_path
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction script"
             self.message.reduction_log = f"Exception: {err}"
