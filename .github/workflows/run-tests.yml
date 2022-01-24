@@ -37,7 +37,7 @@ jobs:
         run: |
           RUNNING_VIA_PYTEST=true pytest autoreduce_qp/systemtests --cov-append -v
 
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v2
         with:
           files: ./coverage.xml
           name: codecov-umbrella
