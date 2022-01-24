@@ -46,7 +46,7 @@ class VariableUtils:
                 "advanced_vars": {},
             }
         }
-        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+        reduce_vars = ReductionScript(instrument_name, script_path=None, module='reduce_vars.py')
 
         try:
             module = reduce_vars.load()
