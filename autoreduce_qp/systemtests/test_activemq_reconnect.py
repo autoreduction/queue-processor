@@ -8,8 +8,8 @@
 Linux only!
 Tests that data can traverse through the autoreduction system successfully
 """
-import subprocess
 import time
+import docker
 
 from autoreduce_utils.clients import queue_client
 from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory
@@ -40,15 +40,20 @@ class TestActiveMQReconnect(BaseAutoreduceSystemTest):
 
     @staticmethod
     def _start_activemq():
-        subprocess.run("docker run --rm --name activemq_systemtest -p 62000:61613 -d rmohr/activemq",
-                       shell=True,
-                       timeout=30,
-                       check=True)
+        """Start ActiveMQ"""
+        docker.from_env(timeout=30).containers.run(name="activemq_systemtest",
+                                                   image="rmohr/activemq",
+                                                   ports={"61613": "62000"},
+                                                   detach=True,
+                                                   tty=True,
+                                                   auto_remove=True)
         time.sleep(30)
 
     @staticmethod
     def _stop_activemq():
-        subprocess.run("docker kill activemq_systemtest", shell=True, timeout=30, check=True)
+        """Stop ActiveMQ"""
+        container = docker.from_env().containers.get("activemq_systemtest")
+        container.kill()
 
     def test_reconnect_on_activemq_failure(self):
         """
