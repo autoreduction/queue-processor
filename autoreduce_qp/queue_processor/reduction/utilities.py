@@ -11,6 +11,8 @@ Post-Process Admin Utilities
 import sys
 from contextlib import contextmanager
 from typing import List, Union
+from autoreduce_db.reduction_viewer.models import Software
+from docker.errors import APIError
 
 
 @contextmanager
@@ -79,3 +81,20 @@ def windows_to_linux_path(paths: Union[str, List[str]], temp_root_directory) -> 
                                     '/isis/').replace('\\\\autoreduce\\data\\',
                                                       temp_root_directory + '/data/').replace('\\', '/')
         return paths
+
+
+def get_correct_image(client, software: Software):
+    """ Fetch correct image based on the software and version
+    :param client: Docker client
+    :param software: (class) Software to be used
+    :return: (Image) Image that contains the correct version of the software
+    """
+
+    try:
+        # All 'runner' images are named 'runner-<software_name>-<version>'
+        # e.g. 'runner-Mantid:6.2.0'
+        image_name = f"ghcr.io/autoreduction/runner-{software.name}:{software.version}"
+        return client.images.pull(image_name.lower())
+    # If the matching version isn't in the list of versions, then it is unsupported
+    except APIError as exc:
+        raise exc

@@ -9,6 +9,8 @@ import unittest
 from unittest.mock import Mock, patch
 from docker.errors import APIError, ImageNotFound
 
+from autoreduce_db.reduction_viewer.models import Software
+
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
 from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_and_message, add_data_and_message,
                                                                   expected_return_data_and_message)
@@ -21,19 +23,20 @@ class TestReductionProcessManager(unittest.TestCase):
         self.expected_data, self.expected_message = expected_return_data_and_message()
         self.bad_data, self.bad_message = add_bad_data_and_message()
         self.run_name = "Test run name"
+        self.software = Software(name="Mantid", version="6.2.0")
 
     def test_init(self):
         """Test that the constructor is doing what's expected"""
         self.data, self.message = add_data_and_message()
 
-        rpm = ReductionProcessManager(self.message, self.run_name)
+        rpm = ReductionProcessManager(self.message, self.run_name, self.software)
 
         assert rpm.message == self.message
 
     def test_run(self):
         """Tests success path"""
         run_name = "Test run name"
-        rpm = ReductionProcessManager(self.message, run_name)
+        rpm = ReductionProcessManager(self.message, run_name, self.software)
         result_message = rpm.run()
 
         self.assertEqual(result_message.facility, 'ISIS')
@@ -55,7 +58,7 @@ class TestReductionProcessManager(unittest.TestCase):
     def test_run_subprocess_error(self, docker_run: Mock):
         """Test proper handling of container encountering an error"""
         docker_run.side_effect = Exception()
-        rpm = ReductionProcessManager(self.message, self.run_name)
+        rpm = ReductionProcessManager(self.message, self.run_name, self.software)
         rpm.run()
         docker_run.assert_called_once()
         assert "Processing encountered an error" in rpm.message.message
@@ -64,7 +67,7 @@ class TestReductionProcessManager(unittest.TestCase):
     def test_missing_image(self, docker_run: Mock):
         """Test proper handling of container encountering an error"""
         docker_run.side_effect = ImageNotFound("test error")
-        rpm = ReductionProcessManager(self.message, self.run_name)
+        rpm = ReductionProcessManager(self.message, self.run_name, self.software)
         self.assertRaises(ImageNotFound, rpm.run)
         docker_run.assert_called_once()
 
@@ -72,6 +75,6 @@ class TestReductionProcessManager(unittest.TestCase):
     def test_api_error(self, docker_run: Mock):
         """Test proper handling of container encountering an error"""
         docker_run.side_effect = APIError("test error")
-        rpm = ReductionProcessManager(self.message, self.run_name)
+        rpm = ReductionProcessManager(self.message, self.run_name, self.software)
         self.assertRaises(APIError, rpm.run)
         docker_run.assert_called_once()

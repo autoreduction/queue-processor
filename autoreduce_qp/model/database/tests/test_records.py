@@ -52,13 +52,15 @@ class TestDatabaseRecords(TestCase):
         mock_arguments = mock.NonCallableMock()
         mock_status = mock.NonCallableMock()
         mock_message = mock.NonCallableMagicMock()
+        mock_software = mock.NonCallableMagicMock()
 
         _make_script_and_arguments.return_value = mock_script, mock_arguments, mock_message
         returned_run, returned_msg = records.create_reduction_run_record(experiment=mock_experiment,
                                                                          instrument=mock_inst,
                                                                          message=mock_msg,
                                                                          run_version=mock_run_version,
-                                                                         status=mock_status)
+                                                                         status=mock_status,
+                                                                         software=mock_software)
         self.assertEqual(ReductionRun.objects.create.return_value, returned_run)
         self.assertEqual(mock_msg, returned_msg)
 
@@ -73,6 +75,7 @@ class TestDatabaseRecords(TestCase):
             status_id=mock_status.id,
             started_by=mock_msg.started_by,
             run_title=mock_msg.run_title,
+            software=mock_software,
             # Hardcoded below
             run_description=mock.ANY,
             hidden_in_failviewer=mock.ANY,

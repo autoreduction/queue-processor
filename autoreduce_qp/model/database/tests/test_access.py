@@ -8,10 +8,11 @@
 """
 Unit tests to exercise the code responsible for common database access methods
 """
-from unittest.mock import Mock
+import os
+from unittest.mock import Mock, patch
 from django.test import TestCase
 
-from autoreduce_db.reduction_viewer.models import Experiment, Instrument
+from autoreduce_db.reduction_viewer.models import Experiment, Instrument, Software
 from autoreduce_qp.model.database import access
 from autoreduce_qp.model.database.access import get_all_instrument_names, is_instrument_flat_output
 from autoreduce_qp.model.database.records import create_reduction_run_record
@@ -89,16 +90,46 @@ class TestAccess(TestCase):
         self.assertIsInstance(actual, Experiment)
         actual.delete()
 
-    def test_get_software(self):
+    def test_get_supported_software(self):
         """
         Test: The correct Software record is returned
         When: get_software is called with values that match a database record
         """
-        actual = access.get_software('Mantid', '4.0')
+        actual = access.get_software('Mantid', '6.2.0')
         self.assertIsNotNone(actual)
         self.assertEqual('Mantid', actual.name)
-        self.assertEqual('4.0', actual.version)
+        self.assertEqual('6.2.0', actual.version)
         actual.delete()
+
+    @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
+    def test_get_supported_software_prod(self):
+        """
+        Test: The correct Software record is returned
+        When: get_software is called with values that match a database record (production environment)
+        """
+        software = Software.objects.create(name="Mantid", version="6.2.0")
+        actual = access.get_software('Mantid', '6.2.0')
+        self.assertIsNotNone(actual)
+        self.assertEqual('Mantid', actual.name)
+        self.assertEqual('6.2.0', actual.version)
+        actual.delete()
+        software.delete()
+
+    @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
+    def test_get_unsupported_software_prod(self):
+        """
+        Test: The correct Software record is returned
+        When: get_software is called with values that do not match a database record (production environment)
+        """
+        self.assertRaises(ValueError, access.get_software, 'test software', '6.2.0')
+
+    @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
+    def test_get_unsupported_software_version_prod(self):
+        """
+        Test: The correct Software record is returned
+        When: get_software is called with values that do not match a database record (production environment)
+        """
+        self.assertRaises(ValueError, access.get_software, 'Mantid', '4.0')
 
     def test_find_highest_run_version_single_run_number(self):
         """
@@ -108,11 +139,12 @@ class TestAccess(TestCase):
 
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
         status = access.get_status("q")
         msg = make_test_message(instrument.name)
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, msg, i, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status, software)
 
         assert access.find_highest_run_version(experiment, msg.run_number) == 3
 
@@ -125,13 +157,14 @@ class TestAccess(TestCase):
 
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
         msg = make_test_message(instrument.name)
 
         msg.run_number = [1234567, 1234568, 1234569]
         status = access.get_status("q")
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, msg, i, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status, software)
 
         assert access.find_highest_run_version(experiment, msg.run_number) == 3
 
@@ -148,13 +181,14 @@ class TestAccess(TestCase):
 
         experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
         msg = make_test_message(instrument.name)
 
         msg.run_number = [1234567, 1234570, 1234572]
         status = access.get_status("q")
 
         for i in range(3):
-            create_reduction_run_record(experiment, instrument, msg, i, status)
+            create_reduction_run_record(experiment, instrument, msg, i, status, software)
 
         assert access.find_highest_run_version(experiment, msg.run_number) == 3
 

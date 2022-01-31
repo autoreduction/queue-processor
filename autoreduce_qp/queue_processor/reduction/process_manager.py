@@ -15,15 +15,19 @@ from docker.errors import APIError, ImageNotFound, ContainerError
 
 from autoreduce_utils.settings import ARCHIVE_ROOT, AUTOREDUCE_HOME_ROOT, PROJECT_DEV_ROOT
 from autoreduce_utils.message.message import Message
+from autoreduce_db.reduction_viewer.models import Software
+
+from autoreduce_qp.queue_processor.reduction.utilities import get_correct_image
 
 logger = logging.getLogger(__file__)
 
 
 class ReductionProcessManager:
 
-    def __init__(self, message: Message, run_name: str) -> None:
+    def __init__(self, message: Message, run_name: str, software: Software) -> None:
         self.message: Message = message
         self.run_name = run_name
+        self.software = software
 
     def run(self) -> Message:
         """Run the reduction subprocess."""
@@ -46,9 +50,7 @@ class ReductionProcessManager:
                 # https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
                 client = docker.from_env()
 
-                # Pull all tags of runner-mantid as a list
-                # Could be used to populate a dropdown menu of images
-                runner_mantid = client.images.pull('ghcr.io/autoreduction/runner-mantid:6.2.0')
+                image = get_correct_image(client, self.software)
 
                 if "AUTOREDUCTION_PRODUCTION" in os.environ:
                     reduced_data = Path('/instrument')
@@ -65,7 +67,7 @@ class ReductionProcessManager:
                     Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
 
                 container = client.containers.run(
-                    image=runner_mantid,
+                    image=image,
                     command=args,
                     volumes={
                         AUTOREDUCE_HOME_ROOT: {

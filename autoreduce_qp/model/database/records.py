@@ -17,7 +17,7 @@ import requests
 from requests.exceptions import ConnectionError
 
 from autoreduce_db.reduction_viewer.models import (DataLocation, Experiment, Instrument, ReductionArguments,
-                                                   ReductionScript, RunNumber, ReductionRun, Status)
+                                                   ReductionScript, RunNumber, ReductionRun, Status, Software)
 from autoreduce_qp.queue_processor.reduction.service import ReductionScript as ReductionScriptFile
 from autoreduce_qp.queue_processor.variable_utils import VariableUtils
 
@@ -161,7 +161,7 @@ def _make_script_and_arguments(experiment: Experiment, instrument: Instrument, m
 
 
 def create_reduction_run_record(experiment: Experiment, instrument: Instrument, message, run_version: int,
-                                status: Status):
+                                status: Status, software: Software):
     """
     Create an ORM record for the given reduction run and return this record
     without saving it to the DB.
@@ -184,6 +184,7 @@ def create_reduction_run_record(experiment: Experiment, instrument: Instrument, 
                                                 reduction_host=socket.getfqdn(),
                                                 batch_run=batch_run,
                                                 script=script,
+                                                software=software,
                                                 arguments=arguments)
     _make_run_numbers(reduction_run, message.run_number)
     _make_data_locations(reduction_run, message.data)

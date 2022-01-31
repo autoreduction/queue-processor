@@ -16,7 +16,7 @@ from django.db.utils import IntegrityError
 from django.test import TestCase
 from parameterized import parameterized
 
-from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, Status)
+from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, Status, Software)
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database.records import create_reduction_run_record
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
@@ -36,7 +36,10 @@ def make_test_message(instrument: str) -> Message:
         "reduction_data": "/path/1",
         "started_by": -1,
         "data": "/path",
-        "software": "6.0.0",
+        'software': {
+            "name": "Mantid",
+            "version": "6.2.0",
+        },
         "description": "This is a fake description",
         "instrument": instrument,  # Autoreduction Mock Instrument
         "reduction_script": """def main(input_file, output_dir): print(123)""",
@@ -64,9 +67,10 @@ class TestHandleMessage(TestCase):
 
         self.experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         self.instrument, _ = Instrument.objects.get_or_create(name=self.instrument_name, is_active=True)
+        self.software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
         status = Status.get_queued()
         self.reduction_run, self.message = create_reduction_run_record(self.experiment, self.instrument, self.msg, 0,
-                                                                       status)
+                                                                       status, self.software)
 
     @parameterized.expand([
         ["reduction_error", 'e'],
@@ -124,8 +128,8 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.finished is not None
         assert self.reduction_run.status == Status.get_completed()
         self.mocked_logger.info.assert_called_once()
-        assert self.reduction_run.software.name == "Mantid"
-        assert self.reduction_run.software.version == self.msg.software
+        assert self.reduction_run.software.name == self.msg.software.get("name")
+        assert self.reduction_run.software.version == self.msg.software.get("version")
         assert self.reduction_run.reduction_location.count() == 0
 
     def test_reduction_complete_with_reduction_data(self):
@@ -148,7 +152,7 @@ class TestHandleMessage(TestCase):
         """Test the success path of do_reduction."""
         rpm.return_value.run = self.do_post_started_assertions
 
-        self.handler.do_reduction(self.reduction_run, self.msg)
+        self.handler.do_reduction(self.reduction_run, self.msg, self.software)
         assert self.reduction_run.status == Status.get_completed()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None
@@ -161,8 +165,8 @@ class TestHandleMessage(TestCase):
         self.reduction_run.batch_run = True
         self.reduction_run.run_numbers.create(run_number=7654322)
 
-        self.handler.do_reduction(self.reduction_run, self.msg)
-        rpm.assert_called_once_with(self.msg, "batch-7654321-7654322")
+        self.handler.do_reduction(self.reduction_run, self.msg, self.software)
+        rpm.assert_called_once_with(self.msg, "batch-7654321-7654322", self.software)
         assert self.reduction_run.status == Status.get_completed()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None
@@ -178,7 +182,7 @@ class TestHandleMessage(TestCase):
         test_special_chars_script = 'print("✈", "’")'
         self.reduction_run.script.text = test_special_chars_script
 
-        self.handler.do_reduction(self.reduction_run, self.msg)
+        self.handler.do_reduction(self.reduction_run, self.msg, self.software)
         assert self.reduction_run.status == Status.get_completed()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None
@@ -203,7 +207,7 @@ class TestHandleMessage(TestCase):
 
         rpm.return_value.run = self.do_post_started_assertions
 
-        self.handler.do_reduction(self.reduction_run, self.msg)
+        self.handler.do_reduction(self.reduction_run, self.msg, self.software)
         assert self.reduction_run.status == Status.get_error()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None
@@ -265,7 +269,7 @@ class TestHandleMessage(TestCase):
         """Test that a run where all is OK is reduced."""
         rpm.return_value.run = partial(self.do_post_started_assertions)
 
-        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
+        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument, self.software)
 
         assert self.reduction_run.status == Status.get_completed()
         assert self.instrument.is_active
@@ -275,7 +279,7 @@ class TestHandleMessage(TestCase):
         """Test that a run that fails validation is skipped."""
         self.msg.rb_number = 123
 
-        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
+        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument, self.software)
 
         rpm.return_value.run.assert_not_called()
         assert self.reduction_run.status == Status.get_skipped()
@@ -290,7 +294,7 @@ class TestHandleMessage(TestCase):
 
         self.msg.run_number = random.randint(1000000, 10000000)
         for i in range(5):
-            reduction_run, message, instrument = self.handler.create_run_records(self.msg)
+            reduction_run, message, instrument, software = self.handler.create_run_records(self.msg)
 
             assert reduction_run.run_number == self.msg.run_number
             assert reduction_run.experiment.reference_number == self.msg.rb_number
@@ -303,6 +307,8 @@ class TestHandleMessage(TestCase):
             assert reduction_run.arguments.as_dict() == self.msg.reduction_arguments
             assert reduction_run.data_location.first().file_path == message.data
             assert reduction_run.status == Status.get_queued()
+            assert software.name == self.msg.software["name"]
+            assert software.version == self.msg.software["version"]
 
     def test_data_ready_other_exception_raised_ends_processing(self):
         """Test an exception being raised inside data_ready handler."""
@@ -317,7 +323,8 @@ class TestHandleMessage(TestCase):
         Test that an integrity error inside data_ready marks the reduction as
         errored.
         """
-        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument,
+                                                             self.software))
         self.handler.send_message_onwards = Mock(side_effect=IntegrityError)
         with self.assertRaises(IntegrityError):
             self.handler.data_ready(self.msg)
@@ -330,13 +337,13 @@ class TestHandleMessage(TestCase):
         """Test creating a run record when the rb number is invalid."""
         with DefaultDataArchive(self.instrument_name):
             self.msg.rb_number = "INVALID RB NUMBER CALIBRATION RUN PERHAPS"
-            reduction_run, _, _ = self.handler.create_run_records(self.msg)
+            reduction_run, _, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == 0
 
     def test_create_run_records_valid_rb_number(self):
         """Test creating a run record when the rb number is invalid."""
         with DefaultDataArchive(self.instrument_name):
-            reduction_run, _, _ = self.handler.create_run_records(self.msg)
+            reduction_run, _, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == self.msg.rb_number
 
     @patch("autoreduce_qp.queue_processor.handle_message.records.VariableUtils.get_default_variables")

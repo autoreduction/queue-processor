@@ -6,6 +6,7 @@
 # ############################################################################### #
 """Common functions for accessing and creating records in the database."""
 # pylint:disable=no-member
+import os
 from typing import List, Union
 from django.db import transaction
 
@@ -95,11 +96,13 @@ def get_software(name: str, version: str) -> Software:
     Return:
         The Software object from the database
     """
-    if not version:
-        # Hard-code a version if not provided until
-        # https://autoreduce.atlassian.net/browse/AR-1230 is addressed
-        version = "6"
-    return Software.objects.get_or_create(name=name, version=version)[0]
+    # If running in test env, create and delete a test software record
+    if not "AUTOREDUCTION_PRODUCTION" in os.environ:
+        return Software.objects.get_or_create(name=name, version=version)[0]
+    else:
+        if Software.objects.filter(name=name, version=version).count() == 0:
+            raise ValueError(f"Software {name} version {version} is not supported.")
+        return Software.objects.get(name=name, version=version)
 
 
 def find_highest_run_version(experiment: str, run_number: Union[int, List[int]]) -> int:

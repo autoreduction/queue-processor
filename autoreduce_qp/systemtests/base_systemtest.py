@@ -66,6 +66,10 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.rb_number = 1234567
         self.run_number = 101
         self.run_title = "test title"
+        self.software = {
+            "name": "Mantid",
+            "version": "6.2.0",
+        }
 
         # Create test archive and add data
         self.data_archive = DataArchive([self.instrument], 19, 19)
@@ -78,19 +82,20 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
                                           run_title=self.run_title,
                                           description="This is a system test",
                                           facility="ISIS",
-                                          software="6.0.0",
+                                          software=self.software,
                                           started_by=0,
                                           reduction_script=None,
                                           reduction_arguments=None)
 
-        expected_mantid_py = f"{MANTID_PATH}/mantid.py"
-        if not os.path.exists(expected_mantid_py):
-            os.makedirs(MANTID_PATH)
-            with open(expected_mantid_py, mode="w", encoding="utf-8") as self.test_mantid_py:
-                self.test_mantid_py.write(FAKE_MANTID)
-        else:
-            # Mantid is installed, don't create or delete (in tearDown) anything
-            self.test_mantid_py = None
+        if self.software.get("name") == "Mantid":
+            expected_mantid_py = f"{MANTID_PATH}/mantid.py"
+            if not os.path.exists(expected_mantid_py):
+                os.makedirs(MANTID_PATH)
+                with open(expected_mantid_py, mode="w", encoding="utf-8") as self.test_mantid_py:
+                    self.test_mantid_py.write(FAKE_MANTID)
+            else:
+                # Mantid is installed, don't create or delete (in tearDown) anything
+                self.test_mantid_py = None
 
     def tearDown(self):
         """ Disconnect from services, stop external services and delete data archive """
