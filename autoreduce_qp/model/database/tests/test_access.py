@@ -105,7 +105,7 @@ class TestAccess(TestCase):
     def test_get_supported_software_prod(self):
         """
         Test: The correct Software record is returned
-        When: get_software is called with values that match a database record
+        When: get_software is called with values that match a database record (production environment)
         """
         software = Software.objects.create(name="Mantid", version="6.2.0")
         actual = access.get_software('Mantid', '6.2.0')
@@ -119,7 +119,7 @@ class TestAccess(TestCase):
     def test_get_unsupported_software_prod(self):
         """
         Test: The correct Software record is returned
-        When: get_software is called with values that match a database record
+        When: get_software is called with values that do not match a database record (production environment)
         """
         self.assertRaises(ValueError, access.get_software, 'test software', '6.2.0')
 
@@ -127,7 +127,7 @@ class TestAccess(TestCase):
     def test_get_unsupported_software_version_prod(self):
         """
         Test: The correct Software record is returned
-        When: get_software is called with values that match a database record
+        When: get_software is called with values that do not match a database record (production environment)
         """
         self.assertRaises(ValueError, access.get_software, 'Mantid', '4.0')
 
