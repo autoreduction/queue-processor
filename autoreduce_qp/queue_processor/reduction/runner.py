@@ -10,7 +10,6 @@
 import io
 import logging
 import os
-from pathlib import Path
 import sys
 import tempfile
 import traceback
@@ -65,6 +64,7 @@ class ReductionRunner:
 
         # Attempt to read the reduction script
         try:
+            # pylint: disable=consider-using-with
             temp_script = tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix=".py")
             temp_script.write(self.reduction_script)
             temp_script.seek(0)
