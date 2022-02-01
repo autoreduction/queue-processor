@@ -10,6 +10,7 @@
 import io
 import logging
 import os
+from pathlib import Path
 import sys
 import tempfile
 import traceback
@@ -64,11 +65,11 @@ class ReductionRunner:
 
         # Attempt to read the reduction script
         try:
-            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8') as temp_script:
-                temp_script.write(self.reduction_script)
-                temp_script.seek(0)
-                reduction_script = ReductionScript(self.instrument, temp_script.name)
-                reduction_script_path = reduction_script.script_path
+            temp_script = tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix=".py")
+            temp_script.write(self.reduction_script)
+            temp_script.seek(0)
+            reduction_script = ReductionScript(self.instrument, script_path=temp_script.name)
+            reduction_script_path = reduction_script.script_path
         except Exception as err:
             self.message.message = "Error encountered when trying to read the reduction script"
             self.message.reduction_log = f"Exception: {err}"
