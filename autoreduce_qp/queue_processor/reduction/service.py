@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Reduction service contains the classes, and functions that performs a reduction
+Reduction service contains the classes, and functions that performs a reduction.
 """
 import io
 import logging
@@ -19,7 +19,6 @@ from tempfile import TemporaryDirectory
 from typing import List
 
 from autoreduce_utils.settings import SCRIPTS_DIRECTORY, CEPH_DIRECTORY, SCRIPT_TIMEOUT
-
 from autoreduce_qp.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
 from autoreduce_qp.queue_processor.reduction.timeout import TimeOut
 from autoreduce_qp.queue_processor.reduction.utilities import channels_redirected
@@ -29,10 +28,9 @@ logger = logging.getLogger(__package__)
 
 class ReductionDirectory:
     """
-    ReductionDirectory encapsulated directory creation, deletion and handling output type
-    (flat or not)
+    ReductionDirectory encapsulated directory creation, deletion and handling
+    output type (flat or not).
     """
-
     def __init__(self, instrument, rb_number, run_name, run_version, flat_output=False):
         self._is_flat_directory = flat_output
         self.run_version = run_version
@@ -48,7 +46,8 @@ class ReductionDirectory:
 
     def create(self):
         """
-        Creates the reduction directory including the log path, Script.out and Mantid.log files
+        Creates the reduction directory including the log path, Script.out and
+        Mantid.log files.
         """
         logger.info("Creating reduction directory: %s", self.path)
         os.umask(0)
@@ -59,10 +58,7 @@ class ReductionDirectory:
 
 
 class TemporaryReductionDirectory:
-    """
-    Encapsulates the use of the temporary reduction directory
-    """
-
+    """Encapsulates the use of the temporary reduction directory."""
     def __init__(self, rb_number, run_name):
         self._temp_dir = TemporaryDirectory()  # pylint:disable=consider-using-with
         self._path = Path(self._temp_dir.name)
@@ -77,16 +73,16 @@ class TemporaryReductionDirectory:
         self.script_log.touch()
 
     def delete(self):
-        """
-        Deletes the temporary directory and all of its contents.
-        """
+        """Deletes the temporary directory and all of its contents."""
         self._temp_dir.cleanup()
 
     def copy(self, destination: Path):
         """
-        Copy the contents of the temporary directory to the given destination, overwriting what is
-        already present.
-        :param destination: (Path like) the copy destination
+        Copy the contents of the temporary directory to the given destination,
+        overwriting what is already present.
+
+        args:
+            destination: (Path like) the copy destination.
         """
         logger.info("Copying %s to %s", self.path, destination)
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
@@ -94,22 +90,20 @@ class TemporaryReductionDirectory:
     @property
     def path(self) -> str:
         """
-        Returns the path string with a slash at the end. This is because some reduction scripts just do
-        `output_dir + str` resulting in broken output copying, as all output files end up being /tmp/abcedfgFILENAME.nxs
+        Returns the path string with a slash at the end. This is because some
+        reduction scripts just do `output_dir + str` resulting in broken output
+        copying, as all output files end up being /tmp/abcedfgFILENAME.nxs
         rather than /tmp/abcedfg/FILENAME.nxs
         """
         return f"{self._path}/"
 
     def exists(self) -> bool:
-        """Checks that the path for the TemporaryReductionDirectory exists"""
+        """Checks that the path for the TemporaryReductionDirectory exists."""
         return self._path.exists()
 
 
 class Datafile:
-    """
-    Encapsulates datafile path and verification
-    """
-
+    """Encapsulates datafile path and verification."""
     def __init__(self, path):
         self.path = Path(path)
         try:
@@ -119,10 +113,7 @@ class Datafile:
 
 
 class ReductionScript:
-    """
-    Encapsulates the loading and running of a reduction script
-    """
-
+    """Encapsulates the loading and running of a reduction script."""
     def __init__(self, instrument, script_path=None, module="reduce.py"):
         if script_path is None:
             self.script_path: Path = Path(SCRIPTS_DIRECTORY % instrument) / module
@@ -132,18 +123,17 @@ class ReductionScript:
         self.module = None
 
     def exists(self) -> bool:
-        """
-        Returns whether the script file exists
-        """
+        """Returns whether the script file exists."""
         return self.script_path.exists()
 
     def load(self):
         """
-        Loads the reduction script as a module
-        :raises ImportError: If the reduction script is missing an import
-        :raises SyntaxError: If there is a syntax error in the reduction script
-        """
+        Loads the reduction script as a module.
 
+        raises:
+            ImportError If the reduction script is missing an import.
+            SyntaxError: If there is a syntax error in the reduction script.
+        """
         module_name = os.path.splitext(self.script_path.name)[0]
         try:
             spec = spec_from_file_location(module_name, self.script_path)
@@ -160,7 +150,7 @@ class ReductionScript:
             raise
 
     def text(self) -> str:
-        """Returns the text of the script file. Does not load it as a module"""
+        """Returns the text of the script file. Does not load it as a module."""
         # Read raw bytes and determine encoding
         try:
             with io.open(self.script_path, encoding='utf-8', mode='r+') as open_file:
@@ -170,19 +160,18 @@ class ReductionScript:
 
     def replace_variables(self, reduction_arguments):
         """
-        We mock up the web_var module according to what's expected. The scripts want standard_vars
-        and advanced_vars, e.g.
+        We mock up the web_var module according to what's expected. The scripts
+        want standard_vars and advanced_vars, e.g.
         https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py
         """
-
         def merge_dicts(dict_name):
             """
-            Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
-            overwriting any key that exists in both with the value from sourceDict.
+            Merge self.reduction_arguments[dictName] into
+            reduce_script.web_var[dictName], overwriting any key that exists in
+            both with the value from sourceDict.
             """
-
             def merge_dict_to_name(source_dict):
-                """ Merge the two dictionaries. """
+                """Merge the two dictionaries."""
                 old_dict = {}
                 if hasattr(self.module.web_var, dict_name):
                     old_dict = getattr(self.module.web_var, dict_name)
@@ -202,11 +191,13 @@ class ReductionScript:
 
     def run(self, input_files: List[Datafile], output_dir):
         """
-        Runs the reduction script on the given input file and outputs to the given
-        ReductionReturn and returns the return value of the main function of the script.
-        :param input_file: (Datafile) Input datafile
-        :param output_dir: (ReductionDirectory) Directory to output to
-        :return:
+        Runs the reduction script on the given input file and outputs to the
+        given ReductionReturn and returns the return value of the main function
+        of the script.
+
+        Args:
+            input_file: Input datafile.
+            output_dir: Directory to output to.
         """
         logger.info("Running reduction script: %s", self.script_path)
         final_input_files = str(
@@ -217,14 +208,18 @@ class ReductionScript:
 
 def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction_arguments, log_stream):
     """
-    Performs a reduction on the given datafile using the given script, outputting to the given
-    output directory
-    :param reduction_dir: (ReductionDirectory) The final directory to output to
-    :param temp_dir: (TemporaryReductionDirectory) Where the reduction initially outputs to
-    :param datafile: (Datafile) The datafile to perform the reduction on
-    :param script: (ReductionScript) The Script used to reduce the data
-    :param log_stream: (StringIO) A stream to which the log output will be written
-    :return (StringIO): The log stream of the reduction script
+    Performs a reduction on the given datafile using the given script,
+    outputting to the given output directory.
+
+    Args:
+        reduction_dir: The final directory to output to.
+        temp_dir: Where the reduction initially outputs to.
+        datafile: The datafile to perform the reduction on.
+        script: The Script used to reduce the data.
+        log_stream: A stream to which the log output will be written.
+
+    Returns:
+        The log stream of the reduction script.
     """
     reduction_dir.create()
 
