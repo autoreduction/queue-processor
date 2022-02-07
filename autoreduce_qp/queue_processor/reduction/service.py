@@ -1,9 +1,9 @@
-# ############################################################################### #
+# ############################################################################ #
 # Autoreduction Repository : https://github.com/autoreduction/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
-# ############################################################################### #
+# ############################################################################ #
 """
 Reduction service contains the classes, and functions that performs a reduction.
 """
@@ -82,7 +82,7 @@ class TemporaryReductionDirectory:
         overwriting what is already present.
 
         args:
-            destination: (Path like) the copy destination.
+            destination: The copy destination.
         """
         logger.info("Copying %s to %s", self.path, destination)
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
