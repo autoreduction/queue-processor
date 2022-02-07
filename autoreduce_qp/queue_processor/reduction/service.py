@@ -205,6 +205,12 @@ class ReductionScript:
         with TimeOut(SCRIPT_TIMEOUT):
             return self.module.main(input_file=final_input_files, output_dir=str(output_dir.path))
 
+    def __str__(self):
+        return self.script_path
+
+    def __repr__(self):
+        return 'ReductionScript(instrument={instrument}, script_path={script_path}, module={module})'
+
 
 def reduce(reduction_dir, temp_dir, datafiles: List[Datafile], script, reduction_arguments, log_stream):
     """
