@@ -29,6 +29,11 @@ jobs:
         with:
           package_name: autoreduce_qp
 
+      - name: Remote dotenv to Environment (configserver alike)
+        uses: Steph0/dotenv-configserver@v1.2.0
+        with:
+          repository: "autoreduction/autoreduce-workspace"
+
       - name: Run unit tests
         run: >-
           RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
