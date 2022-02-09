@@ -11,9 +11,6 @@ Tests that data can traverse through the autoreduction system successfully
 import time
 import docker
 
-from autoreduce_utils.clients import queue_client
-from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory
-
 from autoreduce_qp.systemtests.base_systemtest import BaseAutoreduceSystemTest, REDUCE_SCRIPT
 
 
@@ -23,20 +20,11 @@ class TestActiveMQReconnect(BaseAutoreduceSystemTest):
     @classmethod
     def setUpClass(cls):
         """ Start all external services """
-        settings_factory = ClientSettingsFactory()
-        cls.original_activemq_credentials = queue_client.ACTIVEMQ_CREDENTIALS
-
-        queue_client.ACTIVEMQ_CREDENTIALS = settings_factory.create('queue',
-                                                                    username="admin",
-                                                                    password="admin",
-                                                                    host="127.0.0.1",
-                                                                    port="62000")
         cls._start_activemq()
 
     @classmethod
     def tearDownClass(cls):
         cls._stop_activemq()
-        queue_client.ACTIVEMQ_CREDENTIALS = cls.original_activemq_credentials
 
     @staticmethod
     def _start_activemq():
