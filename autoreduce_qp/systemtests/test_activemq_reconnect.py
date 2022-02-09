@@ -11,9 +11,6 @@ Tests that data can traverse through the autoreduction system successfully
 import time
 import docker
 
-from autoreduce_utils.clients import queue_client
-from autoreduce_utils.clients.settings.client_settings_factory import ClientSettingsFactory
-
 from autoreduce_qp.systemtests.base_systemtest import BaseAutoreduceSystemTest, REDUCE_SCRIPT
 
 
