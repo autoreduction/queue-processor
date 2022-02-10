@@ -89,6 +89,22 @@
             }
         },
         {
+            "name": "Run Kafka consumer",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/autoreduce_qp/queue_processor/consumer.py",
+            "console": "integratedTerminal",
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-run",
+                "order": 1
+            },
+            "justMyCode": false,
+            "env": {
+                // "AUTOREDUCTION_PRODUCTION": "true",
+            }
+        },
+        {
             "name": "Attach",
             "type": "python",
             "request": "attach",
