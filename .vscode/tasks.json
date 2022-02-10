@@ -17,5 +17,19 @@
                 "clear": false
             }
         },
+        {
+            "label": "Run Kafka Docker daemon",
+            "type": "shell",
+            "command": "make kafka",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        }
     ]
 }

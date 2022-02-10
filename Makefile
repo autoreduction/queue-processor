@@ -5,3 +5,6 @@ all:
 
 activemq:
 	sudo docker run --rm --name activemq -p 61613:61613 -p 8161:8161 -d rmohr/activemq
+
+kafka:
+	docker-compose -f container/docker-compose.yml up -d
