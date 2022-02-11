@@ -1,7 +1,8 @@
 version: '3'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.0.1
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
     ports:
       - "2181:2181"
     environment:
@@ -9,35 +10,18 @@ services:
 
   # reachable on 9092 from the host and on 29092 from inside docker compose
   kafka:
-    image: confluentinc/cp-kafka:7.0.1
-    depends_on:
-      - zookeeper
+    image: wurstmeister/kafka
+    container_name: kafka
     ports:
-      - '9092:9092'
-    expose:
-      - '29092'
+      - "9092:9092"
+      - "29092:29092"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
-      KAFKA_MIN_INSYNC_REPLICAS: '1'
-
-  init-kafka:
-    image: confluentinc/cp-kafka:7.0.1
-    depends_on:
-      - kafka
-    entrypoint: [ '/bin/sh', '-c' ]
-    command: |
-      "
-      # blocks until kafka is reachable
-      kafka-topics --bootstrap-server kafka:29092 --list
-
-      echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic data_ready --replication-factor 1 --partitions 1
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic my-topic-2 --replication-factor 1 --partitions 1
-
-      echo -e 'Successfully created the following topics:'
-      kafka-topics --bootstrap-server kafka:29092 --list
-      "
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:29092,OUTSIDE://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "data_ready"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
