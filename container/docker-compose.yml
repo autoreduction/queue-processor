@@ -22,6 +22,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CREATE_TOPICS: "data_ready"
+      # Create a topic NAME:PARTITION:REPLICAS
+      KAFKA_CREATE_TOPICS: "data_ready:1:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
