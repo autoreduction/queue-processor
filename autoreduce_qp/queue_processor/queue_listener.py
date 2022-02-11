@@ -11,6 +11,7 @@ messages from the queues and then updates the reduction run status in the
 database.
 """
 import logging
+import threading
 import time
 import traceback
 from contextlib import contextmanager
@@ -21,6 +22,8 @@ from stomp import ConnectionListener
 from autoreduce_utils.clients.queue_client import QueueClient
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
+from autoreduce_qp.queue_processor.consumer import Consumer
+from autoreduce_utils.clients.producer import Publisher
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 
@@ -97,24 +100,21 @@ class QueueListener(ConnectionListener):
                                   type(exp).__name__, exp, traceback.format_exc())
 
 
-def setup_connection() -> Tuple[QueueClient, QueueListener]:
+def setup_connection() -> Tuple[Publisher, Consumer]:
     """
-    Starts the ActiveMQ connection and registers the event listener.
-
-    Returns:
-        A client connected and subscribed to the queue specified in credentials,
-        and a listener instance which will handle incoming messages.
+    Starts the Kafka consumer and publisher.
     """
-    # Connect to ActiveMQ
-    activemq_client = QueueClient()
-    activemq_client.connect()
 
-    # Register the event listener
-    listener = QueueListener(activemq_client)
+    consumer = Consumer()
+    publisher = Publisher()
 
-    # Subscribe to queues
-    activemq_client.subscribe(listener)
-    return activemq_client, listener
+    t1 = threading.Thread(target=consumer.run)
+    t1.start()
+
+    t2 = threading.Thread(target=publisher.run)
+    t2.start()
+
+    return publisher, consumer
 
 
 def main():
