@@ -131,7 +131,7 @@ class HandleMessage:
         if reduction_run.script.text == "":
             return "Script text for current instrument is empty"
         try:
-            message.validate("/queue/DataReady")
+            message.validate("data_ready")
         except RuntimeError as validation_err:
             return f"Validation error from handler: {validation_err}"
 
