@@ -1,6 +1,8 @@
+from contextlib import contextmanager
 import json
 import threading
 import traceback
+from typing import Tuple
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
 import logging
@@ -10,6 +12,7 @@ import time
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
+from autoreduce_utils.clients.producer import Publisher
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
@@ -25,6 +28,7 @@ class Consumer(threading.Thread):
         self.consumer = None
         self.message_handler = HandleMessage()
         self._stop_event = threading.Event()
+        self._processing = False
 
         while self.consumer is None:
             self.logger.debug("Getting the kafka consumer")
@@ -58,6 +62,22 @@ class Consumer(threading.Thread):
         """ Return whether the consumer has been stopped """
         return self._stop_event.is_set()
 
+    def is_processing_message(self):
+        """Return the processing state."""
+        return self._processing
+
+    @contextmanager
+    def mark_processing(self):
+        """
+        Function usable by using `with ...` for context management and to ensure
+        processing is always set to false at the end.
+        """
+        self._processing = True
+        try:
+            yield
+        finally:
+            self._processing = False
+
 
 def on_message(self, incoming_message):
     """ Handle a message """
@@ -89,6 +109,23 @@ def setup_connection() -> Consumer:
     t1.start()
 
     return consumer
+
+
+def setup_kafka_connections() -> Tuple[Publisher, Consumer]:
+    """
+    Starts the Kafka consumer and publisher.
+    """
+
+    consumer = Consumer()
+    publisher = Publisher()
+
+    t1 = threading.Thread(target=consumer.run)
+    t1.start()
+
+    t2 = threading.Thread(target=publisher.run)
+    t2.start()
+
+    return publisher, consumer
 
 
 def main():

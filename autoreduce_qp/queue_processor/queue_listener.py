@@ -100,23 +100,6 @@ class QueueListener(ConnectionListener):
                                   type(exp).__name__, exp, traceback.format_exc())
 
 
-def setup_connection() -> Tuple[Publisher, Consumer]:
-    """
-    Starts the Kafka consumer and publisher.
-    """
-
-    consumer = Consumer()
-    publisher = Publisher()
-
-    t1 = threading.Thread(target=consumer.run)
-    t1.start()
-
-    t2 = threading.Thread(target=publisher.run)
-    t2.start()
-
-    return publisher, consumer
-
-
 def main():
     """Entry point for the module."""
     logger = logging.getLogger(__package__)
