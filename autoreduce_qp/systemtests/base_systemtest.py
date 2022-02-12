@@ -20,7 +20,7 @@ from autoreduce_db.reduction_viewer.models import Instrument, ReductionRun
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import MANTID_PATH, PROJECT_DEV_ROOT
-from autoreduce_qp.queue_processor.queue_listener import setup_connection
+from autoreduce_qp.queue_processor.consumer import setup_kafka_connections
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.model.database import access as db
 
@@ -55,10 +55,10 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         """ Start all external services """
         # Get all clients
         try:
-            self.queue_client, self.listener = setup_connection()
+            self.publisher, self.consumer = setup_kafka_connections()
         except ConnectionException as err:
-            raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
-                               "the ActiveMQ Docker container is running") from err
+            raise RuntimeError("Could not connect to Kafka - check your credentials. If running locally check that "
+                               "the Kafka Docker container is running") from err
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
         self.instrument = 'ARMI'
@@ -75,7 +75,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.data_archive = DataArchive([self.instrument], 19, 19)
         self.data_archive.create()
 
-        # Create and send json message to ActiveMQ
+        # Create and send json message to Kafka
         self.data_ready_message = Message(rb_number=self.rb_number,
                                           instrument=self.instrument,
                                           run_number=self.run_number,

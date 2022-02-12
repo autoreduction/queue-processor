@@ -73,22 +73,6 @@
             "justMyCode": false
         },
         {
-            "name": "Run queue listener",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/autoreduce_qp/queue_processor/queue_listener.py",
-            "console": "integratedTerminal",
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-run",
-                "order": 1
-            },
-            "justMyCode": false,
-            "env": {
-                // "AUTOREDUCTION_PRODUCTION": "true",
-            }
-        },
-        {
             "name": "Run Kafka consumer",
             "type": "python",
             "request": "launch",
