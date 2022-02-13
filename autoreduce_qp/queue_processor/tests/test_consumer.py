@@ -17,3 +17,8 @@ class TestConsumer(TestCase):
         When: setup_connection is called
         """
         self.consumer.run()
+
+    def test_on_message_unknown_topic(self):
+        """Test receiving a message on an unknown topic"""
+        # Should it create a new topic?
+        pass
