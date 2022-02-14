@@ -20,7 +20,7 @@ from autoreduce_db.reduction_viewer.models import (Experiment, Instrument, Statu
 from autoreduce_utils.message.message import Message
 from autoreduce_qp.model.database.records import create_reduction_run_record
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
-from autoreduce_qp.queue_processor.queue_listener import QueueListener
+from autoreduce_qp.queue_processor.confluent_consumer import Consumer
 from autoreduce_qp.systemtests.utils.data_archive import DefaultDataArchive
 
 
@@ -57,7 +57,7 @@ class TestHandleMessage(TestCase):
     fixtures = ["status_fixture"]
 
     def setUp(self):
-        self.mocked_client = mock.Mock(spec=QueueListener)
+        self.mocked_client = mock.Mock(spec=Consumer)
         self.instrument_name = "ARMI"
         self.msg = make_test_message(self.instrument_name)
 
