@@ -76,7 +76,7 @@
             "name": "Run Kafka consumer",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/autoreduce_qp/queue_processor/consumer.py",
+            "program": "${workspaceFolder}/autoreduce_qp/queue_processor/confluent_consumer.py",
             "console": "integratedTerminal",
             "presentation": {
                 "hidden": false,

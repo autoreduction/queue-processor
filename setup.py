@@ -18,7 +18,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "autoreduce-qp-start = autoreduce_qp.queue_processor.consumer:main",
+            "autoreduce-qp-start = autoreduce_qp.queue_processor.confluent_consumer:main",
             "autoreduce-runner-start = autoreduce_qp.queue_processor.reduction.runner:main"
         ],
     },

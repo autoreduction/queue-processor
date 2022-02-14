@@ -20,7 +20,7 @@ from autoreduce_db.reduction_viewer.models import Instrument, ReductionRun
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import MANTID_PATH, PROJECT_DEV_ROOT
-from autoreduce_qp.queue_processor.consumer import setup_kafka_connections
+from autoreduce_qp.queue_processor.confluent_consumer import setup_kafka_connections
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.model.database import access as db
 
@@ -150,15 +150,14 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         return instrument.reduction_runs.filter(run_numbers__run_number=self.run_number)
 
     def send_and_wait_for_result(self, message):
-        """Sends the message to the queue and waits until the listener has finished processing it"""
-        # forces the is_processing to return True so that the listener has time to actually start processing the message
-        self.listener._processing = True  # pylint:disable=protected-access
-        self.queue_client.send('/queue/DataReady', message)
-        start_time = time.time()
-        while self.listener.is_processing_message():
-            time.sleep(0.5)
-            if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
-                break
+        """Sends the message to the topic and waits until the consumer has finished processing it"""
+        self.publisher.send(message)
+
+        # Check if the message has been processed via offset
+        offset = self.consumer.get_offset(message.topic, message.partition, message.offset)
+        while offset is None:
+            time.sleep(0.1)
+            offset = self.consumer.get_offset(message.topic, message.partition, message.offset)
 
         results = self._find_run_in_database()
         assert results
