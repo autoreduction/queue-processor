@@ -9,7 +9,7 @@ import os
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
-from autoreduce_utils.clients.confluent_producer import Publisher
+from autoreduce_utils.clients.producer import Publisher
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
@@ -121,9 +121,6 @@ def setup_kafka_connections() -> Tuple[Publisher, Consumer]:
 
     t1 = threading.Thread(target=consumer.run)
     t1.start()
-
-    t2 = threading.Thread(target=publisher.run)
-    t2.start()
 
     return publisher, consumer
 

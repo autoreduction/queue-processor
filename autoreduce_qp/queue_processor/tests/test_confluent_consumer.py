@@ -4,7 +4,7 @@ from unittest import TestCase, main, mock
 from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
 from autoreduce_qp.queue_processor.confluent_consumer import Consumer
 
-from autoreduce_utils.clients.confluent_producer import setup_connection
+from autoreduce_utils.clients.producer import Producer
 
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
 
@@ -19,8 +19,8 @@ class KafkaTestCase(TestCase):
             message = make_test_message("test_instrument")
 
             # Send message
-            publisher = setup_connection()
-            p_msg = publisher.send(message)
+            publisher = Producer()
+            p_msg = publisher.publish(message)
 
             # Consume message
             consumer = Consumer()

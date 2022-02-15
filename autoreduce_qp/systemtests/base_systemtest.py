@@ -151,7 +151,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
 
     def send_and_wait_for_result(self, message):
         """Sends the message to the topic and waits until the consumer has finished processing it"""
-        self.publisher.send(message)
+        self.publisher.publish("data_ready", message)
 
         # Check if the message has been processed via offset
         offset = self.consumer.get_offset(message.topic, message.partition, message.offset)
