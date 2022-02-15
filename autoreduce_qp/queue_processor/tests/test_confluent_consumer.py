@@ -19,8 +19,8 @@ class KafkaTestCase(TestCase):
             message = make_test_message("test_instrument")
 
             # Send message
-            publisher = Producer()
-            p_msg = publisher.publish(message)
+            publisher = Publisher()
+            p_msg = publisher.publish("data_ready", message)
 
             # Consume message
             consumer = Consumer()
@@ -32,7 +32,6 @@ class KafkaTestCase(TestCase):
             # Check if the messages are the same
             self.assertTrue(p_msg == c_msg)
 
-            publisher.stop()
             consumer.stop()
 
 
