@@ -1,11 +1,10 @@
-import json
 import os
 from unittest import TestCase, main, mock
 
-from autoreduce_qp.queue_processor.confluent_consumer import Consumer
-from autoreduce_utils.clients.confluent_producer import Publisher, setup_connection
-
 from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
+from autoreduce_qp.queue_processor.confluent_consumer import Consumer
+
+from autoreduce_utils.clients.confluent_producer import setup_connection
 
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
 
