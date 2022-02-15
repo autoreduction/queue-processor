@@ -4,7 +4,7 @@ from unittest import TestCase, main, mock
 from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
 from autoreduce_qp.queue_processor.confluent_consumer import Consumer
 
-from autoreduce_utils.clients.producer import Producer
+from autoreduce_utils.clients.producer import Publisher
 
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
 
