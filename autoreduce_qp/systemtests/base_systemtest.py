@@ -87,7 +87,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
                                           software=self.software,
                                           started_by=0,
                                           reduction_script=None,
-                                          reduction_arguments={})
+                                          reduction_arguments=None)
 
         if self.software.get("name") == "Mantid":
             expected_mantid_py = f"{MANTID_PATH}/mantid.py"

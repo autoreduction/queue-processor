@@ -77,9 +77,9 @@ class TestAccess(TestCase):
         Test: The correct Experiment record is returned
         When: get_status is called on a database containing expected Experiment reference number
         """
-        actual = access.get_experiment('123')
+        actual = access.get_experiment(123)
         self.assertIsNotNone(actual)
-        self.assertEqual(str(123), str(actual.reference_number))
+        self.assertEqual(123, actual.reference_number)
 
     def test_get_experiment_create(self):
         """

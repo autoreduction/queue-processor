@@ -70,7 +70,7 @@ def get_status(status_value: str) -> Status:
 
 
 @transaction.atomic
-def get_experiment(rb_number: str) -> Experiment:
+def get_experiment(rb_number: int) -> Experiment:
     """
     Find the Experiment record associated with the rb_number provided in the
     database.
@@ -105,7 +105,7 @@ def get_software(name: str, version: str) -> Software:
         return Software.objects.get(name=name, version=version)
 
 
-def find_highest_run_version(experiment: str, run_number: Union[int, List[int]]) -> int:
+def find_highest_run_version(experiment: Experiment, run_number: Union[int, List[int]]) -> int:
     """
     Search for the highest run version in the database.
 
