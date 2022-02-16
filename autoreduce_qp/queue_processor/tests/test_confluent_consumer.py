@@ -1,13 +1,6 @@
 import os
 from unittest import TestCase, main, mock
-
-from confluent_kafka import DeserializingConsumer
-from autoreduce_qp.queue_processor.handle_message import HandleMessage
-
-from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
-from autoreduce_qp.queue_processor.confluent_consumer import Consumer, setup_connection
-from confluent_kafka.serialization import StringDeserializer
-from autoreduce_utils.clients.producer import Publisher
+from autoreduce_qp.queue_processor.confluent_consumer import Consumer
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
@@ -19,11 +12,13 @@ class KafkaTestCase(TestCase):
 
     @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
     def test_init_consumer(self, mock_kafka_consumer):
+        """ Test if the consumer is initialized and subscribed to the topic """
         consumer = Consumer(mock_kafka_consumer)
         mock_kafka_consumer.subscribe.assert_called_once_with([TRANSACTIONS_TOPIC])
 
     @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
     def test_consume(self, ConfluentConsumer):
+        """ Test if the consumer is able to consume messages from Kafka """
         # Mocking whole class since mock cannot set
         # properties in cimpl.Consumer
         confluent_consumer = ConfluentConsumer.return_value

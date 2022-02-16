@@ -1,15 +1,14 @@
 import threading
 import traceback
+import logging
+import os
 from typing import Tuple
 from confluent_kafka import DeserializingConsumer, KafkaError, KafkaException
 from confluent_kafka.serialization import StringDeserializer
-import logging
-import os
-
-from autoreduce_qp.queue_processor.handle_message import HandleMessage
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.clients.producer import Publisher
+from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
@@ -77,9 +76,7 @@ class Consumer(threading.Thread):
         return self._stop_event.is_set()
 
     def manual_consume(self, batch_size, timeout=1.0):
-        """ Consume a batch of messages
-            Used for testing purposes 
-        """
+        """ Consume a batch of messages. Used for testing purposes """
         return [message.value() for message in self.consumer.consume(batch_size, timeout=timeout)]
 
     # Called when the consumer commits it's new offset
