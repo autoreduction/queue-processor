@@ -157,9 +157,14 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.publisher.publish("data_ready", message)
         after_offset = self.get_commited()[0].offset
 
-        while initial_offset == after_offset:
-            time.sleep(1)
-            after_offset = self.get_commited()[0].offset
+        timeout = 300  # [seconds]
+        timeout_start = time.time()
+
+        while time.time() < timeout_start + timeout:
+            if initial_offset == after_offset:
+                after_offset = self.get_commited()[0].offset
+            else:
+                break
 
         time.sleep(10)
 
@@ -169,5 +174,5 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
 
     def get_commited(self):
         topic_partition = TopicPartition("data_ready", partition=0)
-        commited = self.consumer.consumer.committed([topic_partition])
+        commited = self.consumer.consumer.committed([topic_partition], timeout=30.0)
         return commited
