@@ -85,7 +85,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
                                           software=self.software,
                                           started_by=0,
                                           reduction_script=None,
-                                          reduction_arguments=None)
+                                          reduction_arguments={})
 
         if self.software.get("name") == "Mantid":
             expected_mantid_py = f"{MANTID_PATH}/mantid.py"
@@ -99,7 +99,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
 
     def tearDown(self):
         """ Disconnect from services, stop external services and delete data archive """
-        self.queue_client.disconnect()
+        self.consumer.stop()
         self._remove_run_from_database(self.instrument, self.run_number)
         self.data_archive.delete()
 
@@ -153,11 +153,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         """Sends the message to the topic and waits until the consumer has finished processing it"""
         self.publisher.publish("data_ready", message)
 
-        # Check if the message has been processed via offset
-        offset = self.consumer.get_offset(message.topic, message.partition, message.offset)
-        while offset is None:
-            time.sleep(0.1)
-            offset = self.consumer.get_offset(message.topic, message.partition, message.offset)
+        time.sleep(30)
 
         results = self._find_run_in_database()
         assert results
