@@ -5,6 +5,7 @@ import os
 from typing import Tuple
 from confluent_kafka import DeserializingConsumer, KafkaError, KafkaException
 from confluent_kafka.serialization import StringDeserializer
+from confluent_kafka.admin import AdminClient, NewTopic
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.clients.producer import Publisher
@@ -22,6 +23,17 @@ class Consumer(threading.Thread):
         super().__init__()
         self.logger = logging.getLogger(__package__)
         self.logger.debug("Initializing the consumer")
+
+        kafka_broker = {'bootstrap.servers': KAFKA_BROKER_URL}
+        admin_client = AdminClient(kafka_broker)
+        topics = admin_client.list_topics().topics
+
+        if not topics:
+            # Create the topic
+            self.logger.info("Creating the topic '%s'", TRANSACTIONS_TOPIC)
+            new_topic = NewTopic(TRANSACTIONS_TOPIC, num_partitions=1, replication_factor=1)
+            admin_client.create_topics([new_topic])
+
         self.consumer = consumer
         self.message_handler = HandleMessage()
         self._stop_event = threading.Event()
