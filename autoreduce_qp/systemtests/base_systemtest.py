@@ -13,6 +13,8 @@ import os
 import shutil
 import time
 from pathlib import Path
+from confluent_kafka import TopicPartition
+import confluent_kafka
 
 from django.test import TransactionTestCase
 
@@ -151,10 +153,21 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
 
     def send_and_wait_for_result(self, message):
         """Sends the message to the topic and waits until the consumer has finished processing it"""
+        initial_offset = self.get_commited()[0].offset
         self.publisher.publish("data_ready", message)
+        after_offset = self.get_commited()[0].offset
 
-        time.sleep(30)
+        while initial_offset == after_offset:
+            time.sleep(1)
+            after_offset = self.get_commited()[0].offset
+
+        time.sleep(10)
 
         results = self._find_run_in_database()
         assert results
         return results
+
+    def get_commited(self):
+        topic_partition = TopicPartition("data_ready", partition=0)
+        commited = self.consumer.consumer.committed([topic_partition])
+        return commited
