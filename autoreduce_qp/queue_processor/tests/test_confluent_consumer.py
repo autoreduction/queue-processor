@@ -1,38 +1,46 @@
 import os
 from unittest import TestCase, main, mock
 
-from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
-from autoreduce_qp.queue_processor.confluent_consumer import Consumer
+from confluent_kafka import DeserializingConsumer
+from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
+from autoreduce_qp.queue_processor.tests.test_handle_message import make_test_message
+from autoreduce_qp.queue_processor.confluent_consumer import Consumer, setup_connection
+from confluent_kafka.serialization import StringDeserializer
 from autoreduce_utils.clients.producer import Publisher
 
+TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
+GROUP_ID = 1
 
 
 # This tests if a message sent to Kafka is successfully consumed.
 class KafkaTestCase(TestCase):
 
-    @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.Consumer.run')
-    def test_message(self, mock_method):
-        with mock.patch.object(Consumer, 'on_message', return_value="test"):
-            # Make test message
-            message = make_test_message("test_instrument")
+    @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
+    def test_init_consumer(self, mock_kafka_consumer):
+        consumer = Consumer(mock_kafka_consumer)
+        mock_kafka_consumer.subscribe.assert_called_once_with([TRANSACTIONS_TOPIC])
 
-            # Send message
-            publisher = Publisher()
-            p_msg = publisher.publish("data_ready", message)
+    @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
+    def test_consume(self, ConfluentConsumer):
+        # Mocking whole class since mock cannot set
+        # properties in cimpl.Consumer
+        confluent_consumer = ConfluentConsumer.return_value
+        message1 = mock.Mock()
+        message1.value.return_value = 'foo'
 
-            # Consume message
-            consumer = Consumer()
-            c_msg = consumer.start()
+        message2 = mock.Mock()
+        message2.value.return_value = 'bar'
 
-            # Assert mock_method was called at least once
-            self.assertTrue(mock_method.called)
+        confluent_consumer.consume.return_value = [message1, message2]
 
-            # Check if the messages are the same
-            self.assertTrue(p_msg == c_msg)
+        consumer = Consumer()
 
-            consumer.stop()
+        result = consumer.manual_consume(100, timeout=5)
+
+        assert result == ['foo', 'bar']
+        confluent_consumer.consume.assert_called_with(100, timeout=5)
 
 
 if __name__ == '__main__':

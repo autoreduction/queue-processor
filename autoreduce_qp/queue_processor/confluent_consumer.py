@@ -19,11 +19,11 @@ GROUP_ID = 1
 class Consumer(threading.Thread):
     """ A class to read messages from a Kafka topic """
 
-    def __init__(self):
+    def __init__(self, consumer=None):
         super().__init__()
         self.logger = logging.getLogger(__package__)
         self.logger.debug("Initializing the consumer")
-        self.consumer = None
+        self.consumer = consumer
         self.message_handler = HandleMessage()
         self._stop_event = threading.Event()
 
@@ -40,10 +40,11 @@ class Consumer(threading.Thread):
                     'value.deserializer': StringDeserializer('utf_8')
                 }
                 self.consumer = DeserializingConsumer(config)
-                self.consumer.subscribe([TRANSACTIONS_TOPIC])
             except KafkaException as err:
                 self.logger.error("Could not initialize the consumer: %s", err)
                 raise ConnectionException("Could not initialize the consumer")
+
+        self.consumer.subscribe([TRANSACTIONS_TOPIC])
 
     def run(self):
         """ Run the consumer """
@@ -75,6 +76,12 @@ class Consumer(threading.Thread):
         """ Return whether the consumer has been stopped """
         return self._stop_event.is_set()
 
+    def manual_consume(self, batch_size, timeout=1.0):
+        """ Consume a batch of messages
+            Used for testing purposes 
+        """
+        return [message.value() for message in self.consumer.consume(batch_size, timeout=timeout)]
+
     # Called when the consumer commits it's new offset
     def on_commit(self, error, partition_list):
         self.logger.info(f"On Commit: Error: {error} Partitions: {partition_list}")
@@ -99,11 +106,11 @@ class Consumer(threading.Thread):
                               type(exp).__name__, exp, traceback.format_exc())
 
 
-def setup_connection() -> Consumer:
+def setup_connection(consumer=None) -> Consumer:
     """
     Starts the Kafka consumer.
     """
-    consumer = Consumer()
+    consumer = Consumer(consumer=consumer)
 
     t1 = threading.Thread(target=consumer.run)
     t1.start()
