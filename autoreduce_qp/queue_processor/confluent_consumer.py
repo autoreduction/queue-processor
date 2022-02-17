@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import threading
 import traceback
 import logging
@@ -37,6 +38,11 @@ class Consumer(threading.Thread):
         self.consumer = consumer
         self.message_handler = HandleMessage()
         self._stop_event = threading.Event()
+
+        # Track whether there is currently a message being processed. Just a raw
+        # bool is OK because the subscription is configured to prefetch 1
+        # message at a time - i.e. this function should NOT run in parallel
+        self._processing = False
 
         while self.consumer is None:
             try:
@@ -91,22 +97,39 @@ class Consumer(threading.Thread):
 
     def on_message(self, incoming_message):
         """ Handle a message """
-        topic = incoming_message.topic()
-        data = incoming_message.value()
-        try:
-            message = Message.parse_raw(data)
-        except ValueError:
-            self.logger.error("Could not decode message from %s\n\n%s", topic, traceback.format_exc())
-            return
+        with self.mark_processing():
+            topic = incoming_message.topic()
+            data = incoming_message.value()
+            try:
+                message = Message.parse_raw(data)
+            except ValueError:
+                self.logger.error("Could not decode message from %s\n\n%s", topic, traceback.format_exc())
+                return
 
+            try:
+                if topic == 'data_ready':
+                    self.message_handler.data_ready(message)
+                else:
+                    self.logger.error("Received a message on an unknown topic '%s'", topic)
+            except Exception as exp:  # pylint:disable=broad-except
+                self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
+                                  type(exp).__name__, exp, traceback.format_exc())
+
+    def is_processing_message(self):
+        """Return the processing state."""
+        return self._processing
+
+    @contextmanager
+    def mark_processing(self):
+        """
+        Function usable by using `with ...` for context management and to ensure
+        processing is always set to false at the end.
+        """
+        self._processing = True
         try:
-            if topic == 'data_ready':
-                self.message_handler.data_ready(message)
-            else:
-                self.logger.error("Received a message on an unknown topic '%s'", topic)
-        except Exception as exp:  # pylint:disable=broad-except
-            self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
-                              type(exp).__name__, exp, traceback.format_exc())
+            yield
+        finally:
+            self._processing = False
 
 
 def setup_connection(consumer=None) -> Consumer:

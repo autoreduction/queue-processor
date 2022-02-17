@@ -152,8 +152,10 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
 
     def send_and_wait_for_result(self, message):
         """Sends the message to the topic and waits until the consumer has finished processing it"""
+        self.consumer._processing = True  # pylint:disable=protected-access
+        self.publisher.publish(topic='data_ready', messages=message)
         start_time = time.time()
-        while True:
+        while self.consumer.is_processing_message():
             time.sleep(0.5)
             if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
                 break
