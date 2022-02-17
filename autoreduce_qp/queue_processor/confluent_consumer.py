@@ -3,7 +3,7 @@ import traceback
 import logging
 import os
 from typing import Tuple
-from confluent_kafka import DeserializingConsumer, KafkaError, KafkaException
+from confluent_kafka import DeserializingConsumer, KafkaException
 from confluent_kafka.serialization import StringDeserializer
 from confluent_kafka.admin import AdminClient, NewTopic
 from autoreduce_utils.clients.connection_exception import ConnectionException
@@ -63,13 +63,13 @@ class Consumer(threading.Thread):
             msg = self.consumer.poll(timeout=1.0)
             if msg is None:
                 continue
-            if msg.error():
-                self.logger.error("Undefined error in consumer loop")
-                raise KafkaException(msg.error())
-            else:
+            if not msg.error():
                 self.on_message(msg)
                 if self._stop_event.is_set():
                     break
+            else:
+                self.logger.error("Undefined error in consumer loop")
+                raise KafkaException(msg.error())
 
         self.consumer.close()
 
@@ -85,8 +85,8 @@ class Consumer(threading.Thread):
         """ Consume a batch of messages. Used for testing purposes """
         return [message.value() for message in self.consumer.consume(batch_size, timeout=timeout)]
 
-    # Called when the consumer commits it's new offset
     def on_commit(self, error, partition_list):
+        """ Called when the consumer commits it's new offset """
         self.logger.info("On Commit: Error: %s Partitions: %s", error, partition_list)
 
     def on_message(self, incoming_message):

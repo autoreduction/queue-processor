@@ -10,14 +10,16 @@ GROUP_ID = 1
 # This tests if a message sent to Kafka is successfully consumed.
 class KafkaTestCase(TestCase):
 
+    @classmethod
     @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
-    def test_init_consumer(self, mock_kafka_consumer):
+    def test_init_consumer(cls, mock_kafka_consumer):
         """ Test if the consumer is initialized and subscribed to the topic """
         Consumer(mock_kafka_consumer)
         mock_kafka_consumer.subscribe.assert_called_once_with([TRANSACTIONS_TOPIC])
 
+    @classmethod
     @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
-    def test_consume(self, mock_confluent_consumer):
+    def test_consume(cls, mock_confluent_consumer):
         """ Test if the consumer is able to consume messages from Kafka """
         # Mocking whole class since mock cannot set
         # properties in cimpl.Consumer
