@@ -152,27 +152,12 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
 
     def send_and_wait_for_result(self, message):
         """Sends the message to the topic and waits until the consumer has finished processing it"""
-        initial_offset = self.get_commited()[0].offset
-        self.publisher.publish("data_ready", message)
-        after_offset = self.get_commited()[0].offset
-
-        timeout = 300  # [seconds]
-        timeout_start = time.time()
-
-        while time.time() < timeout_start + timeout:
-            if initial_offset == after_offset:
-                after_offset = self.get_commited()[0].offset
-            else:
+        start_time = time.time()
+        while True:
+            time.sleep(0.5)
+            if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
                 break
-
-        time.sleep(20)
 
         results = self._find_run_in_database()
         assert results
         return results
-
-    def get_commited(self):
-        """ Gets the committed attribute for the topic """
-        topic_partition = TopicPartition("data_ready", partition=0)
-        commited = self.consumer.consumer.committed([topic_partition], timeout=40.0)
-        return commited
