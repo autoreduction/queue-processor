@@ -151,28 +151,21 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         return instrument.reduction_runs.filter(run_numbers__run_number=self.run_number)
 
     def send_and_wait_for_result(self, message):
-        """Sends the message to the topic and waits until the consumer has finished processing it"""
-        initial_offset = self.get_commited()[0].offset
-        self.publisher.publish("data_ready", message)
-        after_offset = self.get_commited()[0].offset
+        """Sends a message. Waits for number of messages in the Producer queue to be equal to 0"""
+        num_data = len(message.data)
+        num_remaining = self.publisher.publish("data_ready", message)
 
         timeout = 300  # [seconds]
         timeout_start = time.time()
 
         while time.time() < timeout_start + timeout:
-            if initial_offset == after_offset:
-                after_offset = self.get_commited()[0].offset
+            if num_remaining != 0:
+                num_remaining = self.publisher.producer.flush()
             else:
                 break
 
-        time.sleep(10)
+        time.sleep(60)
 
         results = self._find_run_in_database()
         assert results
         return results
-
-    def get_commited(self):
-        """ Gets the committed attribute for the topic """
-        topic_partition = TopicPartition("data_ready", partition=0)
-        commited = self.consumer.consumer.committed([topic_partition], timeout=30.0)
-        return commited
