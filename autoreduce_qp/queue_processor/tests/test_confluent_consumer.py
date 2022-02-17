@@ -13,15 +13,15 @@ class KafkaTestCase(TestCase):
     @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
     def test_init_consumer(self, mock_kafka_consumer):
         """ Test if the consumer is initialized and subscribed to the topic """
-        consumer = Consumer(mock_kafka_consumer)
+        Consumer(mock_kafka_consumer)
         mock_kafka_consumer.subscribe.assert_called_once_with([TRANSACTIONS_TOPIC])
 
     @mock.patch('autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer')
-    def test_consume(self, ConfluentConsumer):
+    def test_consume(self, mock_confluent_consumer):
         """ Test if the consumer is able to consume messages from Kafka """
         # Mocking whole class since mock cannot set
         # properties in cimpl.Consumer
-        confluent_consumer = ConfluentConsumer.return_value
+        confluent_consumer = mock_confluent_consumer.return_value
         message1 = mock.Mock()
         message1.value.return_value = 'foo'
 

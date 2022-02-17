@@ -14,7 +14,6 @@ import shutil
 import time
 from pathlib import Path
 from confluent_kafka import TopicPartition
-import confluent_kafka
 
 from django.test import TransactionTestCase
 
@@ -173,6 +172,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         return results
 
     def get_commited(self):
+        """ Gets the committed attribute for the topic """
         topic_partition = TopicPartition("data_ready", partition=0)
         commited = self.consumer.consumer.committed([topic_partition], timeout=30.0)
         return commited

@@ -53,7 +53,7 @@ class Consumer(threading.Thread):
                 self.consumer = DeserializingConsumer(config)
             except KafkaException as err:
                 self.logger.error("Could not initialize the consumer: %s", err)
-                raise ConnectionException("Could not initialize the consumer")
+                raise ConnectionException("Could not initialize the consumer") from err
 
         self.consumer.subscribe([TRANSACTIONS_TOPIC])
 
@@ -64,14 +64,8 @@ class Consumer(threading.Thread):
             if msg is None:
                 continue
             if msg.error():
-                if msg.error().code() == KafkaError._PARTITION_EOF:
-                    # End of partition event
-                    self.logger.error(f'{msg.topic()} in partition {msg.partition} '
-                                      f'{msg.partition()} reached end at offset '
-                                      f'{msg.offset()}')
-                else:
-                    self.logger.error("Undefined error in consumer loop")
-                    raise KafkaException(msg.error())
+                self.logger.error("Undefined error in consumer loop")
+                raise KafkaException(msg.error())
             else:
                 self.on_message(msg)
                 if self._stop_event.is_set():
@@ -93,7 +87,7 @@ class Consumer(threading.Thread):
 
     # Called when the consumer commits it's new offset
     def on_commit(self, error, partition_list):
-        self.logger.info(f"On Commit: Error: {error} Partitions: {partition_list}")
+        self.logger.info("On Commit: Error: %s Partitions: %s", error, partition_list)
 
     def on_message(self, incoming_message):
         """ Handle a message """
@@ -121,8 +115,8 @@ def setup_connection(consumer=None) -> Consumer:
     """
     consumer = Consumer(consumer=consumer)
 
-    t1 = threading.Thread(target=consumer.run)
-    t1.start()
+    consumer_thread = threading.Thread(target=consumer.run)
+    consumer_thread.start()
 
     return consumer
 
@@ -135,8 +129,8 @@ def setup_kafka_connections() -> Tuple[Publisher, Consumer]:
     consumer = Consumer()
     publisher = Publisher()
 
-    t1 = threading.Thread(target=consumer.run)
-    t1.start()
+    consumer_thread = threading.Thread(target=consumer.run)
+    consumer_thread.start()
 
     return publisher, consumer
 
