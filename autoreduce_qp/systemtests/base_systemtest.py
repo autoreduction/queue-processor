@@ -155,10 +155,8 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.consumer._processing = True  # pylint:disable=protected-access
         self.publisher.publish(topic='data_ready', messages=message)
         start_time = time.time()
-        while self.consumer.is_processing_message():
+        while time.time() < start_time + 70:
             time.sleep(0.5)
-            if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
-                break
 
         results = self._find_run_in_database()
         assert results

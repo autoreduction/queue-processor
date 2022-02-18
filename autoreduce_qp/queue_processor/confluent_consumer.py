@@ -66,7 +66,7 @@ class Consumer(threading.Thread):
     def run(self):
         """ Run the consumer """
         while not self._stop_event.is_set():
-            msg = self.consumer.poll(timeout=1.0)
+            msg = self.consumer.poll(timeout=-1)
             if msg is None:
                 continue
             if not msg.error():
