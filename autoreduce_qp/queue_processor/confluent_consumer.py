@@ -14,7 +14,7 @@ from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
-GROUP_ID = 1
+GROUP_ID = 'mygroup'
 
 
 class Consumer(threading.Thread):
@@ -51,7 +51,7 @@ class Consumer(threading.Thread):
                 config = {
                     'bootstrap.servers': KAFKA_BROKER_URL,
                     'group.id': GROUP_ID,
-                    'auto.offset.reset': "latest",
+                    'auto.offset.reset': "earliest",
                     "on_commit": self.on_commit,
                     'key.deserializer': StringDeserializer('utf_8'),
                     'value.deserializer': StringDeserializer('utf_8')
