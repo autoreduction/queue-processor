@@ -1,5 +1,5 @@
 name: Tests
-on: [ push ]
+on: [push]
 
 jobs:
   pytest:
@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8']
+        python-version: ["3.8"]
 
     steps:
       - uses: actions/checkout@v2
@@ -28,6 +28,13 @@ jobs:
       - uses: autoreduction/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
+          run_kafka: false
+
+      - name: Run Kafka Broker
+        run: |
+          [ "true" = "${{ inputs.run_kafka }}" ] &&
+          docker-compose -f "container/docker-compose.yml" up -d
+        shell: bash
 
       - name: Remote dotenv to Environment (configserver alike)
         uses: Steph0/dotenv-configserver@v1.2.0
@@ -66,7 +73,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.6', '3.8']
+        python-version: ["3.6", "3.8"]
 
     steps:
       - uses: actions/checkout@v2
@@ -95,7 +102,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8']
+        python-version: ["3.8"]
 
     steps:
       - uses: actions/checkout@v2
@@ -119,4 +126,3 @@ jobs:
       - uses: autoreduction/autoreduce-actions/code_inspection@main
         with:
           package_name: autoreduce_qp
-
