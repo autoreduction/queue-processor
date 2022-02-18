@@ -32,7 +32,6 @@ jobs:
 
       - name: Run Kafka Broker
         run: |
-          [ "true" = "${{ inputs.run_kafka }}" ] &&
           docker-compose -f "container/docker-compose.yml" up -d
         shell: bash
 
