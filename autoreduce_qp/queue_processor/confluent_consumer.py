@@ -1,12 +1,14 @@
 from contextlib import contextmanager
+import json
 import threading
 import traceback
 import logging
 import os
+import time
 from typing import Tuple
-from confluent_kafka import DeserializingConsumer, KafkaException
-from confluent_kafka.serialization import StringDeserializer
-from confluent_kafka.admin import AdminClient, NewTopic
+from kafka import KafkaAdminClient, KafkaConsumer, KafkaProducer
+from kafka.errors import NoBrokersAvailable
+from kafka.admin import NewTopic
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.clients.producer import Publisher
@@ -20,22 +22,17 @@ GROUP_ID = 1
 class Consumer(threading.Thread):
     """ A class to read messages from a Kafka topic """
 
-    def __init__(self, consumer=None):
-        super().__init__()
-        self.logger = logging.getLogger(__package__)
-        self.logger.debug("Initializing the consumer")
+    def __init__(self):
+        """ Initialize the consumer """
+        threading.Thread.__init__(self)
 
-        kafka_broker = {'bootstrap.servers': KAFKA_BROKER_URL}
-        admin_client = AdminClient(kafka_broker)
-        topics = admin_client.list_topics().topics
+        admin = KafkaAdminClient(bootstrap_servers=KAFKA_BROKER_URL)
+        topics = admin.list_topics()
 
         if not topics:
-            # Create the topic
-            self.logger.info("Creating the topic '%s'", TRANSACTIONS_TOPIC)
-            new_topic = NewTopic(TRANSACTIONS_TOPIC, num_partitions=1, replication_factor=1)
-            admin_client.create_topics([new_topic])
+            topic = NewTopic(name=TRANSACTIONS_TOPIC, num_partitions=2, replication_factor=1)
+            admin.create_topics([topic])
 
-        self.consumer = consumer
         self.message_handler = HandleMessage()
         self._stop_event = threading.Event()
 
@@ -44,38 +41,25 @@ class Consumer(threading.Thread):
         # message at a time - i.e. this function should NOT run in parallel
         self._processing = False
 
-        while self.consumer is None:
-            try:
-                self.logger.debug("Getting the kafka consumer")
-
-                config = {
-                    'bootstrap.servers': KAFKA_BROKER_URL,
-                    'group.id': GROUP_ID,
-                    'auto.offset.reset': "latest",
-                    "on_commit": self.on_commit,
-                    'key.deserializer': StringDeserializer('utf_8'),
-                    'value.deserializer': StringDeserializer('utf_8')
-                }
-                self.consumer = DeserializingConsumer(config)
-            except KafkaException as err:
-                self.logger.error("Could not initialize the consumer: %s", err)
-                raise ConnectionException("Could not initialize the consumer") from err
+        try:
+            self.consumer = KafkaConsumer(bootstrap_servers=KAFKA_BROKER_URL,
+                                          auto_offset_reset='latest',
+                                          value_deserializer=lambda m: json.loads(m.decode('utf-8')))
+        except NoBrokersAvailable as err:
+            time.sleep(1)
 
         self.consumer.subscribe([TRANSACTIONS_TOPIC])
 
     def run(self):
         """ Run the consumer """
         while not self._stop_event.is_set():
-            msg = self.consumer.poll(timeout=1.0)
-            if msg is None:
-                continue
-            if not msg.error():
-                self.on_message(msg)
-                if self._stop_event.is_set():
-                    break
-            else:
-                self.logger.error("Undefined error in consumer loop")
-                raise KafkaException(msg.error())
+            for msg in self.consumer:
+                if msg is None:
+                    continue
+                else:
+                    self.on_message(msg)
+                    if self._stop_event.is_set():
+                        break
 
         self.consumer.close()
 
@@ -93,27 +77,28 @@ class Consumer(threading.Thread):
 
     def on_commit(self, error, partition_list):
         """ Called when the consumer commits it's new offset """
-        self.logger.info("On Commit: Error: %s Partitions: %s", error, partition_list)
+        pass
+        #self.logger.info("On Commit: Error: %s Partitions: %s", error, partition_list)
 
     def on_message(self, incoming_message):
         """ Handle a message """
         with self.mark_processing():
-            topic = incoming_message.topic()
-            data = incoming_message.value()
+            topic = incoming_message.topic
+            data = incoming_message.value
             try:
-                message = Message.parse_raw(data)
+                message = Message.parse_obj(data)
             except ValueError:
-                self.logger.error("Could not decode message from %s\n\n%s", topic, traceback.format_exc())
+                #self.logger.error("Could not decode message from %s\n\n%s", topic, traceback.format_exc())
                 return
 
             try:
                 if topic == 'data_ready':
                     self.message_handler.data_ready(message)
                 else:
-                    self.logger.error("Received a message on an unknown topic '%s'", topic)
+                    pass
+                    #self.logger.error("Received a message on an unknown topic '%s'", topic)
             except Exception as exp:  # pylint:disable=broad-except
-                self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
-                                  type(exp).__name__, exp, traceback.format_exc())
+                pass
 
     def is_processing_message(self):
         """Return the processing state."""
@@ -132,11 +117,11 @@ class Consumer(threading.Thread):
             self._processing = False
 
 
-def setup_connection(consumer=None) -> Consumer:
+def setup_connection() -> Consumer:
     """
     Starts the Kafka consumer.
     """
-    consumer = Consumer(consumer=consumer)
+    consumer = Consumer()
 
     consumer_thread = threading.Thread(target=consumer.run)
     consumer_thread.start()
