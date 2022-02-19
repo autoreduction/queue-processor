@@ -13,7 +13,6 @@ import os
 import shutil
 import time
 from pathlib import Path
-from confluent_kafka import TopicPartition
 
 from django.test import TransactionTestCase
 
