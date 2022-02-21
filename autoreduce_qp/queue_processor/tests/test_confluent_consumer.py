@@ -1,7 +1,5 @@
 import os
-from threading import Thread
 import threading
-import time
 from unittest import TestCase, main, mock
 import confluent_kafka
 from autoreduce_utils.clients.producer import Publisher
@@ -89,6 +87,7 @@ mock.patch("logging.getLogger") as patched_logger:
         self.mocked_logger.error.assert_called_with("Undefined error in consumer loop")
 
     def test_stop_method(self):
+        """ Test that the stop method works """
         self.consumer.stop()
         self.assertTrue(self.consumer.stopped)
 
