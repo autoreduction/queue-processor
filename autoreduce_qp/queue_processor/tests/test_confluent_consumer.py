@@ -1,4 +1,7 @@
 import os
+from threading import Thread
+import threading
+import time
 from unittest import TestCase, main, mock
 import confluent_kafka
 from autoreduce_utils.clients.producer import Publisher
@@ -27,6 +30,7 @@ mock.patch("logging.getLogger") as patched_logger:
             self.consumer = Consumer()
             self.mocked_logger = patched_logger.return_value
             self.mock_confluent_consumer = mock_confluent_consumer.return_value
+            self.mock_confluent_consumer.subscribe.assert_called_with([TRANSACTIONS_TOPIC])
 
     def test_on_message_unknown_topic(self):
         """Test receiving a message on an unknown topic"""
@@ -55,10 +59,49 @@ mock.patch("logging.getLogger") as patched_logger:
         self.consumer.on_message(self.mock_confluent_message)
         self.mocked_logger.error.assert_called_once()
 
-    def test_init_consumer(self):
-        """ Test if the consumer is initialized and subscribed to the topic """
-        Consumer(self.mock_confluent_consumer)
-        self.mock_confluent_consumer.subscribe.assert_called_with([TRANSACTIONS_TOPIC])
+    def test_success_run(self):
+        """ Test that the poll loop runs successfully """
+        self.mock_confluent_message.error.return_value = None
+        self.mock_confluent_consumer.poll.return_value = self.mock_confluent_message
+        # Don't call the on_message method
+        self.consumer.on_message = mock.Mock()
+        # Stop the thread after 5 seconds
+        run = threading.Timer(5, self.consumer.stop)
+        run.start()
+        # Start the thread
+        self.consumer.run()
+        self.mock_confluent_consumer.poll.assert_called_with(timeout=1.0)
+        self.consumer.on_message.assert_called_with(self.mock_confluent_message)
+        self.consumer.stop()
+
+    def test_run_error_message(self):
+        """ Test that the poll loop runs successfully """
+        self.mock_confluent_consumer.poll.return_value = self.mock_confluent_message
+        # Don't call the on_message method
+        self.consumer.on_message = mock.Mock()
+        # Stop the thread after 10 seconds
+        run = threading.Timer(10, self.consumer.stop)
+        run.start()
+        # Start the thread
+        self.assertRaises(confluent_kafka.KafkaException, self.consumer.run)
+        self.mock_confluent_consumer.poll.assert_called_with(timeout=1.0)
+        self.mocked_logger.error.assert_called_with("Undefined error in consumer loop")
+        self.consumer.stop()
+
+    def test_stop_method(self):
+        self.consumer.stop()
+        self.assertTrue(self.consumer.stopped)
+
+    def test_stop_consumer(self):
+        """ Test if the consumer is stopped via Event.set() """
+        self.mock_confluent_message.error.return_value = None
+        self.mock_confluent_consumer.poll.return_value = self.mock_confluent_message
+        # Don't call the on_message method
+        self.consumer.on_message = mock.Mock()
+        run = threading.Timer(5, self.consumer.stop)
+        run.start()
+        self.consumer.run()
+        self.mocked_logger.info.assert_called_with("Stopping the consumer")
 
 
 if __name__ == '__main__':

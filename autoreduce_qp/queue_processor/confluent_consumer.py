@@ -72,11 +72,12 @@ class Consumer(threading.Thread):
                 continue
             if not msg.error():
                 self.on_message(msg)
-                if self._stop_event.is_set():
-                    break
             else:
                 self.logger.error("Undefined error in consumer loop")
                 raise KafkaException(msg.error())
+            if self._stop_event.is_set():
+                self.logger.info("Stopping the consumer")
+                break
 
         self.consumer.close()
 
