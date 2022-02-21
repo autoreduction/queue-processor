@@ -6,7 +6,8 @@ from unittest import TestCase, main, mock
 import confluent_kafka
 from autoreduce_utils.clients.producer import Publisher
 from autoreduce_utils.message.message import Message
-from autoreduce_qp.queue_processor.confluent_consumer import Consumer
+from autoreduce_utils.clients.connection_exception import ConnectionException
+from autoreduce_qp.queue_processor.confluent_consumer import Consumer, setup_connection
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
@@ -80,13 +81,12 @@ mock.patch("logging.getLogger") as patched_logger:
         # Don't call the on_message method
         self.consumer.on_message = mock.Mock()
         # Stop the thread after 10 seconds
-        run = threading.Timer(10, self.consumer.stop)
+        run = threading.Timer(5, self.consumer.stop)
         run.start()
         # Start the thread
         self.assertRaises(confluent_kafka.KafkaException, self.consumer.run)
         self.mock_confluent_consumer.poll.assert_called_with(timeout=1.0)
         self.mocked_logger.error.assert_called_with("Undefined error in consumer loop")
-        self.consumer.stop()
 
     def test_stop_method(self):
         self.consumer.stop()
@@ -102,6 +102,12 @@ mock.patch("logging.getLogger") as patched_logger:
         run.start()
         self.consumer.run()
         self.mocked_logger.info.assert_called_with("Stopping the consumer")
+
+    def test_setup_connection_exception(self):
+        """ Test that the init of Consumer can handle not being able to connect to Kafka """
+        with mock.patch("autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer",
+                        side_effect=confluent_kafka.KafkaException):
+            self.assertRaises(ConnectionException, setup_connection)
 
 
 if __name__ == '__main__':

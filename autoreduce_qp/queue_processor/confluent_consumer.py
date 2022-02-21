@@ -89,10 +89,6 @@ class Consumer(threading.Thread):
         """ Return whether the consumer has been stopped """
         return self._stop_event.is_set()
 
-    def manual_consume(self, batch_size, timeout=1.0):
-        """ Consume a batch of messages. Used for testing purposes """
-        return [message.value() for message in self.consumer.consume(batch_size, timeout=timeout)]
-
     def on_commit(self, error, partition_list):
         """ Called when the consumer commits it's new offset """
         self.logger.info("On Commit: Error: %s Partitions: %s", error, partition_list)
