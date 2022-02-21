@@ -4,6 +4,7 @@ import traceback
 import logging
 import os
 from typing import Tuple
+from pydantic import ValidationError
 from confluent_kafka import DeserializingConsumer, KafkaException
 from confluent_kafka.serialization import StringDeserializer
 from confluent_kafka.admin import AdminClient, NewTopic
@@ -102,8 +103,8 @@ class Consumer(threading.Thread):
             data = incoming_message.value()
             try:
                 message = Message.parse_raw(data)
-            except ValueError:
-                self.logger.error("Could not decode message from %s\n\n%s", topic, traceback.format_exc())
+            except ValidationError or TypeError:
+                self.logger.error("Could not decode message: %s", data)
                 return
 
             try:
