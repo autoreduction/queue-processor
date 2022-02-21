@@ -103,7 +103,7 @@ class Consumer(threading.Thread):
             data = incoming_message.value()
             try:
                 message = Message.parse_raw(data)
-            except ValidationError or TypeError:
+            except (ValidationError, TypeError):
                 self.logger.error("Could not decode message: %s", data)
                 return
 
