@@ -155,7 +155,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.publisher.publish(topic='data_ready', messages=message)
         start_time = time.time()
         while self.consumer.is_processing_message():
-            time.sleep(5)
+            time.sleep(10)
             if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
                 break
 
