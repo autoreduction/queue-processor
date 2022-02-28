@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run ActiveMQ Docker daemon",
+            "label": "Run Kafka Docker daemon",
             "type": "shell",
-            "command": "make activemq",
+            "command": "make kafka",
             "problemMatcher": [],
             "presentation": {
                 "echo": true,
@@ -16,6 +16,6 @@
                 "showReuseMessage": true,
                 "clear": false
             }
-        },
+        }
     ]
 }

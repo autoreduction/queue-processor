@@ -20,7 +20,7 @@ from autoreduce_db.reduction_viewer.models import Instrument, ReductionRun
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.settings import MANTID_PATH, PROJECT_DEV_ROOT
-from autoreduce_qp.queue_processor.queue_listener import setup_connection
+from autoreduce_qp.queue_processor.confluent_consumer import setup_kafka_connections
 from autoreduce_qp.systemtests.utils.data_archive import DataArchive
 from autoreduce_qp.model.database import access as db
 
@@ -55,10 +55,10 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         """ Start all external services """
         # Get all clients
         try:
-            self.queue_client, self.listener = setup_connection()
+            self.publisher, self.consumer = setup_kafka_connections()
         except ConnectionException as err:
-            raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
-                               "the ActiveMQ Docker container is running") from err
+            raise RuntimeError("Could not connect to Kafka - check your credentials. If running locally check that "
+                               "the Kafka Docker container is running") from err
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
         self.instrument = 'ARMI'
@@ -75,7 +75,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.data_archive = DataArchive([self.instrument], 19, 19)
         self.data_archive.create()
 
-        # Create and send json message to ActiveMQ
+        # Create and send json message to Kafka
         self.data_ready_message = Message(rb_number=self.rb_number,
                                           instrument=self.instrument,
                                           run_number=self.run_number,
@@ -99,7 +99,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
 
     def tearDown(self):
         """ Disconnect from services, stop external services and delete data archive """
-        self.queue_client.disconnect()
+        self.consumer.stop()
         self._remove_run_from_database(self.instrument, self.run_number)
         self.data_archive.delete()
 
@@ -150,16 +150,15 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         return instrument.reduction_runs.filter(run_numbers__run_number=self.run_number)
 
     def send_and_wait_for_result(self, message):
-        """Sends the message to the queue and waits until the listener has finished processing it"""
-        # forces the is_processing to return True so that the listener has time to actually start processing the message
-        self.listener._processing = True  # pylint:disable=protected-access
-        self.queue_client.send('/queue/DataReady', message)
+        """Sends the message to the topic and waits until the consumer has finished processing it"""
+        self.consumer._processing = True  # pylint:disable=protected-access
+        self.publisher.publish(topic='data_ready', messages=message)
         start_time = time.time()
-        while self.listener.is_processing_message():
-            time.sleep(0.5)
+        while self.consumer.is_processing_message():
+            time.sleep(5)
             if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
                 break
-
+        time.sleep(10)  # Wait for the message to be processed
         results = self._find_run_in_database()
         assert results
         return results

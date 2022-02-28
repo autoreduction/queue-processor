@@ -73,10 +73,10 @@
             "justMyCode": false
         },
         {
-            "name": "Run queue listener",
+            "name": "Run Kafka consumer",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/autoreduce_qp/queue_processor/queue_listener.py",
+            "program": "${workspaceFolder}/autoreduce_qp/queue_processor/confluent_consumer.py",
             "console": "integratedTerminal",
             "presentation": {
                 "hidden": false,
