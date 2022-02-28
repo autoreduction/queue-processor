@@ -7,12 +7,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="autoreduce_qp",
-    version="22.0.0.dev33",  # when updating the version here make sure to also update qp_mantid_python36.D
+    version="22.0.0.dev34",  # when updating the version here make sure to also update qp_mantid_python36.D
     description="ISIS Autoreduction queue processor",
     author="ISIS Autoreduction Team",
     url="https://github.com/autoreduction/autoreduce/",
     install_requires=[
-        "autoreduce_db==22.0.0.dev32", "Django>=3.2.10", "fire==0.4.0", "plotly==5.3.1", "kaleido==0.2.1", "stomp.py",
+        "autoreduce_db==22.0.0.dev33", "Django>=3.2.10", "fire==0.4.0", "plotly==5.3.1", "kaleido==0.2.1", "stomp.py",
         "docker==5.0.3", "confluent-kafka==1.8.2"
     ],
     packages=find_packages(),
