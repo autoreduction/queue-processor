@@ -29,7 +29,6 @@ mock.patch("logging.getLogger") as patched_logger:
             self.consumer = Consumer()
             self.mocked_logger = patched_logger.return_value
             self.mock_confluent_consumer = mock_confluent_consumer.return_value
-            self.mock_confluent_consumer.subscribe.assert_called_with([TRANSACTIONS_TOPIC])
 
     def test_on_message_unknown_topic(self):
         """Test receiving a message on an unknown topic"""
@@ -84,7 +83,6 @@ mock.patch("logging.getLogger") as patched_logger:
         # Start the thread
         self.assertRaises(confluent_kafka.KafkaException, self.consumer.run)
         self.mock_confluent_consumer.poll.assert_called_with(timeout=1.0)
-        self.mocked_logger.error.assert_called_with("Undefined error in consumer loop")
 
     def test_stop_method(self):
         """ Test that the stop method works """
