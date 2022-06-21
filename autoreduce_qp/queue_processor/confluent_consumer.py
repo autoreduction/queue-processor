@@ -6,16 +6,17 @@ import os
 from typing import Tuple
 from pydantic import ValidationError
 from confluent_kafka import DeserializingConsumer, KafkaException
+from confluent_kafka import KafkaError as ConfluentKafkaError
 from confluent_kafka.serialization import StringDeserializer
-from confluent_kafka.admin import AdminClient, NewTopic
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.clients.producer import Publisher
+from autoreduce_utils.clients.kafka_utils import kafka_config_from_env
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
-GROUP_ID = 'mygroup'
+GROUP_ID = 'data_ready-group'
 
 
 class Consumer(threading.Thread):
@@ -25,16 +26,6 @@ class Consumer(threading.Thread):
         super().__init__()
         self.logger = logging.getLogger(__package__)
         self.logger.debug("Initializing the consumer")
-
-        kafka_broker = {'bootstrap.servers': KAFKA_BROKER_URL}
-        admin_client = AdminClient(kafka_broker)
-        topics = admin_client.list_topics().topics
-
-        if not topics:
-            # Create the topic
-            self.logger.info("Creating the topic '%s'", TRANSACTIONS_TOPIC)
-            new_topic = NewTopic(TRANSACTIONS_TOPIC, num_partitions=1, replication_factor=1)
-            admin_client.create_topics([new_topic])
 
         self.consumer = consumer
         self.message_handler = HandleMessage()
@@ -49,36 +40,38 @@ class Consumer(threading.Thread):
             try:
                 self.logger.debug("Getting the kafka consumer")
 
-                config = {
-                    'bootstrap.servers': KAFKA_BROKER_URL,
-                    'group.id': GROUP_ID,
-                    'auto.offset.reset': "earliest",
-                    "on_commit": self.on_commit,
-                    'key.deserializer': StringDeserializer('utf_8'),
-                    'value.deserializer': StringDeserializer('utf_8')
-                }
+                config = kafka_config_from_env()
+
+                config['key.deserializer'] = StringDeserializer('utf_8')
+                config['value.deserializer'] = StringDeserializer('utf_8')
+                config['on_commit'] = self.on_commit
+                config['group.id'] = GROUP_ID
                 self.consumer = DeserializingConsumer(config)
+
             except KafkaException as err:
                 self.logger.error("Could not initialize the consumer: %s", err)
                 raise ConnectionException("Could not initialize the consumer") from err
 
-        self.consumer.subscribe([TRANSACTIONS_TOPIC])
-
     def run(self):
         """ Run the consumer """
+        self.consumer.subscribe([TRANSACTIONS_TOPIC])
         while not self._stop_event.is_set():
             msg = self.consumer.poll(timeout=1.0)
             if msg is None:
                 continue
-            if not msg.error():
-                self.on_message(msg)
+            if msg.error():
+                if msg.error().code() == ConfluentKafkaError._PARTITION_EOF:
+                    self.logger.info("Received EOF for partition %s", msg.partition())
+                else:
+                    raise KafkaException(msg.error())
+
             else:
-                self.logger.error("Undefined error in consumer loop")
-                raise KafkaException(msg.error())
+                self.on_message(msg)
             if self._stop_event.is_set():
                 self.logger.info("Stopping the consumer")
                 break
 
+        # Close down consumer to commit final offsets.
         self.consumer.close()
 
     def stop(self):
