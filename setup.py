@@ -13,7 +13,7 @@ setup(
     url="https://github.com/autoreduction/autoreduce/",
     install_requires=[
         "autoreduce_db==22.0.0.dev34", "Django>=3.2.10", "fire==0.4.0", "plotly==5.3.1", "kaleido==0.2.1", "stomp.py",
-        "docker==5.0.3", "confluent-kafka==1.8.2"
+        "docker==5.0.3", "confluent-kafka"
     ],
     packages=find_packages(),
     entry_points={
