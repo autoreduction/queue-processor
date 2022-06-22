@@ -10,7 +10,6 @@ from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
 KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
-GROUP_ID = 1
 
 
 class KafkaTestCase(TestCase):

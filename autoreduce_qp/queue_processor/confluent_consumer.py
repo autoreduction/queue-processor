@@ -14,8 +14,6 @@ from autoreduce_utils.clients.kafka_utils import kafka_config_from_env
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
-KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
-GROUP_ID = 'data_ready-group'
 
 
 class Consumer(threading.Thread):
@@ -44,8 +42,6 @@ class Consumer(threading.Thread):
                 config['key.deserializer'] = StringDeserializer('utf_8')
                 config['value.deserializer'] = StringDeserializer('utf_8')
                 config['on_commit'] = self.on_commit
-                config['group.id'] = GROUP_ID
-                config['auto.offset.reset'] = 'earliest'
 
                 self.consumer = DeserializingConsumer(config)
             except KafkaException as err:
