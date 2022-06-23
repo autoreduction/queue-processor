@@ -14,6 +14,7 @@ from autoreduce_utils.clients.kafka_utils import kafka_config_from_env
 from autoreduce_qp.queue_processor.handle_message import HandleMessage
 
 TRANSACTIONS_TOPIC = os.getenv('KAFKA_TOPIC')
+GROUP_ID = 'data_ready-group'
 
 
 class Consumer(threading.Thread):
@@ -42,6 +43,7 @@ class Consumer(threading.Thread):
                 config['key.deserializer'] = StringDeserializer('utf_8')
                 config['value.deserializer'] = StringDeserializer('utf_8')
                 config['on_commit'] = self.on_commit
+                config['group.id'] = GROUP_ID
 
                 self.consumer = DeserializingConsumer(config)
             except KafkaException as err:
