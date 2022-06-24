@@ -7,7 +7,6 @@ from typing import Tuple
 from pydantic import ValidationError
 from confluent_kafka import DeserializingConsumer, KafkaException
 from confluent_kafka.serialization import StringDeserializer
-from confluent_kafka.admin import AdminClient, NewTopic
 from autoreduce_utils.clients.connection_exception import ConnectionException
 from autoreduce_utils.message.message import Message
 from autoreduce_utils.clients.producer import Publisher
