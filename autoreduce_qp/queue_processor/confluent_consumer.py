@@ -45,7 +45,7 @@ class Consumer(threading.Thread):
                 config['value.deserializer'] = StringDeserializer('utf_8')
                 config['on_commit'] = self.on_commit
                 config['group.id'] = GROUP_ID
-                config['auto.offset.reset'] = 'earliest'
+                config['auto.offset.reset'] = 'latest'
                 self.consumer = DeserializingConsumer(config)
             except KafkaException as err:
                 self.logger.error("Could not initialize the consumer: %s", err)
