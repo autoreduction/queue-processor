@@ -12,7 +12,7 @@ setup(
     author="ISIS Autoreduction Team",
     url="https://github.com/autoreduction/autoreduce/",
     install_requires=[
-        "autoreduce_db==22.0.0.dev36", "Django>=3.2.10", "fire==0.4.0", "plotly==5.3.1", "kaleido==0.2.1", "stomp.py",
+        "autoreduce_db==22.0.0.dev36", "Django>=3.2.10", "fire==0.4.0", "plotly==5.9.0", "kaleido==0.2.1", "stomp.py",
         "docker==5.0.3", "confluent-kafka"
     ],
     packages=find_packages(),
