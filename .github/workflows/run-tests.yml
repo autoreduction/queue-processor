@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   pytest:
-    name: Pytest
+    name: Test and publish workflow
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
