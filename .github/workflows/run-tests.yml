@@ -52,7 +52,7 @@ jobs:
 
       - name: Build package for publishing
         if: ${{ github.ref == 'refs/heads/main' }}
-        run: python3 -m pip install wheel && python3 setup.py sdist bdist_wheel
+        run: python3 -m pip install --upgrade build wheel && python -m build
 
       - name: Publish distribution 📦 to PyPI
         if: ${{ github.ref == 'refs/heads/main' }}
