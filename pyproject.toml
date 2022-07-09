@@ -48,7 +48,6 @@ disable = [
     "R1705", # no-else-return
     "C0114", # missing-module-docstring
     "C0115", # missing-class-docstring
-    "R0801", # duplicate-code
 ]
 ignore = [".git", "migrations"]
 [tool.pylint.FORMAT]
