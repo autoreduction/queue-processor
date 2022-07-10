@@ -28,7 +28,7 @@ autoreduce-qp-start = "autoreduce_qp.queue_processor.confluent_consumer:main"
 autoreduce-runner-start = "autoreduce_qp.queue_processor.reduction.runner:main"
 
 [tool.setuptools]
-py-modules = []
+packages = ["autoreduce_qp"]
 
 [tool.yapf]
 column_limit = 120
