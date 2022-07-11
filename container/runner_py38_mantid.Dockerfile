@@ -21,6 +21,8 @@ RUN conda-pack -n py38 -o /tmp/env.tar && \
     mkdir /venv && cd /venv && tar xf /tmp/env.tar && \
     rm /tmp/env.tar
 
+RUN cp /venv/bin/Mantid.properties /venv/lib/Mantid.properties
+
 # We've put venv in same path it'll be in final image,
 # so now fix up paths:
 RUN /venv/bin/conda-unpack
@@ -35,7 +37,6 @@ WORKDIR /home/isisautoreduce
 
 COPY --from=build /venv /venv
 SHELL [ "source", "/venv/bin/activate", "/bin/bash", "-c" ]
-RUN cp /venv/bin/Mantid.properties /venv/lib/Mantid.properties
 
 ENV PYTHONPATH=/venv/scripts/:/venv/scripts/Diffraction/:/venv/scripts/Engineering/:/venv/bin:/venv/lib:/venv/plugins:/venv/scripts/SANS/:/venv/scripts/Inelastic/:/venv/scripts/ExternalInterfaces:/venv/scripts/Interface
 CMD autoreduce-qp-start
