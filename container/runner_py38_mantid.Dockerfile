@@ -1,5 +1,6 @@
 FROM continuumio/miniconda3 AS build
 
+ARG MANTID_VERSION
 WORKDIR /app
 ADD . .
 
@@ -11,7 +12,7 @@ SHELL [ "conda", "run", "-n", "py38", "/bin/bash", "-c" ]
 
 # Install Mantid and install autoreduce-qp from local directory
 RUN conda config --add channels conda-forge
-RUN conda install mantid -c mantid
+RUN conda install mantid=${MANTID_VERSION} -c mantid
 RUN conda install conda-pack
 RUN python3 -m pip install --no-cache-dir . 
 
