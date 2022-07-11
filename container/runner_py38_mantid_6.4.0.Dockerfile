@@ -35,4 +35,5 @@ WORKDIR /home/isisautoreduce
 COPY --from=build /venv /venv
 SHELL [ "source", "/venv/bin/activate", "/bin/bash", "-c" ]
 
+ENV PYTHONPATH=/venv/scripts/:/venv/scripts/Diffraction/:/venv/scripts/Engineering/:/venv/bin:/venv/lib:/venv/plugins:/venv/scripts/SANS/:/venv/scripts/Inelastic/:/venv/scripts/ExternalInterfaces:/venv/scripts/Interface
 CMD autoreduce-qp-start
