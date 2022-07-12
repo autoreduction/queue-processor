@@ -4,6 +4,9 @@ ARG MANTID_VERSION
 WORKDIR /app
 ADD . .
 
+# Install conda-pack into the base environment
+RUN conda install conda-pack
+
 # Create the conda environment
 RUN conda create -n py38 python=3.8.12
 
@@ -13,7 +16,6 @@ SHELL [ "conda", "run", "-n", "py38", "/bin/bash", "-c" ]
 # Install Mantid and install autoreduce-qp from local directory
 RUN conda config --add channels conda-forge
 RUN conda install mantid=${MANTID_VERSION} -c mantid
-RUN conda install conda-pack
 RUN python3 -m pip install --no-cache-dir . 
 
 # Use conda-pack to create a standalone enviornment in /venv:
