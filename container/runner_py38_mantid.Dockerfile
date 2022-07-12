@@ -4,6 +4,17 @@ ARG MANTID_VERSION
 WORKDIR /app
 ADD . .
 
+RUN export DEBIAN_FRONTEND=noninteractive && apt-get update &&\
+    apt-get install -y \
+    wget \
+    gnupg \
+    git \
+    software-properties-common \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    gcc
+
 # Install conda-pack into the base environment
 RUN conda install conda-pack
 
@@ -17,6 +28,7 @@ SHELL [ "conda", "run", "-n", "py38", "/bin/bash", "-c" ]
 RUN conda config --add channels conda-forge
 RUN conda install mantid=${MANTID_VERSION} -c mantid
 RUN python3 -m pip install --no-cache-dir . 
+RUN python3 -m pip install --no-cache-dir mysqlclient debugpy
 
 # Use conda-pack to create a standalone enviornment in /venv:
 RUN conda-pack -n py38 -o /tmp/env.tar && \
@@ -33,12 +45,28 @@ RUN /venv/bin/conda-unpack
 
 FROM debian:buster AS runtime
 
+RUN export DEBIAN_FRONTEND=noninteractive && apt-get update &&\
+    apt-get install -y \
+    wget \
+    gnupg \
+    git \
+    software-properties-common \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    gcc
+
 RUN useradd -m --no-log-init -s /bin/bash -u 880844730 isisautoreduce
 USER isisautoreduce
 WORKDIR /home/isisautoreduce
 
 COPY --from=build /venv /venv
-SHELL [ "source", "/venv/bin/activate", "/bin/bash", "-c" ]
 
 ENV PYTHONPATH=/venv/scripts/:/venv/scripts/Diffraction/:/venv/scripts/Engineering/:/venv/bin:/venv/lib:/venv/plugins:/venv/scripts/SANS/:/venv/scripts/Inelastic/:/venv/scripts/ExternalInterfaces:/venv/scripts/Interface
+
+# Add the environment to the PATH (equivalent of running source /venv/bin/activate)
+ENV PATH="/venv/bin:$PATH"
+
+# When the image is run, run the code with the environment
+SHELL [ "/bin/bash", "-c" ]
 CMD autoreduce-qp-start
