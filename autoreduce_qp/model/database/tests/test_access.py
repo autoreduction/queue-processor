@@ -4,7 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-# pylint:disable=no-self-use,no-member
+# pylint:disable=no-member
 """
 Unit tests to exercise the code responsible for common database access methods
 """
