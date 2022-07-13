@@ -53,6 +53,7 @@ ignore = [".git", "migrations"]
 
 [tool.pylint.FORMAT]
 max-line-length = 120
+
 [tool.pylint.DESIGN]
 max-args = 8
 [tool.pylint.SIMILARITIES]
