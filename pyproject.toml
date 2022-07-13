@@ -1,0 +1,61 @@
+[build-system]
+requires = ["wheel", "setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autoreduce_qp"
+version = "22.0.0.dev37"
+description = "ISIS Autoreduction queue processor"
+license = { text = "GNU General Public License" }
+classifiers = ["Framework :: Django", "Programming Language :: Python :: 3"]
+dependencies = [
+    "autoreduce_db==22.0.0.dev36",
+    "Django>=3.2.10",
+    "fire==0.4.0",
+    "plotly==5.3.1",
+    "kaleido==0.2.1",
+    "stomp.py",
+    "docker==5.0.3",
+    "confluent-kafka==1.9.0",
+]
+
+[project.urls]
+"Repository" = "https://github.com/autoreduction/queue-processor"
+"Wiki" = "https://github.com/autoreduction/queue-processor/wiki"
+
+[project.scripts]
+autoreduce-qp-start = "autoreduce_qp.queue_processor.confluent_consumer:main"
+autoreduce-runner-start = "autoreduce_qp.queue_processor.reduction.runner:main"
+
+[tool.setuptools]
+packages = ["autoreduce_qp"]
+
+[tool.yapf]
+column_limit = 120
+based_on_style = "pep8"
+
+[tool.yapfignore]
+ignore_patterns = ["setup.py", "**/migrations", "venv/", "venv3/"]
+
+[tool.pylint.MAIN]
+load-plugins = ["pylint_django"]
+django-settings-module = "autoreduce_django.settings"
+extension-pkg-whitelist = ["pydantic"]
+disable = [
+    "R0904", # too-many-public-methods
+    "R0902", # too-many-instance-attributes
+    "R0903", # too-few-public-methods
+    "R1705", # no-else-return
+    "C0114", # missing-module-docstring
+    "C0115", # missing-class-docstring
+]
+ignore = [".git", "migrations"]
+
+[tool.pylint.FORMAT]
+max-line-length = 120
+
+[tool.pylint.DESIGN]
+max-args = 8
+
+[tool.pylint.SIMILARITIES]
+min-similarity-lines = 10
