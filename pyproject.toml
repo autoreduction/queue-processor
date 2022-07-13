@@ -50,6 +50,7 @@ disable = [
     "C0115", # missing-class-docstring
 ]
 ignore = [".git", "migrations"]
+
 [tool.pylint.FORMAT]
 max-line-length = 120
 [tool.pylint.DESIGN]
