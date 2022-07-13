@@ -56,5 +56,6 @@ max-line-length = 120
 
 [tool.pylint.DESIGN]
 max-args = 8
+
 [tool.pylint.SIMILARITIES]
 min-similarity-lines = 10
