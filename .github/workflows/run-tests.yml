@@ -42,7 +42,7 @@ jobs:
         run: >-
           RUNNING_VIA_PYTEST=true pytest --ignore=autoreduce_qp/systemtests --cov=autoreduce_qp --cov-report=xml -v autoreduce_qp
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
           name: codecov-umbrella
