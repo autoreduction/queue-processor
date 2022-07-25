@@ -1,6 +1,6 @@
 FROM continuumio/miniconda3 AS build
 
-ARG MANTID_VERSION
+ARG NIGHTLY=False
 WORKDIR /app
 ADD . .
 
@@ -26,7 +26,12 @@ SHELL [ "conda", "run", "-n", "py38", "/bin/bash", "-c" ]
 
 # Install Mantid and install autoreduce-qp from local directory
 RUN conda config --add channels conda-forge
-RUN conda install mantid=${MANTID_VERSION} -c mantid
+RUN if [ "$NIGHTLY" = "False" ]; then \
+    conda install mantid -c mantid; \
+    else \
+    conda install -c mantid/label/nightly mantid; \
+    fi
+
 RUN python3 -m pip install --no-cache-dir . 
 RUN python3 -m pip install --no-cache-dir mysqlclient debugpy
 
