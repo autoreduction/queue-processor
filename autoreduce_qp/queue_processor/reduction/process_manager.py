@@ -8,7 +8,6 @@
 import logging
 import os
 from pathlib import Path
-import tempfile
 import traceback
 import docker
 from docker.errors import APIError, ImageNotFound, ContainerError
@@ -32,66 +31,66 @@ class ReductionProcessManager:
     def run(self) -> Message:
         """Run the reduction subprocess."""
         try:
-                # We need to run the reduction in a new process, otherwise scripts
-                # will fail when they use things that require access to a main loop
-                # e.g. a GUI main loop, for matplotlib or Mantid
-                serialized_vars = self.message.serialize()
-                serialized_vars_truncated = self.message.serialize(limit_reduction_script=True)
-                args = ["autoreduce-runner-start", serialized_vars, self.run_name]
-                logger.info("Calling: %s %s %s %s ", "python3", "runner.py", serialized_vars_truncated, self.run_name)
+            # We need to run the reduction in a new process, otherwise scripts
+            # will fail when they use things that require access to a main loop
+            # e.g. a GUI main loop, for matplotlib or Mantid
+            serialized_vars = self.message.serialize()
+            serialized_vars_truncated = self.message.serialize(limit_reduction_script=True)
+            args = ["autoreduce-runner-start", serialized_vars, self.run_name]
+            logger.info("Calling: %s %s %s %s ", "python3", "runner.py", serialized_vars_truncated, self.run_name)
 
-                # Return a client configured from environment variables
-                # The environment variables used are the same as those used by the Docker command-line client
-                # https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
-                client = docker.from_env()
+            # Return a client configured from environment variables
+            # The environment variables used are the same as those used by the Docker command-line client
+            # https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
+            client = docker.from_env()
 
-                image = get_correct_image(client, self.software)
+            image = get_correct_image(client, self.software)
 
-                if "AUTOREDUCTION_PRODUCTION" in os.environ:
-                    reduced_data = Path('/instrument')
-                else:
-                    reduced_data = Path(f'{PROJECT_DEV_ROOT}/reduced-data')
-                    if not os.path.exists(ARCHIVE_ROOT):
-                        Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
-                    if not os.path.exists(reduced_data):
-                        reduced_data.mkdir(parents=True, exist_ok=True)
+            if "AUTOREDUCTION_PRODUCTION" in os.environ:
+                reduced_data = Path('/instrument')
+            else:
+                reduced_data = Path(f'{PROJECT_DEV_ROOT}/reduced-data')
+                if not os.path.exists(ARCHIVE_ROOT):
+                    Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
+                if not os.path.exists(reduced_data):
+                    reduced_data.mkdir(parents=True, exist_ok=True)
 
-                    # Run chmod's to make sure the directories are writable
-                    reduced_data.chmod(0o777)
-                    Path(ARCHIVE_ROOT).chmod(0o777)
-                    Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
+                # Run chmod's to make sure the directories are writable
+                reduced_data.chmod(0o777)
+                Path(ARCHIVE_ROOT).chmod(0o777)
+                Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
 
-                container = client.containers.run(
-                    image=image,
-                    command=args,
-                    volumes={
-                        AUTOREDUCE_HOME_ROOT: {
-                            'bind': '/home/isisautoreduce/.autoreduce/',
-                            'mode': 'rw'
-                        },
-                        ARCHIVE_ROOT: {
-                            'bind': '/isis/',
-                            'mode': 'rw'
-                        },
-                        reduced_data: {
-                            'bind': '/instrument/',
-                            'mode': 'rw'
-                        },
+            container = client.containers.run(
+                image=image,
+                command=args,
+                volumes={
+                    AUTOREDUCE_HOME_ROOT: {
+                        'bind': '/home/isisautoreduce/.autoreduce/',
+                        'mode': 'rw'
                     },
-                    stdin_open=True,
-                    environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
-                    stdout=True,
-                    stderr=True,
-                )
+                    ARCHIVE_ROOT: {
+                        'bind': '/isis/',
+                        'mode': 'rw'
+                    },
+                    reduced_data: {
+                        'bind': '/instrument/',
+                        'mode': 'rw'
+                    },
+                },
+                stdin_open=True,
+                environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
+                stdout=True,
+                stderr=True,
+            )
 
-                logger.info("Container logs %s", container.decode("utf-8"))
+            logger.info("Container logs %s", container.decode("utf-8"))
 
-                with open(f'{AUTOREDUCE_HOME_ROOT}/output.txt', encoding="utf-8", mode='r') as out_file:
-                    result_message_raw = out_file.read()
+            with open(f'{AUTOREDUCE_HOME_ROOT}/output.txt', encoding="utf-8", mode='r') as out_file:
+                result_message_raw = out_file.read()
 
-                result_message = Message()
+            result_message = Message()
 
-                result_message.populate(result_message_raw)
+            result_message.populate(result_message_raw)
 
         # If the specified image does not exist.
         except ImageNotFound as exc:
