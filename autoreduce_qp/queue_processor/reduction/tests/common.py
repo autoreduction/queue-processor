@@ -35,6 +35,7 @@ def add_data_and_message():
     message.populate(data)
     return data, message
 
+
 def add_bad_data_and_message():
     """
     Makes and returns some test data and message
