@@ -32,11 +32,6 @@ class ReductionProcessManager:
     def run(self) -> Message:
         """Run the reduction subprocess."""
         try:
-            # Create a temp directory to store reduction result
-            # Volume bind for the container to write to and host to read from
-            with tempfile.TemporaryDirectory() as temp_dir:
-                os.chmod(temp_dir, 0o777)
-
                 # We need to run the reduction in a new process, otherwise scripts
                 # will fail when they use things that require access to a main loop
                 # e.g. a GUI main loop, for matplotlib or Mantid
@@ -82,10 +77,6 @@ class ReductionProcessManager:
                             'bind': '/instrument/',
                             'mode': 'rw'
                         },
-                        temp_dir: {
-                            'bind': '/output/',
-                            'mode': 'rw'
-                        },
                     },
                     stdin_open=True,
                     environment=["AUTOREDUCTION_PRODUCTION=1", "PYTHONIOENCODING=utf-8"],
@@ -95,7 +86,7 @@ class ReductionProcessManager:
 
                 logger.info("Container logs %s", container.decode("utf-8"))
 
-                with open(f'{temp_dir}/output.txt', encoding="utf-8", mode='r') as out_file:
+                with open(f'{AUTOREDUCE_HOME_ROOT}/output.txt', encoding="utf-8", mode='r') as out_file:
                     result_message_raw = out_file.read()
 
                 result_message = Message()

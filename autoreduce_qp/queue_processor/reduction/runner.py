@@ -10,6 +10,7 @@
 import io
 import logging
 import os
+from pathlib import Path
 import sys
 import tempfile
 import traceback
@@ -124,9 +125,8 @@ def write_reduction_message(reduction):
     """
     Write the reduction message to the reduction directory
     """
-    with open("/output/output.txt", mode="w", encoding="utf-8") as out_file:
+    with open("/home/isisautoreduce/.autoreduce/output.txt", mode="w+", encoding="utf-8") as out_file:
         out_file.write(reduction.message.serialize())
-        os.chmod("/output/output.txt", 0o777)
 
 
 def main():
