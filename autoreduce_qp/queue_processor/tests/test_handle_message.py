@@ -38,7 +38,7 @@ def make_test_message(instrument: str) -> Message:
         "data": "/path",
         'software': {
             "name": "Mantid",
-            "version": "6.2.0",
+            "version": "latest",
         },
         "description": "This is a fake description",
         "instrument": instrument,  # Autoreduction Mock Instrument
@@ -67,7 +67,7 @@ class TestHandleMessage(TestCase):
 
         self.experiment, _ = Experiment.objects.get_or_create(reference_number=1231231)
         self.instrument, _ = Instrument.objects.get_or_create(name=self.instrument_name, is_active=True)
-        self.software, _ = Software.objects.get_or_create(name="Mantid", version="6.2.0")
+        self.software, _ = Software.objects.get_or_create(name="Mantid", version="latest")
         status = Status.get_queued()
         self.reduction_run, self.message = create_reduction_run_record(self.experiment, self.instrument, self.msg, 0,
                                                                        status, self.software)
