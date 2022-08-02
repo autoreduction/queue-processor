@@ -66,7 +66,6 @@ class TestReductionRunner(unittest.TestCase):
                 runner = ReductionRunner(self.message, self.run_name)
                 write_reduction_message(runner)
         m_open.assert_called_with('/home/isisautoreduce/.autoreduce/output.txt', mode='w+', encoding='utf-8')
-        m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce):
@@ -80,7 +79,6 @@ class TestReductionRunner(unittest.TestCase):
                 main()
         mock_reduce.assert_called_once()
         m_open.assert_called_with('/home/isisautoreduce/.autoreduce/output.txt', mode='w+', encoding='utf-8')
-        m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce', side_effect=Exception)
     def test_main_reduce_raises(self, mock_reduce):
