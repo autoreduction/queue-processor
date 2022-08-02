@@ -68,7 +68,7 @@ class BaseAutoreduceSystemTest(TransactionTestCase):
         self.run_title = "test title"
         self.software = {
             "name": "Mantid",
-            "version": "6.2.0",
+            "version": "latest",
         }
 
         # Create test archive and add data
