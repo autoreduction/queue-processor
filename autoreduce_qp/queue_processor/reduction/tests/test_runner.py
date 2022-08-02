@@ -65,7 +65,7 @@ class TestReductionRunner(unittest.TestCase):
             with patch('os.chmod') as m_chmod:
                 runner = ReductionRunner(self.message, self.run_name)
                 write_reduction_message(runner)
-        m_open.assert_called_with('/output/output.txt', mode='w', encoding='utf-8')
+        m_open.assert_called_with('/home/isisautoreduce/.autoreduce/output.txt', mode='w+', encoding='utf-8')
         m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce')
@@ -79,7 +79,7 @@ class TestReductionRunner(unittest.TestCase):
                 sys.argv = ['', json.dumps(self.data), self.run_name]
                 main()
         mock_reduce.assert_called_once()
-        m_open.assert_called_with('/output/output.txt', mode='w', encoding='utf-8')
+        m_open.assert_called_with('/home/isisautoreduce/.autoreduce/output.txt', mode='w+', encoding='utf-8')
         m_chmod.assert_called_once()
 
     @patch(f'{DIR}.runner.ReductionRunner.reduce', side_effect=Exception)
