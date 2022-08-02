@@ -61,7 +61,7 @@ class TestReductionRunnerHelpers(unittest.TestCase):
         client = docker.from_env()
         test_software = MagicMock()
         test_software.name = "Mantid"
-        test_software.version = "6.2.0"
+        test_software.version = "latest"
         image = get_correct_image(client, test_software)
         self.assertIsNotNone(image)
 

@@ -184,7 +184,7 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.reduction_data is None
         assert runner.message.software == {
             "name": "Mantid",
-            "version": "6.2.0",
+            "version": "latest",
         }
         assert "Error encountered when running the reduction script" in runner.message.message
 
@@ -206,7 +206,7 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.reduction_data is None
         assert runner.message.software == {
             "name": "Mantid",
-            "version": "6.2.0",
+            "version": "latest",
         }
         assert "REDUCTION Error:" in runner.message.message
 
@@ -233,7 +233,7 @@ class TestReductionRunner(unittest.TestCase):
         assert runner.message.message is None
         assert runner.message.software == {
             "name": "Mantid",
-            "version": "6.2.0",
+            "version": "latest",
         }
 
     @staticmethod

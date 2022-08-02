@@ -12,18 +12,16 @@ from docker.errors import APIError, ImageNotFound
 from autoreduce_db.reduction_viewer.models import Software
 
 from autoreduce_qp.queue_processor.reduction.process_manager import ReductionProcessManager
-from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_and_message, add_data_and_message,
-                                                                  expected_return_data_and_message)
+from autoreduce_qp.queue_processor.reduction.tests.common import (add_bad_data_and_message, add_data_and_message)
 
 
 class TestReductionProcessManager(unittest.TestCase):
 
     def setUp(self) -> None:
         self.data, self.message = add_data_and_message()
-        self.expected_data, self.expected_message = expected_return_data_and_message()
         self.bad_data, self.bad_message = add_bad_data_and_message()
         self.run_name = "Test run name"
-        self.software = Software(name="Mantid", version="6.2.0")
+        self.software = Software(name="Mantid", version="latest")
 
     def test_init(self):
         """Test that the constructor is doing what's expected"""
