@@ -59,6 +59,7 @@ class ReductionProcessManager:
                 reduced_data.chmod(0o777)
                 Path(ARCHIVE_ROOT).chmod(0o777)
                 Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
+                Path(f'{AUTOREDUCE_HOME_ROOT}/output.txt').chmod(0o777)
 
             container = client.containers.run(
                 image=image,
