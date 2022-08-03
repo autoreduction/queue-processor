@@ -31,7 +31,7 @@ class TestReductionProcessManager(unittest.TestCase):
         rpm = ReductionProcessManager(self.message, self.run_name, self.software)
 
         assert rpm.message == self.message
-        assert str(rpm.reduced_data_path) == os.path.expanduser("~/.autoreduce/reduced-data")
+        assert str(rpm.reduced_data_path) == os.path.expanduser("~/.autoreduce/dev/reduced-data")
 
     @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
     def test_init_prod(self):
