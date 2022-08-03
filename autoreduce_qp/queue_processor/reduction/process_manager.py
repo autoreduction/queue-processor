@@ -28,6 +28,11 @@ class ReductionProcessManager:
         self.run_name = run_name
         self.software = software
 
+        if "AUTOREDUCTION_PRODUCTION" in os.environ:
+            self.reduced_data_path = Path('/instrument')
+        else:
+            self.reduced_data_path = Path(f'{PROJECT_DEV_ROOT}/reduced-data')
+
     def run(self) -> Message:
         """Run the reduction subprocess."""
         try:
@@ -46,17 +51,13 @@ class ReductionProcessManager:
 
             image = get_correct_image(client, self.software)
 
-            if "AUTOREDUCTION_PRODUCTION" in os.environ:
-                reduced_data = Path('/instrument')
-            else:
-                reduced_data = Path(f'{PROJECT_DEV_ROOT}/reduced-data')
+            if not "AUTOREDUCTION_PRODUCTION" in os.environ:
                 if not os.path.exists(ARCHIVE_ROOT):
                     Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
-                if not os.path.exists(reduced_data):
-                    reduced_data.mkdir(parents=True, exist_ok=True)
-
+                if not os.path.exists(self.reduced_data_path):
+                    self.reduced_data_path.mkdir(parents=True, exist_ok=True)
                 # Run chmod's to make sure the directories are writable
-                reduced_data.chmod(0o777)
+                self.reduced_data_path.chmod(0o777)
                 Path(ARCHIVE_ROOT).chmod(0o777)
                 Path(AUTOREDUCE_HOME_ROOT).chmod(0o777)
                 Path(f'{AUTOREDUCE_HOME_ROOT}/logs/autoreduce.log').chmod(0o777)
@@ -73,7 +74,7 @@ class ReductionProcessManager:
                         'bind': '/isis/',
                         'mode': 'rw'
                     },
-                    reduced_data: {
+                    self.reduced_data_path: {
                         'bind': '/instrument/',
                         'mode': 'rw'
                     },

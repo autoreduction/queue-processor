@@ -5,6 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
+import os
 import unittest
 from unittest.mock import Mock, patch
 from docker.errors import APIError, ImageNotFound
@@ -30,6 +31,17 @@ class TestReductionProcessManager(unittest.TestCase):
         rpm = ReductionProcessManager(self.message, self.run_name, self.software)
 
         assert rpm.message == self.message
+        assert str(rpm.reduced_data_path) == os.path.expanduser("~/.autoreduce/reduced-data")
+
+    @patch.dict(os.environ, {"AUTOREDUCTION_PRODUCTION": "1"})
+    def test_init_prod(self):
+        """Test that the constructor is doing what's expected"""
+        self.data, self.message = add_data_and_message()
+
+        rpm = ReductionProcessManager(self.message, self.run_name, self.software)
+
+        assert rpm.message == self.message
+        assert str(rpm.reduced_data_path) == "/instrument"
 
     def test_run(self):
         """Tests success path"""
