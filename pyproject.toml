@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoreduce_qp"
-version = "22.0.0.dev37"
+version = "22.0.0.dev38"
 description = "ISIS Autoreduction queue processor"
 readme = "README.md"
 license = { text = "GNU General Public License" }
 classifiers = ["Framework :: Django", "Programming Language :: Python :: 3"]
 dependencies = [
-    "autoreduce_db==22.0.0.dev36",
-    "Django>=3.2.10",
+    "autoreduce_db==22.0.0.dev37",
+    "Django==4.0.6",
     "fire==0.4.0",
     "plotly==5.3.1",
     "kaleido==0.2.1",
