@@ -14,7 +14,7 @@ jobs:
       - name: Build and Push runner-mantid latest
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
-          image: ghcr.io/autoreduction/runner-mantid
+          image: runner-mantid
           tags: latest
           registry: ghcr.io
           dockerfile: container/runner_py38_mantid.Dockerfile
