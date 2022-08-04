@@ -2,6 +2,9 @@ name: "Build and Push Runner-Mantid Nightly"
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: "0 9 * * 0" # every Sunday at 9:00am
+
 jobs:
   build-and-push-nightly:
     runs-on: ubuntu-latest
