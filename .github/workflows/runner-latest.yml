@@ -1,6 +1,6 @@
 name: "Build and Push Runner-Mantid Latest"
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Allows workflow to be triggered manually
 
   schedule:
     - cron: "0 9 * * 0" # every Sunday at 9:00am
