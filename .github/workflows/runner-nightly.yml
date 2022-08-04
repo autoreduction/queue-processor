@@ -17,8 +17,7 @@ jobs:
           image: ghcr.io/autoreduction/runner-mantid
           tags: nightly
           registry: ghcr.io
-          dockerfile: ./queue-processor/container/runner_py38_mantid.Dockerfile
-          directory: ./queue-processor
+          dockerfile: container/runner_py38_mantid.Dockerfile
           buildArgs: NIGHTLY=True
           addTimestamp: true
           enableBuildKit: true
