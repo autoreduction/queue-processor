@@ -1,4 +1,4 @@
-name: "Build/Push Runner-Mantid Nightly"
+name: "Deploy runner"
 on:
   workflow_dispatch: # Allows workflow to be triggered manually
 
@@ -21,9 +21,11 @@ jobs:
         id: build_args
         run: |
           if [ ${{ matrix.deployment }} != 'nightly' ]; then
-            echo "::set-output name=build-arg::NIGHTLY=False"
+            echo "::set-output name=build_arg::False"
+            echo "build-arg set for Latest"
           else
-            echo "::set-output name=build-arg::NIGHTLY=True"
+            echo "::set-output name=build_arg::True"
+            echo "build-arg set for Nightly"
           fi
 
       - name: Set up QEMU
@@ -43,7 +45,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: container/runner_py38_mantid.Dockerfile
-          build-args: ${{ steps.build_args.outputs.build_arg }}
+          build-args: NIGHTLY=${{ steps.build_args.outputs.build_arg }}
           push: true
           tags: |
             ghcr.io/autoreduction/runner-mantid:${{ matrix.deployment }}
