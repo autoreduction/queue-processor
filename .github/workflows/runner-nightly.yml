@@ -1,4 +1,4 @@
-name: "Build and Push Runner-Mantid Nightly"
+name: "Build/Push Runner-Mantid Nightly"
 on:
   workflow_dispatch: # Allows workflow to be triggered manually
 
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build and Push runner-mantid nightly
-        uses: mr-smithers-excellent/docker-build-push@v5
+        uses: mr-smithers-excellent/docker-build-push@master
         with:
           image: runner-mantid
           tags: nightly
