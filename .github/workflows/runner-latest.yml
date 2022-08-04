@@ -32,7 +32,7 @@ jobs:
           file: container/runner_py38_mantid.Dockerfile
           push: true
           tags: |
-            autoreduction/runner-mantid:latest
-            autoreduction/runner-mantid:${{ steps.date.outputs.date }}-latest
-          cache-from: type=registry,ref=autoreduction/runner-mantid:latest
+            ghcr.io/autoreduction/runner-mantid:latest
+            ghcr.io/autoreduction/runner-mantid:${{ steps.date.outputs.date }}-latest
+          cache-from: type=registry,ref=ghcr.io/autoreduction/runner-mantid:latest
           cache-to: type=inline

@@ -34,7 +34,7 @@ jobs:
             NIGHTLY=True
           push: true
           tags: |
-            autoreduction/runner-mantid:nightly
-            autoreduction/runner-mantid:${{ steps.date.outputs.date }}-nightly
-          cache-from: type=registry,ref=autoreduction/runner-mantid:nightly
+            ghcr.io/autoreduction/runner-mantid:nightly
+            ghcr.io/autoreduction/runner-mantid:${{ steps.date.outputs.date }}-nightly
+          cache-from: type=registry,ref=ghcr.io/autoreduction/runner-mantid:nightly
           cache-to: type=inline
