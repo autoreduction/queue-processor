@@ -27,9 +27,9 @@ SHELL [ "conda", "run", "-n", "py38", "/bin/bash", "-c" ]
 # Install Mantid and install autoreduce-qp from local directory
 RUN conda config --add channels conda-forge
 RUN if [ "$NIGHTLY" = "False" ]; then \
-    conda install mantid -c mantid; \
+    conda install mantid matplotlib -c mantid -c conda-forge; \
     else \
-    conda install -c mantid/label/nightly mantid; \
+    conda install -c conda-forge -c mantid/label/nightly mantid matplotlib; \
     fi
 
 RUN python3 -m pip install --no-cache-dir . 
@@ -59,7 +59,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get update &&\
     python3-dev \
     default-libmysqlclient-dev \
     build-essential \
-    gcc
+    gcc \
+    libgl1-mesa-glx
 
 RUN useradd -m --no-log-init -s /bin/bash -u 880844730 isisautoreduce
 USER isisautoreduce
