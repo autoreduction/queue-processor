@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3 AS build
+FROM condaforge/mambaforge AS build
 
 ARG NIGHTLY=False
 WORKDIR /app
@@ -16,24 +16,18 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get update &&\
     gcc
 
 # Install conda-pack into the base environment
-RUN conda install conda-pack
+RUN mamba install conda-pack
 
-# Create the conda environment
-RUN conda create -n py38 python=3.8.12
-
+RUN mamba env create -f environment.yml
 # Make RUN, CMD, and ENTRYPOINT commands use the new environment with the SHELL command
-SHELL [ "conda", "run", "-n", "py38", "/bin/bash", "-c" ]
+SHELL [ "mamba", "run", "-n", "py38", "/bin/bash", "-c" ]
 
-# Install Mantid and install autoreduce-qp from local directory
-RUN conda config --add channels conda-forge
+# Install Mantid
 RUN if [ "$NIGHTLY" = "False" ]; then \
-    conda install mantid matplotlib -c mantid -c conda-forge; \
+    mamba install mantid -c mantid; \
     else \
-    conda install -c conda-forge -c mantid/label/nightly mantid matplotlib; \
+    mamba install -c mantid/label/nightly mantid; \
     fi
-
-RUN python3 -m pip install --no-cache-dir . 
-RUN python3 -m pip install --no-cache-dir mysqlclient debugpy
 
 # Use conda-pack to create a standalone enviornment in /venv:
 RUN conda-pack -n py38 -o /tmp/env.tar && \
@@ -62,7 +56,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get update &&\
     gcc \
     libgl1-mesa-glx
 
-RUN useradd -m --no-log-init -s /bin/bash -u 880844730 isisautoreduce
+RUN groupadd -g 880844730 isisautoreduce \
+    && useradd -u 880844730 -g 880844730 -m -s /bin/bash --no-log-init isisautoreduce
 USER isisautoreduce
 WORKDIR /home/isisautoreduce
 
