@@ -19,7 +19,7 @@ jobs:
         uses: mr-smithers-excellent/docker-build-push@master
         with:
           image: runner-mantid
-          tags: latest,${{ steps.date.outputs.date }}
+          tags: latest,${{ steps.date.outputs.date }}-latest
           registry: ghcr.io
           dockerfile: container/runner_py38_mantid.Dockerfile
           addTimestamp: true

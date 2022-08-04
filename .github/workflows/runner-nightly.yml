@@ -19,7 +19,7 @@ jobs:
         uses: mr-smithers-excellent/docker-build-push@master
         with:
           image: runner-mantid
-          tags: nightly,${{ steps.date.outputs.date }}
+          tags: nightly,${{ steps.date.outputs.date }}-nightly
           registry: ghcr.io
           dockerfile: container/runner_py38_mantid.Dockerfile
           buildArgs: NIGHTLY=True
