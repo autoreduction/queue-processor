@@ -11,11 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
+
       - name: Build and Push runner-mantid latest
         uses: mr-smithers-excellent/docker-build-push@master
         with:
           image: runner-mantid
-          tags: latest
+          tags: latest,${{ steps.date.outputs.date }}
           registry: ghcr.io
           dockerfile: container/runner_py38_mantid.Dockerfile
           addTimestamp: true
