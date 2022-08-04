@@ -29,10 +29,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          file: ./container/runner_py38_mantid.Dockerfile
+          file: container/runner_py38_mantid.Dockerfile
           build-args: |
             NIGHTLY=True
-          context: .
           push: true
           tags: |
             autoreduction/runner-mantid:nightly
