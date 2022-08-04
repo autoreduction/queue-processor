@@ -1,0 +1,22 @@
+name: "Build and Push Runner-Mantid Latest"
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build and Push runner-mantid latest
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: ghcr.io/autoreduction/runner-mantid
+          tags: latest
+          registry: ghcr.io
+          dockerfile: ./queue-processor/container/runner_py38_mantid.Dockerfile
+          directory: ./queue-processor
+          addTimestamp: true
+          enableBuildKit: true
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}

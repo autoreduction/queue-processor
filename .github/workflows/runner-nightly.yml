@@ -1,0 +1,23 @@
+name: "Build and Push Runner-Mantid Nightly"
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push-nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build and Push runner-mantid nightly
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: ghcr.io/autoreduction/runner-mantid
+          tags: nightly
+          registry: ghcr.io
+          dockerfile: ./queue-processor/container/runner_py38_mantid.Dockerfile
+          directory: ./queue-processor
+          buildArgs: NIGHTLY=True
+          addTimestamp: true
+          enableBuildKit: true
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
