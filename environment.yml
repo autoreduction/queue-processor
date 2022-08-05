@@ -1,0 +1,11 @@
+name: py38
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - matplotlib
+  - pip:
+    - . # Install local queue-processor
+    - mysqlclient
+    - debugpy
