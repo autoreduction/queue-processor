@@ -88,7 +88,7 @@ class TemporaryReductionDirectory:
         :param destination: (Path like) the copy destination
         """
         logger.info("Copying %s to %s", self.path, destination)
-        copytree(self.path, str(destination))  # We have to convert path objects to str
+        copytree(self.path, str(destination), dirs_exist_ok=True)  # We have to convert path objects to str
 
     @property
     def path(self) -> str:
