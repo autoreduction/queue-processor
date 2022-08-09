@@ -51,7 +51,7 @@ class ReductionProcessManager:
 
             image = get_correct_image(client, self.software)
 
-            if not "AUTOREDUCTION_PRODUCTION" in os.environ:
+            if "AUTOREDUCTION_PRODUCTION" not in os.environ:
                 if not os.path.exists(ARCHIVE_ROOT):
                     Path(ARCHIVE_ROOT).mkdir(parents=True, exist_ok=True)
                 if not os.path.exists(self.reduced_data_path):

@@ -95,8 +95,8 @@ class ReductionRunner:
         except ReductionScriptError as err:
             logger.error("Reduction script path: %s", reduction_script_path)
             self.message.message = "Error encountered when running the reduction script"
-            self.message.reduction_log = f"""Exception: {reduction_script_path} {err} ## Script output ## 
-{reduction_log_stream.getvalue()}""" # pylint:disable=trailing-whitespace
+            self.message.reduction_log = f"""Exception: {reduction_script_path} {err} ## Script output ##
+{reduction_log_stream.getvalue()}"""  # pylint:disable=trailing-whitespace
         except Exception as err:
             logger.error(traceback.format_exc())
             self.message.message = f"REDUCTION Error: {err}"
