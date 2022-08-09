@@ -12,7 +12,7 @@ import logging
 import os
 import traceback
 import types
-from distutils.dir_util import copy_tree
+from shutil import copytree
 from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -51,8 +51,7 @@ class ReductionDirectory:
         Creates the reduction directory including the log path, Script.out and Mantid.log files
         """
         logger.info("Creating reduction directory: %s", self.path)
-        os.umask(0)
-        os.makedirs(self.path, mode=0o777, exist_ok=False)
+        self.path.mkdir(parents=True, exist_ok=True)
         self.log_path.mkdir(exist_ok=True)
         self.script_log.touch(exist_ok=True)
         self.mantid_log.touch(exist_ok=True)
@@ -89,7 +88,7 @@ class TemporaryReductionDirectory:
         :param destination: (Path like) the copy destination
         """
         logger.info("Copying %s to %s", self.path, destination)
-        copy_tree(self.path, str(destination))  # We have to convert path objects to str
+        copytree(self.path, str(destination))  # We have to convert path objects to str
 
     @property
     def path(self) -> str:
