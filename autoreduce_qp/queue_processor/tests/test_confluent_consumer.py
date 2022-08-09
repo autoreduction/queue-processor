@@ -24,8 +24,8 @@ class KafkaTestCase(TestCase):
 
         with mock.patch("autoreduce_qp.queue_processor.confluent_consumer.HandleMessage",
                         return_value=self.mocked_handler), \
-            mock.patch("autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer") as mock_confluent_consumer, \
-                mock.patch("logging.getLogger") as patched_logger:
+            mock.patch("autoreduce_qp.queue_processor.confluent_consumer.DeserializingConsumer")\
+                as mock_confluent_consumer, mock.patch("logging.getLogger") as patched_logger:
             self.consumer = Consumer()
             self.mocked_logger = patched_logger.return_value
             self.mock_confluent_consumer = mock_confluent_consumer.return_value
