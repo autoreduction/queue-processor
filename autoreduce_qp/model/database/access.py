@@ -97,7 +97,7 @@ def get_software(name: str, version: str) -> Software:
         The Software object from the database
     """
     # If running in test env, create and delete a test software record
-    if not "AUTOREDUCTION_PRODUCTION" in os.environ:
+    if "AUTOREDUCTION_PRODUCTION" not in os.environ:
         return Software.objects.get_or_create(name=name, version=version)[0]
     else:
         if Software.objects.filter(name=name, version=version).count() == 0:
