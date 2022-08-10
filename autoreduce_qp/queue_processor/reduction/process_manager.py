@@ -27,6 +27,7 @@ class ReductionProcessManager:
         self.message: Message = message
         self.run_name = run_name
         self.software = software
+        self.mantid_path = os.path.expanduser("~/.mantid")
 
         if "AUTOREDUCTION_PRODUCTION" in os.environ:
             self.reduced_data_path = Path('/instrument')
@@ -68,6 +69,10 @@ class ReductionProcessManager:
                 volumes={
                     AUTOREDUCE_HOME_ROOT: {
                         'bind': '/home/isisautoreduce/.autoreduce/',
+                        'mode': 'rw'
+                    },
+                    self.mantid_path: {
+                        'bind': '/home/isisautoreduce/.mantid/',
                         'mode': 'rw'
                     },
                     ARCHIVE_ROOT: {
