@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = []
+dev = ["parameterized"]
 
 [project.urls]
 "Repository" = "https://github.com/autoreduction/queue-processor"
