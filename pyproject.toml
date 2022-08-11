@@ -38,6 +38,8 @@ packages = ["autoreduce_qp"]
 [tool.yapf]
 column_limit = 120
 based_on_style = "pep8"
+allow_split_before_dict_value = false
+each_dict_entry_on_separate_line = true
 
 [tool.yapfignore]
 ignore_patterns = ["setup.py", "**/migrations", "venv/", "venv3/"]
