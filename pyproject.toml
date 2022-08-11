@@ -34,6 +34,11 @@ autoreduce-runner-start = "autoreduce_qp.queue_processor.reduction.runner:main"
 [tool.setuptools]
 packages = ["autoreduce_qp"]
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "autoreduce_django.settings"
+norecursedirs = [".*", "dist", "CVS", "_darcs", "{arch}", "*.egg"]
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+
 [tool.yapf]
 column_limit = 120
 based_on_style = "pep8"
