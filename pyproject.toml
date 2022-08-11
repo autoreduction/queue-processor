@@ -18,6 +18,7 @@ dependencies = [
     "stomp.py",
     "docker==5.0.3",
     "confluent-kafka==1.9.0",
+    "django-dbconn-retry==0.1.6",
 ]
 
 [project.optional-dependencies]

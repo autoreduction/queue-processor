@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'autoreduce_qp.autoreduce_django',
     'autoreduce_db.reduction_viewer',
     'autoreduce_db.instrument',
+    'django_dbconn_retry'
 ]
 DATABASES = autoreduce_db_settings
 
