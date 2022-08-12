@@ -28,7 +28,6 @@ jobs:
       - uses: autoreduction/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
-          install_current_repo: false
 
       - name: Remote dotenv to Environment (configserver alike)
         uses: Steph0/dotenv-configserver@v1.2.0
@@ -113,8 +112,6 @@ jobs:
       - uses: autoreduction/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
-          install_current_repo: false
-          run_kafka: false
 
       - name: Install Tox
         run: python -m pip install tox tox-gh-actions
