@@ -27,6 +27,8 @@ def check_mysql_gone_away(function):
                     'Lost connection to MySQL server during query' in str(e)):
                 connection.close()
                 return function(*args, **kwargs)
+            else:
+                raise e
     return wrapper
 
 
