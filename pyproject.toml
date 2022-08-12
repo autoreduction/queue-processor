@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = []
+dev = ["parameterized==0.8.1", "pytest==7.1.2"]
 
 [project.urls]
 "Repository" = "https://github.com/autoreduction/queue-processor"
@@ -33,6 +33,11 @@ autoreduce-runner-start = "autoreduce_qp.queue_processor.reduction.runner:main"
 
 [tool.setuptools]
 packages = ["autoreduce_qp"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "autoreduce_django.settings"
+norecursedirs = [".*", "dist", "CVS", "_darcs", "{arch}", "*.egg"]
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
 
 [tool.yapf]
 column_limit = 120
