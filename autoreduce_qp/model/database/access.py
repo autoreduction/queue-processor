@@ -23,7 +23,8 @@ def check_mysql_gone_away(function):
             return function(*args, **kwargs)
         except (OperationalError, InterfaceError) as e:
             if ('MySQL server has gone away' in str(e) or
-                    'Lost connection to MySQL server during query' in str(e)):
+                    'Lost connection to MySQL server during query' in str(e) or
+                    'The client was disconnected by the server because of inactivity' in str(e)):
                 connection.close()
                 return function(*args, **kwargs)
             else:
