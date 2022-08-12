@@ -20,18 +20,20 @@ def check_mysql_gone_away(function):
     """
     A decorator for checking if django has lost connection to the SQL database and if so fixing that
     """
+
     @wraps(function)
     def wrapper(*args, **kwargs):
         try:
             return function(*args, **kwargs)
         except (OperationalError, InterfaceError) as exception:
-            if ('MySQL server has gone away' in str(exception) or
-                    'Lost connection to MySQL server during query' in str(exception) or
-                    'The client was disconnected by the server because of inactivity' in str(exception)):
+            if ('MySQL server has gone away' in str(exception)
+                    or 'Lost connection to MySQL server during query' in str(exception)
+                    or 'The client was disconnected by the server because of inactivity' in str(exception)):
                 connection.close()
                 return function(*args, **kwargs)
             else:
                 raise exception
+
     return wrapper
 
 
