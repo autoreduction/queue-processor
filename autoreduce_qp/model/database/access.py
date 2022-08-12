@@ -17,18 +17,19 @@ from autoreduce_db.reduction_viewer.models import Software, Status, Experiment, 
 # Adapted from the following github repository using an MIT license:
 # https://github.com/akoidan/MySQL-server-has-gone-away/blob/9e1d422ecae54c7cda3d69f2c2432c497d256e57/mysql_server_has_gone_away/base.py
 def check_mysql_gone_away(function):
+
     @wraps(function)
     def wrapper(*args, **kwargs):
         try:
             return function(*args, **kwargs)
         except (OperationalError, InterfaceError) as e:
-            if ('MySQL server has gone away' in str(e) or
-                    'Lost connection to MySQL server during query' in str(e) or
-                    'The client was disconnected by the server because of inactivity' in str(e)):
+            if ('MySQL server has gone away' in str(e) or 'Lost connection to MySQL server during query' in str(e)
+                    or 'The client was disconnected by the server because of inactivity' in str(e)):
                 connection.close()
                 return function(*args, **kwargs)
             else:
                 raise e
+
     return wrapper
 
 
