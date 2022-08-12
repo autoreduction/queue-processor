@@ -7,12 +7,37 @@
 """Common functions for accessing and creating records in the database."""
 # pylint:disable=no-member
 import os
+from functools import wraps
 from typing import List, Union
-from django.db import transaction
+from django.db import transaction, connection, OperationalError, InterfaceError
 
 from autoreduce_db.reduction_viewer.models import Software, Status, Experiment, Instrument
 
 
+# Adapted from the following github repository using an MIT license:
+# https://github.com/akoidan/MySQL-server-has-gone-away/blob/9e1d422ecae54c7cda3d69f2c2432c497d256e57/mysql_server_has_gone_away/base.py
+def check_mysql_gone_away(function):
+    """
+    A decorator for checking if django has lost connection to the SQL database and if so fixing that
+    """
+
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except (OperationalError, InterfaceError) as exception:
+            if ('MySQL server has gone away' in str(exception)
+                    or 'Lost connection to MySQL server during query' in str(exception)
+                    or 'The client was disconnected by the server because of inactivity' in str(exception)):
+                connection.close()
+                return function(*args, **kwargs)
+            else:
+                raise exception
+
+    return wrapper
+
+
+@check_mysql_gone_away
 @transaction.atomic
 def get_instrument(instrument_name: str) -> Instrument:
     """
@@ -29,6 +54,7 @@ def get_instrument(instrument_name: str) -> Instrument:
     return instrument
 
 
+@check_mysql_gone_away
 def is_instrument_flat_output(instrument_name: str) -> bool:
     """
     Given an instrument name return if it is a flat output instrument.
@@ -42,11 +68,13 @@ def is_instrument_flat_output(instrument_name: str) -> bool:
     return Instrument.objects.filter(name=instrument_name).first().is_flat_output
 
 
+@check_mysql_gone_away
 def get_all_instrument_names() -> List[str]:
     """Return the names of all instruments in the database."""
     return list(Instrument.objects.values_list("name", flat=True))
 
 
+@check_mysql_gone_away
 @transaction.atomic
 def get_status(status_value: str) -> Status:
     """
@@ -69,6 +97,7 @@ def get_status(status_value: str) -> Status:
     return Status.objects.get_or_create(value=status_value)[0]
 
 
+@check_mysql_gone_away
 @transaction.atomic
 def get_experiment(rb_number: str) -> Experiment:
     """
@@ -84,6 +113,7 @@ def get_experiment(rb_number: str) -> Experiment:
     return Experiment.objects.get_or_create(reference_number=rb_number)[0]
 
 
+@check_mysql_gone_away
 @transaction.atomic
 def get_software(name: str, version: str) -> Software:
     """
@@ -105,6 +135,7 @@ def get_software(name: str, version: str) -> Software:
         return Software.objects.get(name=name, version=version)
 
 
+@check_mysql_gone_away
 def find_highest_run_version(experiment: str, run_number: Union[int, List[int]]) -> int:
     """
     Search for the highest run version in the database.
@@ -141,6 +172,7 @@ def find_highest_run_version(experiment: str, run_number: Union[int, List[int]])
         return 0
 
 
+@check_mysql_gone_away
 def save_record(record):
     """
     Save a record to the database.
