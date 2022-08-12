@@ -28,6 +28,7 @@ jobs:
       - uses: autoreduction/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
+          install_current_repo: false
 
       - name: Remote dotenv to Environment (configserver alike)
         uses: Steph0/dotenv-configserver@v1.2.0
@@ -38,7 +39,7 @@ jobs:
         run: python -m pip install tox tox-gh-actions
 
       - name: Test with tox
-        run: tox
+        run: tox -e pytest
 
       - uses: codecov/codecov-action@v3
         with:
@@ -84,8 +85,7 @@ jobs:
       - name: Pip install
         run: |
           pip install --upgrade pip
-          [ -f "requirements.txt" ] && pip install -r requirements.txt || echo "No requirements.txt found"
-          pip install -e .
+          pip install -e .[dev]
 
   Inspection:
     name: Code Inspection
@@ -94,6 +94,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8"]
+        task: ["pylint", "yapf", "vulture"]
 
     steps:
       - uses: actions/checkout@v2
@@ -113,7 +114,8 @@ jobs:
       - uses: autoreduction/autoreduce-actions/build@main
         with:
           package_name: autoreduce_qp
+          install_current_repo: false
+          run_kafka: false
 
-      - uses: autoreduction/autoreduce-actions/code_inspection@main
-        with:
-          package_name: autoreduce_qp
+      - name: Run ${{ matrix.task }} with tox
+        run: tox -e ${{ matrix.task }}
