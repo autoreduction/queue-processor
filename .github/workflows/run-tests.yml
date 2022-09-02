@@ -48,16 +48,6 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-      - name: Build package for publishing
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: python3 -m pip install --upgrade build wheel && python -m build
-
-      - name: Publish distribution 📦 to PyPI
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-latest
