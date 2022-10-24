@@ -17,7 +17,7 @@ dependencies = [
     "kaleido==0.2.1",
     "stomp.py",
     "docker==5.0.3",
-    "confluent-kafka==1.9.0",
+    "confluent-kafka==1.9.2",
 ]
 
 [project.optional-dependencies]
